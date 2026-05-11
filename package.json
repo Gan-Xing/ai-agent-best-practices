@@ -1,0 +1,12 @@
+{
+  "name": "ai-agent-best-practices",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "preview": "npx serve site",
+    "check": "echo 'No build required. Static site lives in ./site'"
+  },
+  "devDependencies": {
+    "serve": "latest"
+  }
+}
