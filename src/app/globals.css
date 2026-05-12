@@ -1,0 +1,74 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4eee2;
+  --foreground: #1f1711;
+  --surface: rgba(255, 253, 249, 0.72);
+  --surface-strong: #fffdf8;
+  --muted: #706456;
+  --line: rgba(135, 117, 91, 0.24);
+  --line-strong: rgba(95, 80, 59, 0.48);
+  --accent: #16615c;
+  --accent-strong: #0f4c48;
+  --accent-soft: rgba(22, 97, 92, 0.12);
+  --shadow: 0 32px 90px rgba(48, 36, 24, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: "IBM Plex Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(22, 97, 92, 0.14), transparent 24rem),
+    radial-gradient(circle at 82% 18%, rgba(199, 151, 81, 0.18), transparent 22rem),
+    linear-gradient(180deg, #fcf8ef 0%, #f3ecdf 100%);
+  color: var(--foreground);
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+::selection {
+  background: rgba(22, 97, 92, 0.18);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .motion-rise {
+    animation: rise-in 780ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .motion-rise-delayed {
+    animation: rise-in 920ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
