@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 const blankToUndefined = (value: unknown) => {
@@ -18,6 +19,17 @@ const stringArray = z
   .array(z.string().trim().min(1))
   .optional()
   .transform((value) => (value ? [...new Set(value)] : []));
+
+export const jsonValueSchema: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(jsonValueSchema),
+    z.record(z.string(), jsonValueSchema),
+  ]),
+);
 
 export const createRecordInputSchema = z.object({
   slug: optionalTrimmedString,
@@ -40,7 +52,7 @@ export const createRecordInputSchema = z.object({
   body: optionalTrimmedString,
   problem: optionalTrimmedString,
   recommendation: optionalTrimmedString,
-  metadata: z.unknown().optional(),
+  metadata: jsonValueSchema.optional(),
   aliases: stringArray,
   keywords: stringArray,
   tags: stringArray,

@@ -1,3 +1,7 @@
+import Link from "next/link";
+
+import { searchRecords } from "@/lib/search";
+
 type HomeProps = {
   searchParams: Promise<{
     q?: string | string[];
@@ -25,28 +29,32 @@ function SearchIcon() {
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
   const query = Array.isArray(params.q) ? params.q[0] ?? "" : params.q ?? "";
+  const searchResult = await searchRecords(
+    query ? { q: query, limit: 10 } : { limit: 6 },
+  );
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-10 sm:px-8">
-      <section className="relative w-full max-w-5xl">
-        <div className="motion-rise mx-auto flex max-w-3xl flex-col items-center gap-8 rounded-[2rem] border border-line bg-surface px-6 py-10 text-center shadow-[var(--shadow)] backdrop-blur-xl sm:px-10 sm:py-14">
+    <main className="relative min-h-screen overflow-hidden px-5 py-10 sm:px-8">
+      <section className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <div className="motion-rise rounded-[2rem] border border-line bg-surface px-6 py-10 text-center shadow-[var(--shadow)] backdrop-blur-xl sm:px-10 sm:py-14">
           <div className="inline-flex items-center gap-3 rounded-full border border-line bg-white/70 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.28em] text-muted">
             <span className="h-2 w-2 rounded-full bg-accent" />
-            Search-first landing page
+            Server-side knowledge search
           </div>
 
-          <div className="space-y-4">
+          <div className="mx-auto mt-8 max-w-3xl space-y-4">
             <p className="font-mono text-xs uppercase tracking-[0.34em] text-muted">
               AI Agent Best Practices
             </p>
             <h1 className="text-balance text-4xl font-semibold leading-tight tracking-[-0.05em] text-foreground sm:text-6xl">
-              One search bar.
+              Search the knowledge base.
               <br />
-              Everything starts there.
+              Open the actual record.
             </h1>
             <p className="mx-auto max-w-2xl text-base leading-7 text-muted sm:text-lg">
-              A focused homepage for searching prompts, workflows, patterns,
-              and operating notes without loading the screen with anything else.
+              Search now runs on PostgreSQL full-text indexes with structured
+              record storage behind it. Imports, records, and search all hit the
+              same server-side database pipeline.
             </p>
           </div>
 
@@ -54,7 +62,7 @@ export default async function Home({ searchParams }: HomeProps) {
             action="/"
             method="GET"
             role="search"
-            className="motion-rise-delayed w-full max-w-2xl"
+            className="motion-rise-delayed mx-auto mt-8 w-full max-w-2xl"
           >
             <label htmlFor="site-search" className="sr-only">
               Search best practices
@@ -100,31 +108,106 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
           </form>
 
-          <div className="flex w-full max-w-2xl flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted">
             <span className="font-mono uppercase tracking-[0.24em]">
-              prompt library
+              import pipeline
             </span>
             <span className="font-mono uppercase tracking-[0.24em]">
-              agent playbooks
+              postgres fts
             </span>
             <span className="font-mono uppercase tracking-[0.24em]">
-              workflow notes
+              record detail pages
             </span>
           </div>
 
-          <p className="rounded-full bg-accent-soft px-4 py-2 text-sm text-muted">
+          <p className="mt-6 rounded-full bg-accent-soft px-4 py-2 text-sm text-muted">
             {query ? (
               <>
-                Current query:
+                Search returned
+                <span className="mx-2 font-mono font-medium text-foreground">
+                  {searchResult.total}
+                </span>
+                result(s) for
                 <span className="ml-2 font-mono font-medium text-foreground">
                   {query}
                 </span>
               </>
             ) : (
-              "Try a natural-language query like “weekly review automation”."
+              "No query yet. Showing the latest records already imported into the database."
             )}
           </p>
         </div>
+
+        <section className="motion-rise-delayed">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.28em] text-muted">
+                {query ? "Search Results" : "Latest Records"}
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-foreground">
+                {query
+                  ? "Results from the server-side knowledge store"
+                  : "The newest records in the knowledge base"}
+              </h2>
+            </div>
+            {searchResult.queryLogId ? (
+              <span className="rounded-full border border-line bg-white/70 px-3 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
+                log {searchResult.queryLogId.slice(0, 8)}
+              </span>
+            ) : null}
+          </div>
+
+          {searchResult.items.length ? (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {searchResult.items.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/records/${item.slug}`}
+                  className="group rounded-[1.6rem] border border-line bg-surface px-5 py-5 shadow-[var(--shadow)] transition duration-200 hover:-translate-y-1 hover:border-line-strong"
+                >
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-muted">
+                    <span>{item.categoryName}</span>
+                    <span>{item.type}</span>
+                    <span>{item.status}</span>
+                    <span>{item.matchSource}</span>
+                  </div>
+
+                  <h3 className="mt-3 text-xl font-semibold tracking-[-0.03em] text-foreground transition group-hover:text-accent">
+                    {item.title}
+                  </h3>
+
+                  <p className="mt-3 line-clamp-4 text-sm leading-7 text-muted">
+                    {item.summary ?? "No summary yet. Open the record to inspect the body and version history."}
+                  </p>
+
+                  <div className="mt-4 flex items-center justify-between gap-4 text-sm text-muted">
+                    <span className="font-mono">
+                      score {item.score.toFixed(3)}
+                    </span>
+                    <span>
+                      {new Intl.DateTimeFormat("en", {
+                        dateStyle: "medium",
+                      }).format(item.updatedAt)}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[1.6rem] border border-dashed border-line-strong bg-surface px-6 py-10 text-center shadow-[var(--shadow)]">
+              <p className="font-mono text-xs uppercase tracking-[0.28em] text-muted">
+                No Matches
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-foreground">
+                Nothing matched that query.
+              </h3>
+              <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-muted">
+                Try broader keywords, or import more records first so the search
+                index has material to work with.
+              </p>
+            </div>
+          )}
+        </section>
       </section>
     </main>
   );

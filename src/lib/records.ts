@@ -41,6 +41,74 @@ const recordDetailInclude = {
   },
 } satisfies Prisma.KnowledgeRecordInclude;
 
+type RecordDetail = Prisma.KnowledgeRecordGetPayload<{
+  include: typeof recordDetailInclude;
+}>;
+
+type RecordSnapshot = {
+  slug: string;
+  externalKey: string | null;
+  externalId: string | null;
+  type: string;
+  categoryCode: string;
+  visibility: CreateRecordInput["visibility"];
+  status: CreateRecordInput["status"];
+  maturity: CreateRecordInput["maturity"];
+  freshness: CreateRecordInput["freshness"];
+  confidence: number | null;
+  language: string;
+  title: string;
+  summary: string | null;
+  body: string | null;
+  problem: string | null;
+  recommendation: string | null;
+  metadata: Prisma.JsonValue | null;
+  aliases: string[];
+  keywords: string[];
+  tags: string[];
+};
+
+type RecordWriteArtifacts = {
+  parsed: CreateRecordInput;
+  slug: string;
+  tags: Array<{ id: string; name: string }>;
+  primaryChunk: {
+    kind: string;
+    text: string;
+  };
+  chunkContentHash: string;
+  searchIndex: {
+    language: string;
+    title: string;
+    summary: string | null;
+    body: string | null;
+    tags: string;
+    aliases: string;
+    keywords: string;
+    contentHash: string;
+  };
+  snapshot: RecordSnapshot;
+};
+
+type RecordWriteOptions = {
+  actorType: string;
+  auditAction: string;
+  note: string;
+  auditMetadata?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
+};
+
+type RecordWriteResult = {
+  action: "CREATE" | "UPDATE";
+  record: RecordDetail;
+  snapshot: RecordSnapshot;
+};
+
+type ImportUpsertOptions = {
+  actorType?: string;
+  note?: string;
+  auditMetadata?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
+};
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -117,7 +185,11 @@ function buildSearchIndexPayload(input: CreateRecordInput, tags: string[]) {
   };
 }
 
-function buildRecordSnapshot(input: CreateRecordInput, slug: string, tags: string[]) {
+function buildRecordSnapshot(
+  input: CreateRecordInput,
+  slug: string,
+  tags: string[],
+): RecordSnapshot {
   return {
     slug,
     externalKey: input.externalKey ?? null,
@@ -142,11 +214,57 @@ function buildRecordSnapshot(input: CreateRecordInput, slug: string, tags: strin
   };
 }
 
+function buildStoredRecordSnapshot(record: RecordDetail): RecordSnapshot {
+  return {
+    slug: record.slug,
+    externalKey: record.externalKey ?? null,
+    externalId: record.externalId ?? null,
+    type: record.type,
+    categoryCode: record.categoryCode,
+    visibility: record.visibility,
+    status: record.status,
+    maturity: record.maturity,
+    freshness: record.freshness,
+    confidence: record.confidence ?? null,
+    language: record.language,
+    title: record.title,
+    summary: record.summary ?? null,
+    body: record.body ?? null,
+    problem: record.problem ?? null,
+    recommendation: record.recommendation ?? null,
+    metadata: (record.metadata as Prisma.JsonValue | null) ?? null,
+    aliases: uniqueStrings(record.aliases.map((item) => item.alias)),
+    keywords: uniqueStrings(record.keywords.map((item) => item.keyword)),
+    tags: uniqueStrings(record.tags.map((item) => item.tag.name)),
+  };
+}
+
+async function ensureCategoryExists(
+  tx: Prisma.TransactionClient,
+  categoryCode: string,
+) {
+  const category = await tx.category.findUnique({
+    where: {
+      code: categoryCode,
+    },
+    select: {
+      code: true,
+    },
+  });
+
+  if (!category) {
+    throw new AppError(
+      400,
+      `Category "${categoryCode}" does not exist. Seed categories first.`,
+    );
+  }
+}
+
 async function ensureTags(
   tx: Prisma.TransactionClient,
   tagNames: string[],
 ) {
-  const tags = [];
+  const tags: Array<{ id: string; name: string }> = [];
 
   for (const tagName of uniqueStrings(tagNames)) {
     const slug = slugify(tagName);
@@ -164,12 +282,332 @@ async function ensureTags(
         slug,
         name: tagName,
       },
+      select: {
+        id: true,
+        name: true,
+      },
     });
 
     tags.push(tag);
   }
 
   return tags;
+}
+
+async function prepareRecordWrite(
+  tx: Prisma.TransactionClient,
+  parsed: CreateRecordInput,
+): Promise<RecordWriteArtifacts> {
+  await ensureCategoryExists(tx, parsed.categoryCode);
+
+  const slug = ensureSlug(parsed);
+  const primaryChunk = buildPrimaryChunk(parsed);
+  const chunkContentHash = hashContent({
+    kind: primaryChunk.kind,
+    text: primaryChunk.text,
+    language: parsed.language,
+  });
+  const tags = await ensureTags(tx, parsed.tags);
+  const tagNames = tags.map((tag) => tag.name);
+
+  return {
+    parsed,
+    slug,
+    tags,
+    primaryChunk,
+    chunkContentHash,
+    searchIndex: buildSearchIndexPayload(parsed, tagNames),
+    snapshot: buildRecordSnapshot(parsed, slug, tagNames),
+  };
+}
+
+function buildRecordCreateData(
+  artifacts: RecordWriteArtifacts,
+): Prisma.KnowledgeRecordUncheckedCreateInput {
+  const { parsed, slug } = artifacts;
+
+  return {
+    slug,
+    externalKey: parsed.externalKey ?? null,
+    externalId: parsed.externalId ?? null,
+    type: parsed.type,
+    categoryCode: parsed.categoryCode,
+    visibility: parsed.visibility,
+    status: parsed.status,
+    maturity: parsed.maturity,
+    freshness: parsed.freshness,
+    confidence: parsed.confidence ?? 0.5,
+    language: parsed.language,
+    title: parsed.title,
+    summary: parsed.summary ?? null,
+    body: parsed.body ?? null,
+    problem: parsed.problem ?? null,
+    recommendation: parsed.recommendation ?? null,
+    metadata: parsed.metadata ?? Prisma.JsonNull,
+  };
+}
+
+function buildRecordUpdateData(
+  artifacts: RecordWriteArtifacts,
+  existing: RecordDetail,
+): Prisma.KnowledgeRecordUncheckedUpdateInput {
+  const { parsed, slug } = artifacts;
+
+  return {
+    slug,
+    externalKey: parsed.externalKey ?? existing.externalKey ?? null,
+    externalId: parsed.externalId ?? existing.externalId ?? null,
+    type: parsed.type,
+    categoryCode: parsed.categoryCode,
+    visibility: parsed.visibility,
+    status: parsed.status,
+    maturity: parsed.maturity,
+    freshness: parsed.freshness,
+    confidence: parsed.confidence ?? 0.5,
+    language: parsed.language,
+    title: parsed.title,
+    summary: parsed.summary ?? null,
+    body: parsed.body ?? null,
+    problem: parsed.problem ?? null,
+    recommendation: parsed.recommendation ?? null,
+    metadata: parsed.metadata ?? Prisma.JsonNull,
+  };
+}
+
+async function getNextVersionNo(
+  tx: Prisma.TransactionClient,
+  recordId: string,
+) {
+  const latestVersion = await tx.recordVersion.findFirst({
+    where: {
+      recordId,
+    },
+    select: {
+      versionNo: true,
+    },
+    orderBy: {
+      versionNo: "desc",
+    },
+  });
+
+  return (latestVersion?.versionNo ?? 0) + 1;
+}
+
+async function syncRecordRelations(
+  tx: Prisma.TransactionClient,
+  recordId: string,
+  artifacts: RecordWriteArtifacts,
+  versionNo: number,
+  changeType: "CREATE" | "UPDATE",
+  note: string,
+) {
+  await tx.knowledgeRecordTag.deleteMany({
+    where: {
+      recordId,
+    },
+  });
+  await tx.alias.deleteMany({
+    where: {
+      recordId,
+      language: artifacts.parsed.language,
+      kind: "ALIAS",
+    },
+  });
+  await tx.keyword.deleteMany({
+    where: {
+      recordId,
+      language: artifacts.parsed.language,
+    },
+  });
+  await tx.recordSearchIndex.deleteMany({
+    where: {
+      recordId,
+      language: artifacts.parsed.language,
+    },
+  });
+  await tx.recordChunk.deleteMany({
+    where: {
+      recordId,
+      chunkNo: 0,
+      language: artifacts.parsed.language,
+    },
+  });
+
+  if (artifacts.tags.length) {
+    await tx.knowledgeRecordTag.createMany({
+      data: artifacts.tags.map((tag) => ({
+        recordId,
+        tagId: tag.id,
+        weight: 1,
+      })),
+    });
+  }
+
+  if (artifacts.parsed.aliases.length) {
+    await tx.alias.createMany({
+      data: artifacts.parsed.aliases.map((alias) => ({
+        recordId,
+        alias,
+        language: artifacts.parsed.language,
+        kind: "ALIAS",
+      })),
+    });
+  }
+
+  if (artifacts.parsed.keywords.length) {
+    await tx.keyword.createMany({
+      data: artifacts.parsed.keywords.map((keyword) => ({
+        recordId,
+        keyword,
+        language: artifacts.parsed.language,
+        weight: 1,
+      })),
+    });
+  }
+
+  await tx.recordSearchIndex.create({
+    data: {
+      recordId,
+      ...artifacts.searchIndex,
+    },
+  });
+
+  await tx.recordChunk.create({
+    data: {
+      recordId,
+      chunkNo: 0,
+      kind: artifacts.primaryChunk.kind,
+      language: artifacts.parsed.language,
+      text: artifacts.primaryChunk.text,
+      contentHash: artifacts.chunkContentHash,
+    },
+  });
+
+  await tx.recordVersion.create({
+    data: {
+      recordId,
+      versionNo,
+      changeType,
+      title: artifacts.parsed.title,
+      summary: artifacts.parsed.summary ?? null,
+      body: artifacts.parsed.body ?? null,
+      snapshot: artifacts.snapshot,
+      note,
+    },
+  });
+}
+
+async function getRecordDetail(
+  tx: Prisma.TransactionClient,
+  recordId: string,
+) {
+  const record = await tx.knowledgeRecord.findUnique({
+    where: {
+      id: recordId,
+    },
+    include: recordDetailInclude,
+  });
+
+  if (!record) {
+    throw new AppError(500, `Failed to load record "${recordId}" after write`);
+  }
+
+  return record;
+}
+
+async function writeRecord(
+  tx: Prisma.TransactionClient,
+  parsed: CreateRecordInput,
+  options: RecordWriteOptions & {
+    existing?: RecordDetail | null;
+  },
+): Promise<RecordWriteResult> {
+  const artifacts = await prepareRecordWrite(tx, parsed);
+  const existing = options.existing ?? null;
+  const action = existing ? "UPDATE" : "CREATE";
+
+  let recordId: string;
+
+  if (existing) {
+    recordId = existing.id;
+
+    await tx.knowledgeRecord.update({
+      where: {
+        id: existing.id,
+      },
+      data: buildRecordUpdateData(artifacts, existing),
+    });
+  } else {
+    const created = await tx.knowledgeRecord.create({
+      data: buildRecordCreateData(artifacts),
+      select: {
+        id: true,
+      },
+    });
+
+    recordId = created.id;
+  }
+
+  const versionNo = existing ? await getNextVersionNo(tx, recordId) : 1;
+
+  await syncRecordRelations(
+    tx,
+    recordId,
+    artifacts,
+    versionNo,
+    action,
+    options.note,
+  );
+
+  const record = await getRecordDetail(tx, recordId);
+
+  await tx.auditLog.create({
+    data: {
+      actorType: options.actorType,
+      action: options.auditAction,
+      targetType: "knowledge_record",
+      targetId: recordId,
+      before: existing ? buildStoredRecordSnapshot(existing) : Prisma.JsonNull,
+      after: artifacts.snapshot,
+      metadata: options.auditMetadata ?? Prisma.JsonNull,
+    },
+  });
+
+  return {
+    action,
+    record,
+    snapshot: artifacts.snapshot,
+  };
+}
+
+async function resolveImportExistingRecord(
+  tx: Prisma.TransactionClient,
+  parsed: CreateRecordInput,
+) {
+  const slug = ensureSlug(parsed);
+  const externalKeyMatch = parsed.externalKey
+    ? await tx.knowledgeRecord.findUnique({
+        where: {
+          externalKey: parsed.externalKey,
+        },
+        include: recordDetailInclude,
+      })
+    : null;
+  const slugMatch = await tx.knowledgeRecord.findUnique({
+    where: {
+      slug,
+    },
+    include: recordDetailInclude,
+  });
+
+  if (externalKeyMatch && slugMatch && externalKeyMatch.id !== slugMatch.id) {
+    throw new AppError(
+      409,
+      `Import conflict: externalKey "${parsed.externalKey}" matches "${externalKeyMatch.slug}" but slug "${slug}" belongs to "${slugMatch.slug}"`,
+    );
+  }
+
+  return externalKeyMatch ?? slugMatch;
 }
 
 function getListWhere(input: ListRecordsQuery): Prisma.KnowledgeRecordWhereInput {
@@ -249,118 +687,31 @@ export async function getRecordBySlug(slug: string) {
 
 export async function createRecord(input: unknown) {
   const parsed = createRecordInputSchema.parse(input);
-  const slug = ensureSlug(parsed);
-  const tagNames = uniqueStrings(parsed.tags);
-  const primaryChunk = buildPrimaryChunk(parsed);
-  const chunkContentHash = hashContent({
-    kind: primaryChunk.kind,
-    text: primaryChunk.text,
-    language: parsed.language,
-  });
 
   return prisma.$transaction(async (tx) => {
-    const category = await tx.category.findUnique({
-      where: {
-        code: parsed.categoryCode,
-      },
-      select: {
-        code: true,
-      },
-    });
-
-    if (!category) {
-      throw new AppError(
-        400,
-        `Category "${parsed.categoryCode}" does not exist. Seed categories first.`,
-      );
-    }
-
-    const tags = await ensureTags(tx, tagNames);
-    const searchIndex = buildSearchIndexPayload(parsed, tags.map((tag) => tag.name));
-    const snapshot = buildRecordSnapshot(parsed, slug, tags.map((tag) => tag.name));
-
-    const record = await tx.knowledgeRecord.create({
-      data: {
-        slug,
-        externalKey: parsed.externalKey ?? null,
-        externalId: parsed.externalId ?? null,
-        type: parsed.type,
-        categoryCode: parsed.categoryCode,
-        visibility: parsed.visibility,
-        status: parsed.status,
-        maturity: parsed.maturity,
-        freshness: parsed.freshness,
-        confidence: parsed.confidence ?? 0.5,
-        language: parsed.language,
-        title: parsed.title,
-        summary: parsed.summary ?? null,
-        body: parsed.body ?? null,
-        problem: parsed.problem ?? null,
-        recommendation: parsed.recommendation ?? null,
-        metadata: parsed.metadata ?? Prisma.JsonNull,
-        tags: tags.length
-          ? {
-              create: tags.map((tag) => ({
-                tagId: tag.id,
-                weight: 1,
-              })),
-            }
-          : undefined,
-        aliases: parsed.aliases.length
-          ? {
-              create: parsed.aliases.map((alias) => ({
-                alias,
-                language: parsed.language,
-                kind: "ALIAS",
-              })),
-            }
-          : undefined,
-        keywords: parsed.keywords.length
-          ? {
-              create: parsed.keywords.map((keyword) => ({
-                keyword,
-                language: parsed.language,
-                weight: 1,
-              })),
-            }
-          : undefined,
-        searchIndexes: {
-          create: searchIndex,
-        },
-        chunks: {
-          create: {
-            chunkNo: 0,
-            kind: primaryChunk.kind,
-            language: parsed.language,
-            text: primaryChunk.text,
-            contentHash: chunkContentHash,
-          },
-        },
-        versions: {
-          create: {
-            versionNo: 1,
-            changeType: "CREATE",
-            title: parsed.title,
-            summary: parsed.summary ?? null,
-            body: parsed.body ?? null,
-            snapshot,
-            note: "Created via records API",
-          },
-        },
-      },
-      include: recordDetailInclude,
-    });
-
-    await tx.auditLog.create({
-      data: {
-        actorType: "API",
-        action: "record.create",
-        targetType: "knowledge_record",
-        targetId: record.id,
-        after: snapshot,
-      },
+    const { record } = await writeRecord(tx, parsed, {
+      actorType: "API",
+      auditAction: "record.create",
+      note: "Created via records API",
     });
 
     return record;
+  });
+}
+
+export async function upsertRecordFromImportTx(
+  tx: Prisma.TransactionClient,
+  input: unknown,
+  options: ImportUpsertOptions = {},
+): Promise<RecordWriteResult> {
+  const parsed = createRecordInputSchema.parse(input);
+  const existing = await resolveImportExistingRecord(tx, parsed);
+
+  return writeRecord(tx, parsed, {
+    existing,
+    actorType: options.actorType ?? "IMPORT",
+    auditAction: existing ? "record.import_update" : "record.import_create",
+    note: options.note ?? "Imported via import API",
+    auditMetadata: options.auditMetadata,
   });
 }
