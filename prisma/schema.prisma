@@ -1,0 +1,637 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RecordVisibility {
+  PUBLIC
+  INTERNAL
+  PRIVATE
+}
+
+enum RecordStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum RecordMaturity {
+  SEED
+  REVIEWED
+  VALIDATED
+  DEPRECATED
+}
+
+enum RecordFreshness {
+  UNKNOWN
+  FRESH
+  STALE
+  NEEDS_REVIEW
+}
+
+enum JobStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+  CANCELED
+}
+
+model KnowledgeRecord {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  externalKey    String?  @unique
+  externalId     String?
+  checksum       String?
+  schemaVersion  Int      @default(1)
+
+  type           String          @default("NOTE")
+  categoryCode   String
+  visibility     RecordVisibility @default(INTERNAL)
+  status         RecordStatus    @default(DRAFT)
+  maturity       RecordMaturity  @default(SEED)
+  freshness      RecordFreshness @default(UNKNOWN)
+  confidence     Float?   @default(0.5)
+  language       String   @default("zh")
+
+  title          String
+  summary        String?
+  body           String?
+  problem        String?
+  recommendation String?
+
+  metadata       Json?
+  applicability  Json?
+  compatibility  Json?
+  tradeoffs      Json?
+  evidence       Json?
+  metrics        Json?
+  curation       Json?
+  extensions     Json?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  publishedAt    DateTime?
+  lastVerifiedAt DateTime?
+  reviewAfter    DateTime?
+  archivedAt     DateTime?
+
+  tags             KnowledgeRecordTag[]
+  category         Category @relation(fields: [categoryCode], references: [code], onDelete: Restrict)
+  translations     RecordTranslation[]
+  aliases          Alias[]
+  keywords         Keyword[]
+  sources          KnowledgeRecordSource[]
+  versions         RecordVersion[]
+  chunks           RecordChunk[]
+  searchIndexes    RecordSearchIndex[]
+  searchIndexJobs  SearchIndexJob[]
+  embeddingJobs    EmbeddingJob[]
+  importItems      ImportJobItem[]
+  searchResults    SearchResultLog[]
+  feedback         SearchFeedback[]
+  outgoingRelations RecordRelation[] @relation("RecordRelationFrom")
+  incomingRelations RecordRelation[] @relation("RecordRelationTo")
+
+  @@index([type])
+  @@index([maturity])
+  @@index([freshness])
+  @@index([language])
+  @@index([confidence])
+  @@index([externalId])
+  @@index([checksum])
+  @@index([updatedAt])
+  @@index([lastVerifiedAt])
+  @@index([reviewAfter])
+  @@index([categoryCode, type])
+  @@index([visibility, status])
+  @@index([status, maturity])
+  @@index([metadata], type: Gin)
+  @@map("knowledge_records")
+}
+
+model VocabularyTerm {
+  id          String  @id @default(cuid())
+  namespace   String
+  code        String
+  label       String
+  labelZh     String?
+  description String?
+  sortOrder   Int     @default(100)
+  isActive    Boolean @default(true)
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([namespace, code])
+  @@index([namespace, isActive, sortOrder])
+  @@map("vocabulary_terms")
+}
+
+model Category {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  slug        String  @unique
+  name        String
+  nameZh      String?
+  description String?
+  parentCode  String?
+  sortOrder   Int     @default(100)
+  isActive    Boolean @default(true)
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentCode], references: [code], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+  records  KnowledgeRecord[]
+
+  @@index([parentCode])
+  @@index([sortOrder])
+  @@index([isActive])
+  @@map("categories")
+}
+
+model RecordTranslation {
+  id             String @id @default(cuid())
+  recordId       String
+  language       String
+  title          String
+  summary        String?
+  body           String?
+  problem        String?
+  recommendation String?
+  metadata       Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, language])
+  @@index([language])
+  @@map("record_translations")
+}
+
+model RecordChunk {
+  id        String @id @default(cuid())
+  recordId  String
+  chunkNo   Int
+  kind      String @default("BODY")
+  language  String @default("zh")
+  text      String
+  contentHash String
+  tokenCount Int?
+  metadata  Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record     KnowledgeRecord  @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  embeddings RecordEmbedding[]
+  embeddingJobs EmbeddingJob[]
+  searchResults SearchResultLog[]
+  feedback SearchFeedback[]
+
+  @@unique([recordId, chunkNo, kind, language])
+  @@index([kind])
+  @@index([language])
+  @@index([contentHash])
+  @@map("record_chunks")
+}
+
+model RecordSearchIndex {
+  id          String @id @default(cuid())
+  recordId    String
+  language    String @default("zh")
+  title       String
+  summary     String?
+  body        String?
+  tags        String?
+  aliases     String?
+  keywords    String?
+  contentHash String
+  searchVector Unsupported("tsvector")?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, language])
+  @@index([language])
+  @@index([contentHash])
+  @@map("record_search_indexes")
+}
+
+model Tag {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  nameZh      String?
+  description String?
+  parentId    String?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Tag?  @relation("TagHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Tag[] @relation("TagHierarchy")
+  records  KnowledgeRecordTag[]
+
+  @@index([name])
+  @@index([parentId])
+  @@map("tags")
+}
+
+model KnowledgeRecordTag {
+  recordId String
+  tagId    String
+  weight   Float? @default(1)
+
+  createdAt DateTime @default(now())
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  tag    Tag             @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recordId, tagId])
+  @@index([tagId])
+  @@map("knowledge_record_tags")
+}
+
+model Alias {
+  id        String @id @default(cuid())
+  recordId  String
+  alias     String
+  language  String @default("zh")
+  kind      String @default("ALIAS")
+
+  createdAt DateTime @default(now())
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, alias, language, kind])
+  @@index([alias])
+  @@index([language])
+  @@map("aliases")
+}
+
+model Keyword {
+  id        String @id @default(cuid())
+  recordId  String
+  keyword   String
+  language  String @default("zh")
+  weight    Float? @default(1)
+
+  createdAt DateTime @default(now())
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, keyword, language])
+  @@index([keyword])
+  @@index([language])
+  @@map("keywords")
+}
+
+model Source {
+  id          String @id @default(cuid())
+  sourceKey   String? @unique
+  sourceType  String
+  uri         String?
+  title       String?
+  author      String?
+  publisher   String?
+  publishedAt DateTime?
+  accessedAt  DateTime?
+  checksum    String?
+  rawPayload   Json?
+  metadata     Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  records KnowledgeRecordSource[]
+
+  @@index([sourceType])
+  @@index([uri])
+  @@index([checksum])
+  @@map("sources")
+}
+
+model KnowledgeRecordSource {
+  recordId String
+  sourceId String
+  role     String @default("REFERENCE")
+  quote    String?
+  note     String?
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  source Source          @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@id([recordId, sourceId, role])
+  @@index([sourceId])
+  @@map("knowledge_record_sources")
+}
+
+model RecordRelation {
+  id              String @id @default(cuid())
+  fromRecordId    String
+  toRecordId      String
+  relationType    String
+  strength        Float? @default(1)
+  description     String?
+  metadata        Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  fromRecord KnowledgeRecord @relation("RecordRelationFrom", fields: [fromRecordId], references: [id], onDelete: Cascade)
+  toRecord   KnowledgeRecord @relation("RecordRelationTo", fields: [toRecordId], references: [id], onDelete: Cascade)
+
+  @@unique([fromRecordId, toRecordId, relationType])
+  @@index([toRecordId])
+  @@index([relationType])
+  @@map("record_relations")
+}
+
+model RecordVersion {
+  id          String @id @default(cuid())
+  recordId    String
+  versionNo   Int
+  changeType  String @default("UPDATE")
+  title       String?
+  summary     String?
+  body        String?
+  snapshot    Json?
+  diff        Json?
+  createdBy   String?
+  note        String?
+
+  createdAt DateTime @default(now())
+
+  record KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@unique([recordId, versionNo])
+  @@index([createdAt])
+  @@map("record_versions")
+}
+
+model RecordEmbedding {
+  id          String @id @default(cuid())
+  chunkId     String
+  provider    String
+  model       String
+  dimensions  Int
+  contentHash String
+  embedding   Unsupported("vector")?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  chunk  RecordChunk @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@unique([chunkId, provider, model, contentHash])
+  @@index([provider, model])
+  @@map("record_embeddings")
+}
+
+model ImportJob {
+  id          String @id @default(cuid())
+  sourceType  String
+  status      JobStatus @default(QUEUED)
+  payload     Json?
+  stats       Json?
+  error       String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ImportJobItem[]
+
+  @@index([status])
+  @@index([sourceType])
+  @@index([createdAt])
+  @@map("import_jobs")
+}
+
+model ImportJobItem {
+  id         String @id @default(cuid())
+  jobId      String
+  recordId   String?
+  externalKey String?
+  externalId String?
+  slug       String?
+  action     String?
+  status     JobStatus @default(QUEUED)
+  checksum   String?
+  payload    Json?
+  error      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job    ImportJob        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  record KnowledgeRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+
+  @@index([jobId, status])
+  @@index([recordId])
+  @@index([externalKey])
+  @@index([externalId])
+  @@index([slug])
+  @@map("import_job_items")
+}
+
+model SearchIndexJob {
+  id        String @id @default(cuid())
+  recordId  String?
+  language  String?
+  status    JobStatus @default(QUEUED)
+  attempts  Int    @default(0)
+  priority  Int    @default(100)
+  reason    String?
+  error     String?
+  lockedAt  DateTime?
+  startedAt DateTime?
+  finishedAt DateTime?
+  payload   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record KnowledgeRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+
+  @@index([status, priority, createdAt])
+  @@index([recordId])
+  @@index([language])
+  @@map("search_index_jobs")
+}
+
+model EmbeddingJob {
+  id        String @id @default(cuid())
+  recordId  String?
+  chunkId   String?
+  provider  String
+  model     String
+  status    JobStatus @default(QUEUED)
+  attempts  Int    @default(0)
+  priority  Int    @default(100)
+  error     String?
+  lockedAt  DateTime?
+  startedAt DateTime?
+  finishedAt DateTime?
+  payload   Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  record KnowledgeRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+  chunk  RecordChunk?     @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+
+  @@index([status, priority, createdAt])
+  @@index([recordId])
+  @@index([chunkId])
+  @@map("embedding_jobs")
+}
+
+model AuditLog {
+  id         String @id @default(cuid())
+  actorId    String?
+  actorType  String @default("SYSTEM")
+  action     String
+  targetType String
+  targetId   String?
+  before     Json?
+  after      Json?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model SearchQueryLog {
+  id          String @id @default(cuid())
+  query       String
+  mode        String @default("SEARCH")
+  filters     Json?
+  resultCount Int?
+  topRecordIds Json?
+  latencyMs   Int?
+  userId      String?
+  sessionId   String?
+  metadata    Json?
+
+  createdAt DateTime @default(now())
+
+  results  SearchResultLog[]
+  feedback SearchFeedback[]
+  answers  AnswerLog[]
+
+  @@index([mode])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("search_query_logs")
+}
+
+model AnswerLog {
+  id            String @id @default(cuid())
+  queryLogId    String
+  provider      String
+  model         String
+  promptVersion String?
+  answer        String
+  citations     Json?
+  inputTokens   Int?
+  outputTokens  Int?
+  costUsd       Float?
+  latencyMs     Int?
+  metadata      Json?
+
+  createdAt DateTime @default(now())
+
+  queryLog SearchQueryLog @relation(fields: [queryLogId], references: [id], onDelete: Cascade)
+  feedback SearchFeedback[]
+
+  @@index([queryLogId])
+  @@index([provider, model])
+  @@index([createdAt])
+  @@map("answer_logs")
+}
+
+model SearchResultLog {
+  id         String @id @default(cuid())
+  queryLogId String
+  recordId   String
+  chunkId    String?
+  rank       Int
+  score      Float?
+  source     String @default("HYBRID")
+  scores     Json?
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+
+  queryLog SearchQueryLog @relation(fields: [queryLogId], references: [id], onDelete: Cascade)
+  record   KnowledgeRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  chunk    RecordChunk?    @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+
+  @@unique([queryLogId, rank])
+  @@index([queryLogId, recordId])
+  @@index([recordId])
+  @@index([chunkId])
+  @@index([source])
+  @@map("search_result_logs")
+}
+
+model SearchFeedback {
+  id         String @id @default(cuid())
+  queryLogId String?
+  answerId   String?
+  recordId   String?
+  chunkId    String?
+  userId     String?
+  sessionId  String?
+  rating     Int?
+  label      String?
+  comment    String?
+  metadata   Json?
+
+  createdAt DateTime @default(now())
+
+  queryLog SearchQueryLog? @relation(fields: [queryLogId], references: [id], onDelete: SetNull)
+  answer   AnswerLog?      @relation(fields: [answerId], references: [id], onDelete: SetNull)
+  record   KnowledgeRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+  chunk    RecordChunk?     @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+
+  @@index([queryLogId])
+  @@index([answerId])
+  @@index([recordId])
+  @@index([chunkId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([label])
+  @@index([createdAt])
+  @@map("search_feedback")
+}
