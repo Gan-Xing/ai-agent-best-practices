@@ -40,6 +40,16 @@ const recordDetailInclude = {
       source: true,
     },
   },
+  outgoingRelations: {
+    include: {
+      toRecord: {
+        select: {
+          externalKey: true,
+          slug: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.KnowledgeRecordInclude;
 
 type RecordDetail = Prisma.KnowledgeRecordGetPayload<{
@@ -88,6 +98,30 @@ type RecordSnapshot = {
   aliases: string[];
   keywords: string[];
   tags: string[];
+  sources: Array<{
+    sourceKey: string | null;
+    sourceType: string;
+    uri: string | null;
+    title: string | null;
+    author: string | null;
+    publisher: string | null;
+    publishedAt: string | null;
+    accessedAt: string | null;
+    checksum: string | null;
+    rawPayload: Prisma.JsonValue | null;
+    metadata: Prisma.JsonValue | null;
+    role: string;
+    quote: string | null;
+    note: string | null;
+  }>;
+  relations: Array<{
+    toExternalKey: string | null;
+    toSlug: string;
+    relationType: string;
+    strength: number | null;
+    description: string | null;
+    metadata: Prisma.JsonValue | null;
+  }>;
 };
 
 type RecordWriteArtifacts = {
@@ -124,12 +158,20 @@ type RecordWriteResult = {
   action: "CREATE" | "UPDATE";
   record: RecordDetail;
   snapshot: RecordSnapshot;
+  versionId: string;
+  auditLogId: string;
+  identityChanged: boolean;
 };
 
 type ImportUpsertOptions = {
   actorType?: string;
   note?: string;
   auditMetadata?: Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput;
+};
+
+type RefreshRecordSnapshotOptions = {
+  versionId?: string;
+  auditLogId?: string;
 };
 
 function slugify(value: string) {
@@ -271,6 +313,15 @@ function buildRecordSnapshot(
     aliases: input.aliases,
     keywords: input.keywords,
     tags,
+    sources: [],
+    relations: input.relations.map((relation) => ({
+      toExternalKey: relation.toExternalKey ?? null,
+      toSlug: relation.toSlug ?? "",
+      relationType: relation.relationType,
+      strength: relation.strength ?? null,
+      description: relation.description ?? null,
+      metadata: relation.metadata ?? null,
+    })),
   };
 }
 
@@ -317,6 +368,53 @@ function buildStoredRecordSnapshot(record: RecordDetail): RecordSnapshot {
     aliases: uniqueStrings(record.aliases.map((item) => item.alias)),
     keywords: uniqueStrings(record.keywords.map((item) => item.keyword)),
     tags: uniqueStrings(record.tags.map((item) => item.tag.name)),
+    sources: record.sources
+      .map((link) => ({
+        sourceKey: link.source.sourceKey ?? null,
+        sourceType: link.source.sourceType,
+        uri: link.source.uri ?? null,
+        title: link.source.title ?? null,
+        author: link.source.author ?? null,
+        publisher: link.source.publisher ?? null,
+        publishedAt: toIsoDateString(link.source.publishedAt),
+        accessedAt: toIsoDateString(link.source.accessedAt),
+        checksum: link.source.checksum ?? null,
+        rawPayload: (link.source.rawPayload as Prisma.JsonValue | null) ?? null,
+        metadata: (link.metadata as Prisma.JsonValue | null) ??
+          ((link.source.metadata as Prisma.JsonValue | null) ?? null),
+        role: link.role,
+        quote: link.quote ?? null,
+        note: link.note ?? null,
+      }))
+      .sort((left, right) =>
+        [
+          left.sourceKey ?? "",
+          left.role,
+          left.title ?? "",
+        ]
+          .join("|")
+          .localeCompare(
+            [right.sourceKey ?? "", right.role, right.title ?? ""].join("|"),
+          ),
+      ),
+    relations: record.outgoingRelations
+      .map((relation) => ({
+        toExternalKey: relation.toRecord.externalKey ?? null,
+        toSlug: relation.toRecord.slug,
+        relationType: relation.relationType,
+        strength: relation.strength ?? null,
+        description: relation.description ?? null,
+        metadata: (relation.metadata as Prisma.JsonValue | null) ?? null,
+      }))
+      .sort((left, right) =>
+        [left.toExternalKey ?? "", left.toSlug, left.relationType]
+          .join("|")
+          .localeCompare(
+            [right.toExternalKey ?? "", right.toSlug, right.relationType].join(
+              "|",
+            ),
+          ),
+      ),
   };
 }
 
@@ -612,7 +710,7 @@ async function syncRecordRelations(
     },
   });
 
-  await tx.recordVersion.create({
+  return tx.recordVersion.create({
     data: {
       recordId,
       versionNo,
@@ -622,6 +720,9 @@ async function syncRecordRelations(
       body: artifacts.parsed.body ?? null,
       snapshot: artifacts.snapshot,
       note,
+    },
+    select: {
+      id: true,
     },
   });
 }
@@ -642,6 +743,190 @@ async function getRecordDetail(
   }
 
   return record;
+}
+
+async function resolveRelationTarget(
+  tx: Prisma.TransactionClient,
+  relation: CreateRecordInput["relations"][number],
+) {
+  const externalKeyRecord = relation.toExternalKey
+    ? await tx.knowledgeRecord.findUnique({
+        where: {
+          externalKey: relation.toExternalKey,
+        },
+        select: {
+          id: true,
+          slug: true,
+          externalKey: true,
+        },
+      })
+    : null;
+  const slugRecord = relation.toSlug
+    ? await tx.knowledgeRecord.findUnique({
+        where: {
+          slug: relation.toSlug,
+        },
+        select: {
+          id: true,
+          slug: true,
+          externalKey: true,
+        },
+      })
+    : null;
+
+  if (relation.toExternalKey && relation.toSlug) {
+    if (!externalKeyRecord || !slugRecord) {
+      const missing = [
+        !externalKeyRecord ? `externalKey "${relation.toExternalKey}"` : null,
+        !slugRecord ? `slug "${relation.toSlug}"` : null,
+      ].filter(Boolean);
+
+      throw new AppError(
+        400,
+        `Relation target not found for ${missing.join(" and ")}`,
+      );
+    }
+
+    if (externalKeyRecord.id !== slugRecord.id) {
+      throw new AppError(
+        409,
+        `Relation target mismatch: externalKey "${relation.toExternalKey}" points to slug "${externalKeyRecord.slug}" but slug "${relation.toSlug}" points to externalKey "${slugRecord.externalKey ?? ""}"`,
+      );
+    }
+
+    return externalKeyRecord;
+  }
+
+  if (externalKeyRecord) {
+    return externalKeyRecord;
+  }
+
+  if (slugRecord) {
+    return slugRecord;
+  }
+
+  const targetLabel = relation.toExternalKey
+    ? `externalKey "${relation.toExternalKey}"`
+    : `slug "${relation.toSlug}"`;
+
+  throw new AppError(400, `Relation target not found for ${targetLabel}`);
+}
+
+export async function syncOutgoingRelationsTx(
+  tx: Prisma.TransactionClient,
+  recordId: string,
+  relations: CreateRecordInput["relations"],
+) {
+  await tx.recordRelation.deleteMany({
+    where: {
+      fromRecordId: recordId,
+    },
+  });
+
+  if (!relations.length) {
+    return;
+  }
+
+  for (const relation of relations) {
+    const target = await resolveRelationTarget(tx, relation);
+
+    if (target.id === recordId) {
+      throw new AppError(
+        400,
+        `Relation "${relation.relationType}" must not reference the same record`,
+      );
+    }
+
+    await tx.recordRelation.create({
+      data: {
+        fromRecordId: recordId,
+        toRecordId: target.id,
+        relationType: relation.relationType,
+        strength: relation.strength ?? 1,
+        description: relation.description ?? null,
+        metadata: jsonOrNull(relation.metadata),
+      },
+    });
+  }
+}
+
+export async function refreshRecordSnapshotTx(
+  tx: Prisma.TransactionClient,
+  recordId: string,
+  options: RefreshRecordSnapshotOptions = {},
+) {
+  const record = await getRecordDetail(tx, recordId);
+  const snapshot = buildStoredRecordSnapshot(record);
+  const checksum = hashContent(snapshot);
+
+  await tx.knowledgeRecord.update({
+    where: {
+      id: recordId,
+    },
+    data: {
+      checksum,
+    },
+  });
+
+  const latestVersion = options.versionId
+    ? { id: options.versionId }
+    : await tx.recordVersion.findFirst({
+        where: {
+          recordId,
+        },
+        select: {
+          id: true,
+        },
+        orderBy: {
+          versionNo: "desc",
+        },
+      });
+
+  if (latestVersion) {
+    await tx.recordVersion.update({
+      where: {
+        id: latestVersion.id,
+      },
+      data: {
+        title: record.title,
+        summary: record.summary ?? null,
+        body: record.body ?? null,
+        snapshot,
+      },
+    });
+  }
+
+  const latestAuditLog = options.auditLogId
+    ? { id: options.auditLogId }
+    : await tx.auditLog.findFirst({
+        where: {
+          targetType: "knowledge_record",
+          targetId: recordId,
+        },
+        select: {
+          id: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+  if (latestAuditLog) {
+    await tx.auditLog.update({
+      where: {
+        id: latestAuditLog.id,
+      },
+      data: {
+        after: snapshot,
+      },
+    });
+  }
+
+  return {
+    record,
+    snapshot,
+    checksum,
+  };
 }
 
 async function writeRecord(
@@ -679,7 +964,7 @@ async function writeRecord(
 
   const versionNo = existing ? await getNextVersionNo(tx, recordId) : 1;
 
-  await syncRecordRelations(
+  const version = await syncRecordRelations(
     tx,
     recordId,
     artifacts,
@@ -690,7 +975,7 @@ async function writeRecord(
 
   const record = await getRecordDetail(tx, recordId);
 
-  await tx.auditLog.create({
+  const auditLog = await tx.auditLog.create({
     data: {
       actorType: options.actorType,
       action: options.auditAction,
@@ -700,12 +985,22 @@ async function writeRecord(
       after: artifacts.snapshot,
       metadata: options.auditMetadata ?? Prisma.JsonNull,
     },
+    select: {
+      id: true,
+    },
   });
 
   return {
     action,
     record,
     snapshot: artifacts.snapshot,
+    versionId: version.id,
+    auditLogId: auditLog.id,
+    identityChanged: Boolean(
+      existing &&
+        (existing.slug !== record.slug ||
+          (existing.externalKey ?? null) !== (record.externalKey ?? null)),
+    ),
   };
 }
 
@@ -812,20 +1107,6 @@ export async function getRecordBySlug(slug: string) {
   }
 
   return record;
-}
-
-export async function createRecord(input: unknown) {
-  const parsed = createRecordInputSchema.parse(input);
-
-  return prisma.$transaction(async (tx) => {
-    const { record } = await writeRecord(tx, parsed, {
-      actorType: "API",
-      auditAction: "record.create",
-      note: "Created via records API",
-    });
-
-    return record;
-  });
 }
 
 export async function upsertRecordFromImportTx(

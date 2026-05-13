@@ -1,5 +1,6 @@
-import { createRecord, listRecords } from "@/lib/records";
 import { toErrorResponse } from "@/lib/errors";
+import { runImportJob } from "@/lib/imports";
+import { listRecords } from "@/lib/records";
 
 export const dynamic = "force-dynamic";
 
@@ -27,14 +28,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const record = await createRecord(body);
+    const result = await runImportJob(body);
+    const ok = result.job.status === "DONE";
 
     return Response.json(
       {
-        ok: true,
-        record,
+        ok,
+        ...result,
       },
-      { status: 201 },
+      { status: ok ? 200 : 422 },
     );
   } catch (error) {
     return toErrorResponse(error);

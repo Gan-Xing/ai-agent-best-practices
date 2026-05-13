@@ -5,6 +5,9 @@ import {
   CONTENT_BATCH_OPTIONAL_FIELDS,
   CONTENT_BATCH_REQUIRED_FIELDS,
   CONTENT_PRISMA_MODEL_FIELD_POLICY,
+  CONTENT_RELATION_INTERNAL_FIELDS,
+  CONTENT_RELATION_OPTIONAL_FIELDS,
+  CONTENT_RELATION_REQUIRED_FIELDS,
   CONTENT_RECORD_INTERNAL_FIELDS,
   CONTENT_RECORD_OPTIONAL_FIELDS,
   CONTENT_RECORD_REQUIRED_FIELDS,
@@ -42,53 +45,27 @@ const VALID_CATEGORY: CategorySeed = {
 
 const VALID_RELATIVE_PATH = "content/knowledge/01-models/records-0001.json";
 
+const minimalSource = {
+  sourceKey: "content-contract-source",
+  sourceType: CONTENT_SOURCE_TYPE,
+  title: "Content contract source",
+  role: "PRIMARY",
+  note: "Contract check source.",
+};
+
 const minimalRecord = {
   externalKey: "kb-contract-000001",
   slug: "content-contract-minimal-record",
-  categoryCode: "01",
-  title: "Content contract minimal record",
-};
-
-const minimalBatch = {
-  schemaVersion: CONTENT_SCHEMA_VERSION,
-  categoryCode: "01",
-  categorySlug: "models",
-  batch: 1,
-  records: [minimalRecord],
-};
-
-const fullSource = {
-  sourceKey: "content-contract-source",
-  sourceType: CONTENT_SOURCE_TYPE,
-  uri: "https://example.com/content-contract",
-  title: "Content contract source",
-  author: "Contract Author",
-  publisher: "Contract Publisher",
-  publishedAt: "2026-01-01",
-  accessedAt: "2026-01-02",
-  checksum: "contract-checksum",
-  rawPayload: {
-    ok: true,
-  },
-  metadata: {
-    purpose: "contract-check",
-  },
-  role: "PRIMARY",
-  quote: "Short quote",
-  note: "Short note",
-};
-
-const fullRecord = {
-  ...minimalRecord,
-  externalId: "external-contract-000001",
   schemaVersion: 1,
   type: "PRACTICE",
+  categoryCode: "01",
   visibility: "PUBLIC",
   status: "PUBLISHED",
   maturity: "REVIEWED",
   freshness: "FRESH",
   confidence: 0.9,
   language: "zh",
+  title: "Content contract minimal record",
   summary: "Content contract summary.",
   body: "Content contract body.",
   problem: "Content contract problem.",
@@ -116,11 +93,54 @@ const fullRecord = {
     owner: "Gan-Xing",
   },
   extensions: {
-    future: ["relations"],
+    contentContract: true,
   },
   publishedAt: "2026-01-01",
   lastVerifiedAt: "2026-01-02",
   reviewAfter: "2026-06-01",
+  translations: [],
+  aliases: [],
+  keywords: ["contract keyword"],
+  tags: ["contract-tag"],
+  sources: [minimalSource],
+  relations: [],
+};
+
+const minimalBatch = {
+  schemaVersion: CONTENT_SCHEMA_VERSION,
+  sourceType: CONTENT_SOURCE_TYPE,
+  sourceLabel: VALID_RELATIVE_PATH,
+  categoryCode: "01",
+  categorySlug: "models",
+  batch: 1,
+  metadata: {
+    purpose: "contract-check",
+  },
+  source: minimalSource,
+  records: [minimalRecord],
+};
+
+const fullSource = {
+  ...minimalSource,
+  uri: "https://example.com/content-contract",
+  author: "Contract Author",
+  publisher: "Contract Publisher",
+  publishedAt: "2026-01-01",
+  accessedAt: "2026-01-02",
+  checksum: "contract-checksum",
+  rawPayload: {
+    ok: true,
+  },
+  metadata: {
+    purpose: "contract-check",
+  },
+  quote: "Short quote",
+  note: "Short note",
+};
+
+const fullRecord = {
+  ...minimalRecord,
+  externalId: "external-contract-000001",
   archivedAt: "2026-12-31",
   translations: [
     {
@@ -143,6 +163,17 @@ const fullRecord = {
       ...fullSource,
       sourceKey: "content-contract-secondary-source",
       role: "REFERENCE",
+    },
+  ],
+  relations: [
+    {
+      toExternalKey: "kb-contract-000002",
+      relationType: "RELATED",
+      strength: 0.8,
+      description: "Related contract record.",
+      metadata: {
+        purpose: "relation-contract-check",
+      },
     },
   ],
 };
@@ -356,6 +387,27 @@ function runPrismaCoverageChecks() {
     missingSourceLinkFields.length === 0,
     `KnowledgeRecordSource field(s) must be exposed in content JSON or explicitly marked internal: ${missingSourceLinkFields.join(", ")}`,
   );
+
+  const prismaRelationFields = readPrismaModelFields("RecordRelation");
+  const relationExposedFields = new Set<string>([
+    ...CONTENT_RELATION_REQUIRED_FIELDS,
+    ...CONTENT_RELATION_OPTIONAL_FIELDS,
+  ]);
+  const relationInternalFields = new Set<string>(
+    CONTENT_RELATION_INTERNAL_FIELDS,
+  );
+  const relationVirtualFields = new Set<string>(["toExternalKey", "toSlug"]);
+  const missingRelationFields = prismaRelationFields.filter(
+    (field) =>
+      !relationExposedFields.has(field) &&
+      !relationInternalFields.has(field) &&
+      !relationVirtualFields.has(field),
+  );
+
+  assert(
+    missingRelationFields.length === 0,
+    `RecordRelation field(s) must be exposed in content JSON or explicitly marked internal: ${missingRelationFields.join(", ")}`,
+  );
 }
 
 function runRequiredFieldChecks() {
@@ -375,6 +427,40 @@ function runRequiredFieldChecks() {
       `record missing required field ${field}`,
       contentRecordSchema,
       withoutKey(minimalRecord, field),
+    );
+  }
+
+  for (const field of CONTENT_SOURCE_REQUIRED_FIELDS) {
+    assertParseFails(
+      `source missing required field ${field}`,
+      contentSourceSchema,
+      withoutKey(minimalSource, field),
+    );
+  }
+
+  const translation = fullRecord.translations[0] as JsonObject;
+
+  for (const field of CONTENT_TRANSLATION_REQUIRED_FIELDS) {
+    assertParseFails(
+      `translation missing required field ${field}`,
+      contentRecordSchema,
+      {
+        ...fullRecord,
+        translations: [withoutKey(translation, field)],
+      },
+    );
+  }
+
+  const relation = fullRecord.relations[0] as JsonObject;
+
+  for (const field of CONTENT_RELATION_REQUIRED_FIELDS) {
+    assertParseFails(
+      `relation missing required field ${field}`,
+      contentRecordSchema,
+      {
+        ...fullRecord,
+        relations: [withoutKey(relation, field)],
+      },
     );
   }
 }
@@ -409,25 +495,20 @@ function runOptionalFieldChecks() {
   }
 }
 
-function runDefaultValueChecks() {
+function runRequiredStructureChecks() {
   const parsedRecord = contentRecordSchema.parse(minimalRecord);
   const parsedBatch = contentBatchSchema.parse(minimalBatch);
-  const parsedSource = contentSourceSchema.parse({});
+  const parsedSource = contentSourceSchema.parse(minimalSource);
 
-  assert(parsedBatch.sourceType === CONTENT_SOURCE_TYPE, "batch sourceType default mismatch");
-  assert(parsedRecord.type === "NOTE", "record type default mismatch");
-  assert(parsedRecord.visibility === "INTERNAL", "record visibility default mismatch");
-  assert(parsedRecord.status === "DRAFT", "record status default mismatch");
-  assert(parsedRecord.maturity === "SEED", "record maturity default mismatch");
-  assert(parsedRecord.freshness === "UNKNOWN", "record freshness default mismatch");
-  assert(parsedRecord.language === "zh", "record language default mismatch");
-  assert(parsedRecord.schemaVersion === 1, "record schemaVersion default mismatch");
-  assert(parsedRecord.translations.length === 0, "record translations default mismatch");
-  assert(parsedRecord.aliases.length === 0, "record aliases default mismatch");
-  assert(parsedRecord.keywords.length === 0, "record keywords default mismatch");
-  assert(parsedRecord.tags.length === 0, "record tags default mismatch");
-  assert(parsedRecord.sources.length === 0, "record sources default mismatch");
-  assert(parsedSource.role === "REFERENCE", "source role default mismatch");
+  assert(parsedBatch.sourceType === CONTENT_SOURCE_TYPE, "batch sourceType mismatch");
+  assert(parsedRecord.schemaVersion === 1, "record schemaVersion mismatch");
+  assert(parsedRecord.translations.length === 0, "record translations structure mismatch");
+  assert(parsedRecord.aliases.length === 0, "record aliases structure mismatch");
+  assert(parsedRecord.keywords.length === 1, "record keywords structure mismatch");
+  assert(parsedRecord.tags.length === 1, "record tags structure mismatch");
+  assert(parsedRecord.sources.length === 1, "record sources structure mismatch");
+  assert(parsedRecord.relations.length === 0, "record relations structure mismatch");
+  assert(parsedSource.role === "PRIMARY", "source role mismatch");
 }
 
 function runLimitChecks() {
@@ -470,6 +551,14 @@ function runFormatChecks() {
     },
   );
   assertParseFails(
+    "batch sourceType must be GITHUB_JSON",
+    contentBatchSchema,
+    {
+      ...minimalBatch,
+      sourceType: "OTHER",
+    },
+  );
+  assertParseFails(
     "batch categoryCode must be two digits",
     contentBatchSchema,
     {
@@ -481,6 +570,46 @@ function runFormatChecks() {
           categoryCode: "1",
         },
       ],
+    },
+  );
+  assertParseFails(
+    "record summary must be non-empty",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      summary: "",
+    },
+  );
+  assertParseFails(
+    "record keywords must not be empty",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      keywords: [],
+    },
+  );
+  assertParseFails(
+    "record tags must not be empty",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      tags: [],
+    },
+  );
+  assertParseFails(
+    "record sources must not be empty",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      sources: [],
+    },
+  );
+  assertParseFails(
+    "record metadata must not be empty",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      metadata: {},
     },
   );
   assertParseFails(
@@ -514,8 +643,7 @@ function runFormatChecks() {
       ...minimalRecord,
       translations: [
         {
-          language: "en",
-          title: "English title",
+          ...fullRecord.translations[0],
           unknownField: true,
         },
       ],
@@ -528,12 +656,49 @@ function runFormatChecks() {
       ...minimalRecord,
       translations: [
         {
-          language: "en",
-          title: "English title",
+          ...fullRecord.translations[0],
         },
         {
-          language: "en",
+          ...fullRecord.translations[0],
           title: "Duplicate English title",
+        },
+      ],
+    },
+  );
+  assertParseFails(
+    "relation target identity is required",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      relations: [
+        {
+          relationType: "RELATED",
+          strength: 0.8,
+          description: "Related contract record.",
+          metadata: {},
+        },
+      ],
+    },
+  );
+  assertParseFails(
+    "duplicate relations must fail",
+    contentRecordSchema,
+    {
+      ...minimalRecord,
+      relations: [
+        {
+          toExternalKey: "kb-contract-000002",
+          relationType: "RELATED",
+          strength: 0.8,
+          description: "Related contract record.",
+          metadata: {},
+        },
+        {
+          toExternalKey: "kb-contract-000002",
+          relationType: "RELATED",
+          strength: 0.7,
+          description: "Duplicate related contract record.",
+          metadata: {},
         },
       ],
     },
@@ -569,17 +734,6 @@ function runBusinessRuleChecks() {
       }),
     ),
     "sourceLabel",
-  );
-  assertBusinessFails(
-    "wrong sourceType",
-    loadedBatch(
-      VALID_RELATIVE_PATH,
-      contentBatchSchema.parse({
-        ...fullBatch,
-        sourceType: "OTHER",
-      }),
-    ),
-    "sourceType",
   );
   assertBusinessFails(
     "unknown category",
@@ -664,6 +818,120 @@ function runImportPayloadChecks() {
       parsedPayload.success ? "" : JSON.stringify(parsedPayload.error.flatten())
     }`,
   );
+
+  for (const field of ["sourceType", "sourceLabel", "metadata", "source", "records"]) {
+    assertParseFails(
+      `import request missing required field ${field}`,
+      importRequestSchema,
+      withoutKey(payload, field),
+    );
+  }
+
+  const firstRecord = payload.records[0] as JsonObject;
+
+  for (const field of CONTENT_RECORD_REQUIRED_FIELDS) {
+    assertParseFails(
+      `import record missing required field ${field}`,
+      importRequestSchema,
+      {
+        ...payload,
+        records: [withoutKey(firstRecord, field)],
+      },
+    );
+  }
+
+  assertParseFails("import record slug must be lowercase kebab-case", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        slug: "Bad Slug",
+      },
+    ],
+  });
+
+  assertParseFails("import record categoryCode must be two digits", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        categoryCode: "1",
+      },
+    ],
+  });
+
+  assertParseFails("import record summary must be non-empty", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        summary: "",
+      },
+    ],
+  });
+
+  assertParseFails("import record keywords must not be empty", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        keywords: [],
+      },
+    ],
+  });
+
+  assertParseFails("import record tags must not be empty", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        tags: [],
+      },
+    ],
+  });
+
+  assertParseFails("import record sources must not be empty", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        sources: [],
+      },
+    ],
+  });
+
+  assertParseFails("singular import record source must fail", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        source: fullSource,
+      },
+    ],
+  });
+
+  assertParseFails("unknown import request fields must fail", importRequestSchema, {
+    ...payload,
+    unknownField: true,
+  });
+
+  assertParseFails("unknown import record fields must fail", importRequestSchema, {
+    ...payload,
+    records: [
+      {
+        ...firstRecord,
+        languge: "zh",
+      },
+    ],
+  });
+
+  assertParseFails("unknown import source fields must fail", importRequestSchema, {
+    ...payload,
+    source: {
+      ...fullSource,
+      unknownField: true,
+    },
+  });
 }
 
 function main() {
@@ -671,7 +939,7 @@ function main() {
   runPrismaCoverageChecks();
   runRequiredFieldChecks();
   runOptionalFieldChecks();
-  runDefaultValueChecks();
+  runRequiredStructureChecks();
   runLimitChecks();
   runFormatChecks();
   runBusinessRuleChecks();
@@ -686,12 +954,15 @@ function main() {
           "full-prisma-model-field-policy",
           "prisma-knowledge-record-coverage",
           "prisma-translation-source-coverage",
+          "prisma-relation-coverage",
           "required-fields",
           "optional-fields",
-          "defaults",
+          "required-structure",
           "records-per-file-limit",
           "formats",
           "business-rules",
+          "import-required-fields",
+          "import-strict-fields",
           "import-payload",
         ],
       },

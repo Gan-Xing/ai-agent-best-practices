@@ -12,36 +12,31 @@ export const CONTENT_SOURCE_TYPE = "GITHUB_JSON";
 
 export const CONTENT_BATCH_REQUIRED_FIELDS = [
   "schemaVersion",
+  "sourceType",
+  "sourceLabel",
   "categoryCode",
   "categorySlug",
   "batch",
+  "metadata",
+  "source",
   "records",
 ] as const;
 
-export const CONTENT_BATCH_OPTIONAL_FIELDS = [
-  "sourceType",
-  "sourceLabel",
-  "metadata",
-  "source",
-] as const;
+export const CONTENT_BATCH_OPTIONAL_FIELDS = [] as const;
 
 export const CONTENT_RECORD_REQUIRED_FIELDS = [
   "externalKey",
   "slug",
-  "categoryCode",
-  "title",
-] as const;
-
-export const CONTENT_RECORD_OPTIONAL_FIELDS = [
-  "externalId",
   "schemaVersion",
   "type",
+  "categoryCode",
   "visibility",
   "status",
   "maturity",
   "freshness",
   "confidence",
   "language",
+  "title",
   "summary",
   "body",
   "problem",
@@ -57,12 +52,17 @@ export const CONTENT_RECORD_OPTIONAL_FIELDS = [
   "publishedAt",
   "lastVerifiedAt",
   "reviewAfter",
-  "archivedAt",
   "translations",
   "aliases",
   "keywords",
   "tags",
   "sources",
+  "relations",
+] as const;
+
+export const CONTENT_RECORD_OPTIONAL_FIELDS = [
+  "externalId",
+  "archivedAt",
 ] as const;
 
 export const CONTENT_RECORD_INTERNAL_FIELDS = [
@@ -86,15 +86,14 @@ export const CONTENT_RECORD_INTERNAL_FIELDS = [
 export const CONTENT_TRANSLATION_REQUIRED_FIELDS = [
   "language",
   "title",
-] as const;
-
-export const CONTENT_TRANSLATION_OPTIONAL_FIELDS = [
   "summary",
   "body",
   "problem",
   "recommendation",
   "metadata",
 ] as const;
+
+export const CONTENT_TRANSLATION_OPTIONAL_FIELDS = [] as const;
 
 export const CONTENT_TRANSLATION_INTERNAL_FIELDS = [
   "id",
@@ -104,13 +103,16 @@ export const CONTENT_TRANSLATION_INTERNAL_FIELDS = [
   "record",
 ] as const;
 
-export const CONTENT_SOURCE_REQUIRED_FIELDS = [] as const;
-
-export const CONTENT_SOURCE_OPTIONAL_FIELDS = [
+export const CONTENT_SOURCE_REQUIRED_FIELDS = [
   "sourceKey",
   "sourceType",
-  "uri",
   "title",
+  "role",
+  "note",
+] as const;
+
+export const CONTENT_SOURCE_OPTIONAL_FIELDS = [
+  "uri",
   "author",
   "publisher",
   "publishedAt",
@@ -118,9 +120,7 @@ export const CONTENT_SOURCE_OPTIONAL_FIELDS = [
   "checksum",
   "rawPayload",
   "metadata",
-  "role",
   "quote",
-  "note",
 ] as const;
 
 export const CONTENT_SOURCE_MODEL_FIELDS = [
@@ -157,6 +157,28 @@ export const CONTENT_SOURCE_LINK_INTERNAL_FIELDS = [
   "createdAt",
   "record",
   "source",
+] as const;
+
+export const CONTENT_RELATION_REQUIRED_FIELDS = [
+  "relationType",
+  "strength",
+  "description",
+  "metadata",
+] as const;
+
+export const CONTENT_RELATION_OPTIONAL_FIELDS = [
+  "toExternalKey",
+  "toSlug",
+] as const;
+
+export const CONTENT_RELATION_INTERNAL_FIELDS = [
+  "id",
+  "fromRecordId",
+  "toRecordId",
+  "createdAt",
+  "updatedAt",
+  "fromRecord",
+  "toRecord",
 ] as const;
 
 export const CONTENT_PRISMA_MODEL_FIELD_POLICY = {
@@ -350,14 +372,11 @@ export const CONTENT_PRISMA_MODEL_FIELD_POLICY = {
     systemManaged: ["recordId", "sourceId", "createdAt", "record", "source"],
   },
   RecordRelation: {
-    deferredContent: [
+    jsonWritable: ["relationType", "strength", "description", "metadata"],
+    systemManaged: [
       "id",
       "fromRecordId",
       "toRecordId",
-      "relationType",
-      "strength",
-      "description",
-      "metadata",
       "createdAt",
       "updatedAt",
       "fromRecord",
@@ -573,30 +592,33 @@ const contentSlugSchema = z
 const contentCategoryCodeSchema = z.string().trim().regex(/^\d{2}$/, {
   message: "Use a two-digit category code, for example: 01",
 });
+const contentMetadataSchema = z
+  .record(z.string(), jsonValueSchema)
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Object must include at least one field",
+  });
 
 export const contentSourceSchema = importSourceSchema.strict();
-const contentRecordBaseSchema = importRecordInputSchema.omit({
-  source: true,
-});
+const contentRecordBaseSchema = importRecordInputSchema;
 
 export const contentRecordSchema = contentRecordBaseSchema.extend({
   externalKey: z.string().trim().min(1),
   slug: contentSlugSchema,
   categoryCode: contentCategoryCodeSchema,
-  schemaVersion: z.literal(CONTENT_SCHEMA_VERSION).default(CONTENT_SCHEMA_VERSION),
+  schemaVersion: z.literal(CONTENT_SCHEMA_VERSION),
   title: z.string().trim().min(1),
-  sources: z.array(contentSourceSchema).optional().default([]),
+  sources: z.array(contentSourceSchema).min(1),
 }).strict();
 
 export const contentBatchSchema = z.object({
   schemaVersion: z.literal(CONTENT_SCHEMA_VERSION),
-  sourceType: z.string().trim().min(1).default(CONTENT_SOURCE_TYPE),
-  sourceLabel: z.string().trim().min(1).optional(),
+  sourceType: z.literal(CONTENT_SOURCE_TYPE),
+  sourceLabel: z.string().trim().min(1),
   categoryCode: contentCategoryCodeSchema,
   categorySlug: contentSlugSchema,
   batch: z.number().int().positive(),
-  metadata: jsonValueSchema.optional(),
-  source: contentSourceSchema.optional(),
+  metadata: contentMetadataSchema,
+  source: contentSourceSchema,
   records: z
     .array(contentRecordSchema)
     .min(1)

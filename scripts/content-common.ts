@@ -173,6 +173,20 @@ export function validateContentBatchBusinessRules(
       errors.push(`${label}: slug already appears in ${existingSlug}`);
     }
 
+    for (const [relationIndex, relation] of record.relations.entries()) {
+      const relationLabel = `${label}.relations[${relationIndex}]`;
+
+      if (relation.toExternalKey === record.externalKey) {
+        errors.push(
+          `${relationLabel}: toExternalKey must not reference the same record`,
+        );
+      }
+
+      if (relation.toSlug === record.slug) {
+        errors.push(`${relationLabel}: toSlug must not reference the same record`);
+      }
+    }
+
     fileExternalKeys.add(record.externalKey);
     fileSlugs.add(record.slug);
     seenExternalKeys.set(record.externalKey, relativePath);
@@ -240,7 +254,7 @@ export function toImportPayload(loaded: LoadedContentBatch) {
 
   return {
     sourceType: batch.sourceType,
-    sourceLabel: batch.sourceLabel ?? relativePath,
+    sourceLabel: batch.sourceLabel,
     metadata: {
       ...(typeof batch.metadata === "object" &&
       batch.metadata !== null &&
@@ -252,26 +266,9 @@ export function toImportPayload(loaded: LoadedContentBatch) {
       categorySlug: batch.categorySlug,
       batch: batch.batch,
     },
-    source: batch.source ?? {
-      sourceType: batch.sourceType,
-      sourceKey: relativePath,
-      title: relativePath,
-      role: "COLLECTION",
-      note: "Canonical GitHub JSON batch source.",
-    },
+    source: batch.source,
     records: batch.records.map((record) => ({
       ...record,
-      source: {
-        sourceType: batch.sourceType,
-        sourceKey: `${relativePath}#${record.externalKey}`,
-        title: record.title,
-        role: "PRIMARY",
-        note: "Canonical GitHub JSON record source.",
-        metadata: {
-          contentPath: relativePath,
-          externalKey: record.externalKey,
-        },
-      },
     })),
   };
 }

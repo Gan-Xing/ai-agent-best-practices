@@ -95,7 +95,8 @@
           "role": "REFERENCE",
           "note": "Optional plural sources field aligned with the Prisma sources relation."
         }
-      ]
+      ],
+      "relations": []
     }
   ]
 }

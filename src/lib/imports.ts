@@ -5,7 +5,11 @@ import { z } from "zod";
 
 import { AppError } from "@/lib/errors";
 import { prisma } from "@/lib/prisma";
-import { upsertRecordFromImportTx } from "@/lib/records";
+import {
+  refreshRecordSnapshotTx,
+  syncOutgoingRelationsTx,
+  upsertRecordFromImportTx,
+} from "@/lib/records";
 import {
   importRequestSchema,
   importSourceSchema,
@@ -13,7 +17,46 @@ import {
 } from "@/lib/validation/imports";
 
 type ImportRequest = z.infer<typeof importRequestSchema>;
+type ImportRecordInput = ImportRequest["records"][number];
 type ImportSourceInput = z.infer<typeof importSourceSchema>;
+
+type ImportItemResult = {
+  itemId: string;
+  status: "DONE" | "FAILED";
+  action?: "CREATE" | "UPDATE";
+  recordId?: string;
+  versionId?: string;
+  auditLogId?: string;
+  slug?: string;
+  sourceIds?: string[];
+  error?: string;
+};
+
+type PreparedImportItem = {
+  item: {
+    id: string;
+  };
+  itemSources: Array<ImportSourceInput & { sourceType: string }>;
+  recordPayload: ImportRecordInput;
+};
+
+type WrittenImportRecord = {
+  itemId: string;
+  recordPayload: ImportRecordInput;
+  result: {
+    action: "CREATE" | "UPDATE";
+    record: {
+      id: string;
+      slug: string;
+      externalKey: string | null;
+      externalId: string | null;
+    };
+    versionId: string;
+    auditLogId: string;
+    identityChanged: boolean;
+    sourceAttachments: Array<{ source: { id: string } }>;
+  };
+};
 
 const importJobListSelect = {
   id: true,
@@ -99,12 +142,11 @@ function getSourceIdentity(input: ImportSourceInput) {
 
 function resolveItemSources(
   jobSourceType: string,
-  requestSource: ImportSourceInput | undefined,
-  recordSource: ImportSourceInput | undefined,
+  batchSource: ImportSourceInput,
   recordSources: ImportSourceInput[],
 ) {
   const seen = new Set<string>();
-  const sources = [requestSource, recordSource, ...recordSources].filter(
+  const sources = [batchSource, ...recordSources].filter(
     (source): source is ImportSourceInput => Boolean(source),
   );
   const resolved: Array<ImportSourceInput & { sourceType: string }> = [];
@@ -288,6 +330,43 @@ async function attachSourcesToRecord(
   return attachments;
 }
 
+async function refreshInboundRelationSnapshotsTx(
+  tx: Prisma.TransactionClient,
+  writtenRecords: WrittenImportRecord[],
+) {
+  const writtenRecordIds = new Set(
+    writtenRecords.map((item) => item.result.record.id),
+  );
+  const changedTargetIds = writtenRecords
+    .filter((item) => item.result.identityChanged)
+    .map((item) => item.result.record.id);
+
+  if (!changedTargetIds.length) {
+    return;
+  }
+
+  const inboundRelations = await tx.recordRelation.findMany({
+    where: {
+      toRecordId: {
+        in: changedTargetIds,
+      },
+      fromRecordId: {
+        notIn: [...writtenRecordIds],
+      },
+    },
+    select: {
+      fromRecordId: true,
+    },
+  });
+  const referringRecordIds = [
+    ...new Set(inboundRelations.map((relation) => relation.fromRecordId)),
+  ];
+
+  for (const recordId of referringRecordIds) {
+    await refreshRecordSnapshotTx(tx, recordId);
+  }
+}
+
 export async function runImportJob(input: unknown) {
   const parsed = importRequestSchema.parse(input);
   const startedAt = new Date();
@@ -313,23 +392,10 @@ export async function runImportJob(input: unknown) {
     },
   });
 
-  const results: Array<{
-    itemId: string;
-    status: "DONE" | "FAILED";
-    action?: "CREATE" | "UPDATE";
-    recordId?: string;
-    slug?: string;
-    sourceIds?: string[];
-    error?: string;
-  }> = [];
+  const results: ImportItemResult[] = [];
+  const importItems: PreparedImportItem[] = [];
 
   for (const recordPayload of parsed.records) {
-    const itemSources = resolveItemSources(
-      parsed.sourceType,
-      parsed.source,
-      recordPayload.source,
-      recordPayload.sources,
-    );
     const item = await prisma.importJobItem.create({
       data: {
         jobId: job.id,
@@ -342,8 +408,27 @@ export async function runImportJob(input: unknown) {
       },
     });
 
-    try {
-      const result = await prisma.$transaction(async (tx) => {
+    importItems.push({
+      item,
+      itemSources: resolveItemSources(
+        parsed.sourceType,
+        parsed.source,
+        recordPayload.sources,
+      ),
+      recordPayload,
+    });
+  }
+
+  let activeItemId: string | null = null;
+
+  try {
+    const transactionResults = await prisma.$transaction(async (tx) => {
+      const nextResults: ImportItemResult[] = [];
+      const writtenRecords: WrittenImportRecord[] = [];
+
+      for (const { item, itemSources, recordPayload } of importItems) {
+        activeItemId = item.id;
+
         await tx.importJobItem.update({
           where: {
             id: item.id,
@@ -372,39 +457,76 @@ export async function runImportJob(input: unknown) {
           itemSources,
         );
 
+        writtenRecords.push({
+          itemId: item.id,
+          recordPayload,
+          result: {
+            ...upserted,
+            sourceAttachments,
+          },
+        });
+      }
+
+      for (const written of writtenRecords) {
+        activeItemId = written.itemId;
+
+        await syncOutgoingRelationsTx(
+          tx,
+          written.result.record.id,
+          written.recordPayload.relations,
+        );
+        await refreshRecordSnapshotTx(tx, written.result.record.id, {
+          versionId: written.result.versionId,
+          auditLogId: written.result.auditLogId,
+        });
+
         await tx.importJobItem.update({
           where: {
-            id: item.id,
+            id: written.itemId,
           },
           data: {
             status: "DONE",
-            action: upserted.action,
-            recordId: upserted.record.id,
-            slug: upserted.record.slug,
+            action: written.result.action,
+            recordId: written.result.record.id,
+            slug: written.result.record.slug,
             externalKey:
-              upserted.record.externalKey ?? recordPayload.externalKey ?? null,
+              written.result.record.externalKey ??
+              written.recordPayload.externalKey ??
+              null,
             externalId:
-              upserted.record.externalId ?? recordPayload.externalId ?? null,
+              written.result.record.externalId ??
+              written.recordPayload.externalId ??
+              null,
             error: null,
           },
         });
 
-        return {
-          ...upserted,
-          sourceAttachments,
-        };
-      });
+        nextResults.push({
+          itemId: written.itemId,
+          status: "DONE",
+          action: written.result.action,
+          recordId: written.result.record.id,
+          versionId: written.result.versionId,
+          auditLogId: written.result.auditLogId,
+          slug: written.result.record.slug,
+          sourceIds: written.result.sourceAttachments.map((item) => item.source.id),
+        });
+      }
 
-      results.push({
-        itemId: item.id,
-        status: "DONE",
-        action: result.action,
-        recordId: result.record.id,
-        slug: result.record.slug,
-        sourceIds: result.sourceAttachments.map((item) => item.source.id),
-      });
-    } catch (error) {
-      const message = getErrorMessage(error);
+      await refreshInboundRelationSnapshotsTx(tx, writtenRecords);
+
+      return nextResults;
+    });
+
+    results.splice(0, results.length, ...transactionResults);
+  } catch (error) {
+    const message = getErrorMessage(error);
+
+    for (const { item } of importItems) {
+      const itemError =
+        item.id === activeItemId
+          ? message
+          : `Rolled back because import item ${activeItemId ?? "unknown"} failed: ${message}`;
 
       await prisma.importJobItem.update({
         where: {
@@ -413,14 +535,14 @@ export async function runImportJob(input: unknown) {
         data: {
           status: "FAILED",
           action: "UPSERT",
-          error: message,
+          error: itemError,
         },
       });
 
       results.push({
         itemId: item.id,
         status: "FAILED",
-        error: message,
+        error: itemError,
       });
     }
   }

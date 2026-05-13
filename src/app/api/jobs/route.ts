@@ -1,5 +1,5 @@
 import { toErrorResponse } from "@/lib/errors";
-import { listImportJobs, runImportJob } from "@/lib/imports";
+import { listImportJobs } from "@/lib/imports";
 
 export const dynamic = "force-dynamic";
 
@@ -17,23 +17,6 @@ export async function GET(request: Request) {
       count: jobs.length,
       jobs,
     });
-  } catch (error) {
-    return toErrorResponse(error);
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const result = await runImportJob(body);
-
-    return Response.json(
-      {
-        ok: true,
-        ...result,
-      },
-      { status: 200 },
-    );
   } catch (error) {
     return toErrorResponse(error);
   }

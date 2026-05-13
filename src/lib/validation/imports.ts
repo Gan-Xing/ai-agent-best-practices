@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   createRecordInputSchema,
   jsonValueSchema,
+  recordSourceInputSchema,
 } from "@/lib/validation/records";
 
 const blankToUndefined = (value: unknown) => {
@@ -18,47 +19,28 @@ const optionalTrimmedString = z.preprocess(
   blankToUndefined,
   z.string().trim().optional(),
 );
+const requiredTrimmedString = z.string().trim().min(1);
+const nonEmptyJsonObjectSchema = z
+  .record(z.string(), jsonValueSchema)
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Object must include at least one field",
+  });
 
-const optionalDateString = z.preprocess(
-  blankToUndefined,
-  z
-    .string()
-    .trim()
-    .refine((value) => !Number.isNaN(Date.parse(value)), {
-      message: "Invalid date string",
-    })
-    .optional(),
-);
-
-export const importSourceSchema = z.object({
-  sourceKey: optionalTrimmedString,
-  sourceType: optionalTrimmedString,
-  uri: optionalTrimmedString,
-  title: optionalTrimmedString,
-  author: optionalTrimmedString,
-  publisher: optionalTrimmedString,
-  publishedAt: optionalDateString,
-  accessedAt: optionalDateString,
-  checksum: optionalTrimmedString,
-  rawPayload: jsonValueSchema.optional(),
-  metadata: jsonValueSchema.optional(),
-  role: optionalTrimmedString.default("REFERENCE"),
-  quote: optionalTrimmedString,
-  note: optionalTrimmedString,
-});
+export const importSourceSchema = recordSourceInputSchema;
 
 export const importRecordInputSchema = createRecordInputSchema.extend({
-  source: importSourceSchema.optional(),
-  sources: z.array(importSourceSchema).optional().default([]),
+  sources: z.array(importSourceSchema).min(1),
 });
 
-export const importRequestSchema = z.object({
-  sourceType: z.string().trim().min(1),
-  sourceLabel: optionalTrimmedString,
-  metadata: jsonValueSchema.optional(),
-  source: importSourceSchema.optional(),
-  records: z.array(importRecordInputSchema).min(1).max(100),
-});
+export const importRequestSchema = z
+  .object({
+    sourceType: requiredTrimmedString,
+    sourceLabel: requiredTrimmedString,
+    metadata: nonEmptyJsonObjectSchema,
+    source: importSourceSchema,
+    records: z.array(importRecordInputSchema).min(1).max(100),
+  })
+  .strict();
 
 export const listImportJobsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),

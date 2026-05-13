@@ -2,6 +2,9 @@ import {
   CONTENT_BATCH_OPTIONAL_FIELDS,
   CONTENT_BATCH_REQUIRED_FIELDS,
   CONTENT_PRISMA_MODEL_FIELD_POLICY,
+  CONTENT_RELATION_INTERNAL_FIELDS,
+  CONTENT_RELATION_OPTIONAL_FIELDS,
+  CONTENT_RELATION_REQUIRED_FIELDS,
   CONTENT_RECORD_INTERNAL_FIELDS,
   CONTENT_RECORD_OPTIONAL_FIELDS,
   CONTENT_RECORD_REQUIRED_FIELDS,
@@ -47,26 +50,30 @@ console.log(
         internal: CONTENT_SOURCE_INTERNAL_FIELDS,
         linkInternal: CONTENT_SOURCE_LINK_INTERNAL_FIELDS,
       },
-      defaults: {
-        batch: {
-          sourceType: CONTENT_SOURCE_TYPE,
-        },
+      relation: {
+        required: CONTENT_RELATION_REQUIRED_FIELDS,
+        optional: CONTENT_RELATION_OPTIONAL_FIELDS,
+        internal: CONTENT_RELATION_INTERNAL_FIELDS,
+      },
+      requiredShapeNotes: {
         record: {
-          schemaVersion: 1,
-          type: "NOTE",
-          visibility: "INTERNAL",
-          status: "DRAFT",
-          maturity: "SEED",
-          freshness: "UNKNOWN",
-          language: "zh",
-          translations: [],
-          aliases: [],
-          keywords: [],
-          tags: [],
-          sources: [],
+          nonEmptyText:
+            "title, summary, body, problem, and recommendation must be present and non-empty",
+          nonEmptyArrays: ["keywords", "tags", "sources"],
+          presentArrays: ["translations", "aliases", "relations"],
+          nonEmptyObjects: [
+            "metadata",
+            "applicability",
+            "compatibility",
+            "tradeoffs",
+            "evidence",
+            "metrics",
+            "curation",
+            "extensions",
+          ],
         },
         source: {
-          role: "REFERENCE",
+          requiredIdentity: ["sourceKey", "sourceType", "title", "role", "note"],
         },
       },
       constraints: {
@@ -86,7 +93,9 @@ console.log(
           categoryCode: "must match the batch categoryCode",
           unknownFields: "rejected; typos fail validation instead of being ignored",
           internalFields:
-            "id, checksum, timestamps, generated indexes, jobs, logs, feedback, and relation edges are managed by the application",
+            "id, checksum, timestamps, generated indexes, jobs, logs, feedback, and relation IDs are managed by the application",
+          relations:
+            "use toExternalKey or toSlug; never write database record IDs in content JSON",
         },
       },
       prismaFieldPolicy: CONTENT_PRISMA_MODEL_FIELD_POLICY,

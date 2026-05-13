@@ -26,10 +26,32 @@ const optionalDateString = z.preprocess(
     .optional(),
 );
 
-const stringArray = z
-  .array(z.string().trim().min(1))
-  .optional()
-  .transform((value) => (value ? [...new Set(value)] : []));
+const requiredTrimmedString = z.string().trim().min(1);
+const requiredDateString = z
+  .string()
+  .trim()
+  .min(1)
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: "Invalid date string",
+  });
+const requiredSlugString = requiredTrimmedString.regex(
+  /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+  {
+    message: "Use lowercase kebab-case, for example: hybrid-search-basics",
+  },
+);
+const requiredCategoryCodeString = z.string().trim().regex(/^\d{2}$/, {
+  message: "Use a two-digit category code, for example: 01",
+});
+
+const stringArrayItem = z.string().trim().min(1);
+const requiredStringArray = z
+  .array(stringArrayItem)
+  .transform((value) => [...new Set(value)]);
+const requiredNonEmptyStringArray = z
+  .array(stringArrayItem)
+  .min(1)
+  .transform((value) => [...new Set(value)]);
 
 export const jsonValueSchema: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
   z.union([
@@ -42,22 +64,28 @@ export const jsonValueSchema: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
   ]),
 );
 
+const jsonObjectSchema = z.record(z.string(), jsonValueSchema);
+const nonEmptyJsonObjectSchema = jsonObjectSchema.refine(
+  (value) => Object.keys(value).length > 0,
+  {
+    message: "Object must include at least one field",
+  },
+);
+
 const recordTranslationInputSchema = z
   .object({
     language: z.string().trim().min(1),
     title: z.string().trim().min(1),
-    summary: optionalTrimmedString,
-    body: optionalTrimmedString,
-    problem: optionalTrimmedString,
-    recommendation: optionalTrimmedString,
-    metadata: jsonValueSchema.optional(),
+    summary: requiredTrimmedString,
+    body: requiredTrimmedString,
+    problem: requiredTrimmedString,
+    recommendation: requiredTrimmedString,
+    metadata: nonEmptyJsonObjectSchema,
   })
   .strict();
 
 const recordTranslationsSchema = z
   .array(recordTranslationInputSchema)
-  .optional()
-  .default([])
   .superRefine((translations, context) => {
     const seenLanguages = new Set<string>();
 
@@ -74,45 +102,106 @@ const recordTranslationsSchema = z
     }
   });
 
-export const createRecordInputSchema = z.object({
-  slug: optionalTrimmedString,
-  externalKey: optionalTrimmedString,
-  externalId: optionalTrimmedString,
-  schemaVersion: z.number().int().positive().default(1),
-  type: optionalTrimmedString.default("NOTE"),
-  categoryCode: z.string().trim().min(1),
-  visibility: z.enum(["PUBLIC", "INTERNAL", "PRIVATE"]).default("INTERNAL"),
-  status: z.enum(["DRAFT", "REVIEW", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
-  maturity: z
-    .enum(["SEED", "REVIEWED", "VALIDATED", "DEPRECATED"])
-    .default("SEED"),
-  freshness: z
-    .enum(["UNKNOWN", "FRESH", "STALE", "NEEDS_REVIEW"])
-    .default("UNKNOWN"),
-  confidence: z.number().min(0).max(1).optional(),
-  language: optionalTrimmedString.default("zh"),
-  title: z.string().trim().min(1),
-  summary: optionalTrimmedString,
-  body: optionalTrimmedString,
-  problem: optionalTrimmedString,
-  recommendation: optionalTrimmedString,
-  metadata: jsonValueSchema.optional(),
-  applicability: jsonValueSchema.optional(),
-  compatibility: jsonValueSchema.optional(),
-  tradeoffs: jsonValueSchema.optional(),
-  evidence: jsonValueSchema.optional(),
-  metrics: jsonValueSchema.optional(),
-  curation: jsonValueSchema.optional(),
-  extensions: jsonValueSchema.optional(),
-  publishedAt: optionalDateString,
-  lastVerifiedAt: optionalDateString,
-  reviewAfter: optionalDateString,
-  archivedAt: optionalDateString,
-  translations: recordTranslationsSchema,
-  aliases: stringArray,
-  keywords: stringArray,
-  tags: stringArray,
-});
+export const recordSourceInputSchema = z
+  .object({
+    sourceKey: requiredTrimmedString,
+    sourceType: requiredTrimmedString,
+    uri: optionalTrimmedString,
+    title: requiredTrimmedString,
+    author: optionalTrimmedString,
+    publisher: optionalTrimmedString,
+    publishedAt: optionalDateString,
+    accessedAt: optionalDateString,
+    checksum: optionalTrimmedString,
+    rawPayload: jsonValueSchema.optional(),
+    metadata: jsonValueSchema.optional(),
+    role: requiredTrimmedString,
+    quote: optionalTrimmedString,
+    note: requiredTrimmedString,
+  })
+  .strict();
+
+const recordRelationInputSchema = z
+  .object({
+    toExternalKey: optionalTrimmedString,
+    toSlug: optionalTrimmedString,
+    relationType: requiredTrimmedString,
+    strength: z.number().min(0).max(1),
+    description: requiredTrimmedString,
+    metadata: jsonObjectSchema,
+  })
+  .strict()
+  .superRefine((relation, context) => {
+    if (!relation.toExternalKey && !relation.toSlug) {
+      context.addIssue({
+        code: "custom",
+        message: "Relation must include toExternalKey or toSlug",
+        path: ["toExternalKey"],
+      });
+    }
+  });
+
+const recordRelationsSchema = z
+  .array(recordRelationInputSchema)
+  .superRefine((relations, context) => {
+    const seenRelations = new Set<string>();
+
+    for (const [index, relation] of relations.entries()) {
+      const target = relation.toExternalKey
+        ? `externalKey:${relation.toExternalKey}`
+        : `slug:${relation.toSlug}`;
+      const key = `${target}:${relation.relationType}`;
+
+      if (seenRelations.has(key)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate relation "${key}"`,
+          path: [index, "relationType"],
+        });
+      }
+
+      seenRelations.add(key);
+    }
+  });
+
+export const createRecordInputSchema = z
+  .object({
+    slug: requiredSlugString,
+    externalKey: requiredTrimmedString,
+    externalId: optionalTrimmedString,
+    schemaVersion: z.literal(1),
+    type: requiredTrimmedString,
+    categoryCode: requiredCategoryCodeString,
+    visibility: z.enum(["PUBLIC", "INTERNAL", "PRIVATE"]),
+    status: z.enum(["DRAFT", "REVIEW", "PUBLISHED", "ARCHIVED"]),
+    maturity: z.enum(["SEED", "REVIEWED", "VALIDATED", "DEPRECATED"]),
+    freshness: z.enum(["UNKNOWN", "FRESH", "STALE", "NEEDS_REVIEW"]),
+    confidence: z.number().min(0).max(1),
+    language: requiredTrimmedString,
+    title: z.string().trim().min(1),
+    summary: requiredTrimmedString,
+    body: requiredTrimmedString,
+    problem: requiredTrimmedString,
+    recommendation: requiredTrimmedString,
+    metadata: nonEmptyJsonObjectSchema,
+    applicability: nonEmptyJsonObjectSchema,
+    compatibility: nonEmptyJsonObjectSchema,
+    tradeoffs: nonEmptyJsonObjectSchema,
+    evidence: nonEmptyJsonObjectSchema,
+    metrics: nonEmptyJsonObjectSchema,
+    curation: nonEmptyJsonObjectSchema,
+    extensions: nonEmptyJsonObjectSchema,
+    publishedAt: requiredDateString,
+    lastVerifiedAt: requiredDateString,
+    reviewAfter: requiredDateString,
+    archivedAt: optionalDateString,
+    translations: recordTranslationsSchema,
+    aliases: requiredStringArray,
+    keywords: requiredNonEmptyStringArray,
+    tags: requiredNonEmptyStringArray,
+    relations: recordRelationsSchema,
+  })
+  .strict();
 
 export const listRecordsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
