@@ -15,6 +15,17 @@ const optionalTrimmedString = z.preprocess(
   z.string().trim().optional(),
 );
 
+const optionalDateString = z.preprocess(
+  blankToUndefined,
+  z
+    .string()
+    .trim()
+    .refine((value) => !Number.isNaN(Date.parse(value)), {
+      message: "Invalid date string",
+    })
+    .optional(),
+);
+
 const stringArray = z
   .array(z.string().trim().min(1))
   .optional()
@@ -31,10 +42,43 @@ export const jsonValueSchema: z.ZodType<Prisma.JsonValue> = z.lazy(() =>
   ]),
 );
 
+const recordTranslationInputSchema = z
+  .object({
+    language: z.string().trim().min(1),
+    title: z.string().trim().min(1),
+    summary: optionalTrimmedString,
+    body: optionalTrimmedString,
+    problem: optionalTrimmedString,
+    recommendation: optionalTrimmedString,
+    metadata: jsonValueSchema.optional(),
+  })
+  .strict();
+
+const recordTranslationsSchema = z
+  .array(recordTranslationInputSchema)
+  .optional()
+  .default([])
+  .superRefine((translations, context) => {
+    const seenLanguages = new Set<string>();
+
+    for (const [index, translation] of translations.entries()) {
+      if (seenLanguages.has(translation.language)) {
+        context.addIssue({
+          code: "custom",
+          message: `Duplicate translation language "${translation.language}"`,
+          path: [index, "language"],
+        });
+      }
+
+      seenLanguages.add(translation.language);
+    }
+  });
+
 export const createRecordInputSchema = z.object({
   slug: optionalTrimmedString,
   externalKey: optionalTrimmedString,
   externalId: optionalTrimmedString,
+  schemaVersion: z.number().int().positive().default(1),
   type: optionalTrimmedString.default("NOTE"),
   categoryCode: z.string().trim().min(1),
   visibility: z.enum(["PUBLIC", "INTERNAL", "PRIVATE"]).default("INTERNAL"),
@@ -53,6 +97,18 @@ export const createRecordInputSchema = z.object({
   problem: optionalTrimmedString,
   recommendation: optionalTrimmedString,
   metadata: jsonValueSchema.optional(),
+  applicability: jsonValueSchema.optional(),
+  compatibility: jsonValueSchema.optional(),
+  tradeoffs: jsonValueSchema.optional(),
+  evidence: jsonValueSchema.optional(),
+  metrics: jsonValueSchema.optional(),
+  curation: jsonValueSchema.optional(),
+  extensions: jsonValueSchema.optional(),
+  publishedAt: optionalDateString,
+  lastVerifiedAt: optionalDateString,
+  reviewAfter: optionalDateString,
+  archivedAt: optionalDateString,
+  translations: recordTranslationsSchema,
   aliases: stringArray,
   keywords: stringArray,
   tags: stringArray,

@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "sourceType": "GITHUB_JSON",
+  "sourceLabel": "content/knowledge/01-models/records-0001.json",
+  "categoryCode": "01",
+  "categorySlug": "models",
+  "batch": 1,
+  "metadata": {
+    "maintainer": "Gan-Xing",
+    "purpose": "Canonical GitHub-visible content source for knowledge records."
+  },
+  "source": {
+    "sourceType": "GITHUB_JSON",
+    "sourceKey": "content/knowledge/01-models/records-0001.json",
+    "title": "Models category content batch 0001",
+    "role": "COLLECTION",
+    "note": "Batch-level source for records stored in this JSON file."
+  },
+  "records": [
+    {
+      "externalKey": "kb-000001",
+      "slug": "postgres-fts-and-vector-search-should-work-together",
+      "externalId": "github-json-kb-000001",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
+      "confidence": 0.86,
+      "language": "zh",
+      "title": "Postgres FTS 和向量搜索应该分工使用",
+      "summary": "全文搜索适合关键词精确匹配，向量搜索适合语义召回，两者混合排序更适合作为知识库检索基础。",
+      "body": "在知识库系统里，向量搜索不应该完全替代全文搜索。Postgres FTS 更适合处理明确关键词、工具名、错误信息、字段名和专有名词；向量搜索更适合处理同义表达、相似思路和上下文相关内容。长期可维护的做法是先做结构化过滤，再用 FTS 和 vector 分别召回候选，最后合并去重并按相关度、freshness 和 confidence 排序。",
+      "problem": "只用向量搜索时，用户输入非常精确的关键词反而可能找不到最准确的记录；只用全文搜索时，又找不到表达不同但语义相近的想法。",
+      "recommendation": "把 Postgres FTS 作为基础检索能力，把 pgvector 作为语义召回补充。第一版可以先上线 FTS，后续再加入云端 embedding 和向量召回。",
+      "tags": ["postgres", "fts", "pgvector", "hybrid-search", "rag"],
+      "aliases": ["全文搜索", "语义搜索", "混合检索"],
+      "keywords": ["PostgreSQL", "tsvector", "pgvector", "hybrid search", "RAG"],
+      "metadata": {
+        "difficulty": "intermediate",
+        "useCase": "knowledge-base-search",
+        "contentSource": "github-json"
+      },
+      "applicability": {
+        "audience": ["agent-builders", "knowledge-base-maintainers"],
+        "projectStage": ["prototype", "production"]
+      },
+      "compatibility": {
+        "database": "PostgreSQL",
+        "vectorStore": "pgvector",
+        "search": ["Postgres FTS", "semantic search"]
+      },
+      "tradeoffs": {
+        "pros": ["精确关键词更稳", "语义召回更宽", "排序可解释性更好"],
+        "cons": ["实现复杂度高于单一向量搜索", "需要维护两套召回分数"]
+      },
+      "evidence": {
+        "basis": "Architecture recommendation for this project.",
+        "confidenceReason": "Postgres FTS and pgvector cover different retrieval failure modes."
+      },
+      "metrics": {
+        "expectedSearchQualityLift": "medium",
+        "implementationComplexity": "medium"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "reviewed"
+      },
+      "extensions": {
+        "nextSteps": ["query expansion", "cloud embedding", "hybrid reranking"]
+      },
+      "publishedAt": "2026-05-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
+      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "translations": [
+        {
+          "language": "en",
+          "title": "Postgres FTS and vector search should work together",
+          "summary": "Full-text search is better for exact keyword matches, while vector search is better for semantic recall. A hybrid ranking pipeline is a stronger foundation for knowledge-base retrieval.",
+          "body": "In a knowledge-base system, vector search should not fully replace full-text search. Postgres FTS is better for exact keywords, tool names, error messages, field names, and proper nouns. Vector search is better for synonymous wording, similar ideas, and contextual matching.",
+          "problem": "Vector-only search can miss exact keyword matches, while full-text-only search misses semantically similar ideas expressed with different wording.",
+          "recommendation": "Use Postgres FTS as the baseline retrieval layer and pgvector as semantic recall. Start with FTS first, then add cloud embeddings and vector recall.",
+          "metadata": {
+            "translationSource": "manual"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceType": "GITHUB_JSON",
+          "sourceKey": "content/knowledge/01-models/records-0001.json#kb-000001#secondary",
+          "title": "GitHub JSON secondary source example",
+          "role": "REFERENCE",
+          "note": "Optional plural sources field aligned with the Prisma sources relation."
+        }
+      ]
+    }
+  ]
+}

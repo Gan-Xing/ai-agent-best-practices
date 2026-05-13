@@ -49,6 +49,7 @@ export const importSourceSchema = z.object({
 
 export const importRecordInputSchema = createRecordInputSchema.extend({
   source: importSourceSchema.optional(),
+  sources: z.array(importSourceSchema).optional().default([]),
 });
 
 export const importRequestSchema = z.object({

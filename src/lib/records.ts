@@ -32,6 +32,7 @@ const recordListInclude = {
 
 const recordDetailInclude = {
   ...recordListInclude,
+  translations: true,
   searchIndexes: true,
   chunks: true,
   sources: {
@@ -49,6 +50,7 @@ type RecordSnapshot = {
   slug: string;
   externalKey: string | null;
   externalId: string | null;
+  schemaVersion: number;
   type: string;
   categoryCode: string;
   visibility: CreateRecordInput["visibility"];
@@ -63,6 +65,26 @@ type RecordSnapshot = {
   problem: string | null;
   recommendation: string | null;
   metadata: Prisma.JsonValue | null;
+  applicability: Prisma.JsonValue | null;
+  compatibility: Prisma.JsonValue | null;
+  tradeoffs: Prisma.JsonValue | null;
+  evidence: Prisma.JsonValue | null;
+  metrics: Prisma.JsonValue | null;
+  curation: Prisma.JsonValue | null;
+  extensions: Prisma.JsonValue | null;
+  publishedAt: string | null;
+  lastVerifiedAt: string | null;
+  reviewAfter: string | null;
+  archivedAt: string | null;
+  translations: Array<{
+    language: string;
+    title: string;
+    summary: string | null;
+    body: string | null;
+    problem: string | null;
+    recommendation: string | null;
+    metadata: Prisma.JsonValue | null;
+  }>;
   aliases: string[];
   keywords: string[];
   tags: string[];
@@ -88,6 +110,7 @@ type RecordWriteArtifacts = {
     contentHash: string;
   };
   snapshot: RecordSnapshot;
+  recordChecksum: string;
 };
 
 type RecordWriteOptions = {
@@ -135,6 +158,22 @@ function uniqueStrings(values: string[]) {
 
 function hashContent(payload: unknown) {
   return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+}
+
+function toDate(value?: string) {
+  return value ? new Date(value) : null;
+}
+
+function toIsoDateString(value?: string | Date | null) {
+  if (!value) {
+    return null;
+  }
+
+  return new Date(value).toISOString();
+}
+
+function jsonOrNull(value: Prisma.JsonValue | undefined) {
+  return value ?? Prisma.JsonNull;
 }
 
 function buildPrimaryChunk(input: CreateRecordInput) {
@@ -194,6 +233,7 @@ function buildRecordSnapshot(
     slug,
     externalKey: input.externalKey ?? null,
     externalId: input.externalId ?? null,
+    schemaVersion: input.schemaVersion,
     type: input.type,
     categoryCode: input.categoryCode,
     visibility: input.visibility,
@@ -208,6 +248,26 @@ function buildRecordSnapshot(
     problem: input.problem ?? null,
     recommendation: input.recommendation ?? null,
     metadata: input.metadata ?? null,
+    applicability: input.applicability ?? null,
+    compatibility: input.compatibility ?? null,
+    tradeoffs: input.tradeoffs ?? null,
+    evidence: input.evidence ?? null,
+    metrics: input.metrics ?? null,
+    curation: input.curation ?? null,
+    extensions: input.extensions ?? null,
+    publishedAt: toIsoDateString(input.publishedAt),
+    lastVerifiedAt: toIsoDateString(input.lastVerifiedAt),
+    reviewAfter: toIsoDateString(input.reviewAfter),
+    archivedAt: toIsoDateString(input.archivedAt),
+    translations: input.translations.map((translation) => ({
+      language: translation.language,
+      title: translation.title,
+      summary: translation.summary ?? null,
+      body: translation.body ?? null,
+      problem: translation.problem ?? null,
+      recommendation: translation.recommendation ?? null,
+      metadata: translation.metadata ?? null,
+    })),
     aliases: input.aliases,
     keywords: input.keywords,
     tags,
@@ -219,6 +279,7 @@ function buildStoredRecordSnapshot(record: RecordDetail): RecordSnapshot {
     slug: record.slug,
     externalKey: record.externalKey ?? null,
     externalId: record.externalId ?? null,
+    schemaVersion: record.schemaVersion,
     type: record.type,
     categoryCode: record.categoryCode,
     visibility: record.visibility,
@@ -233,6 +294,26 @@ function buildStoredRecordSnapshot(record: RecordDetail): RecordSnapshot {
     problem: record.problem ?? null,
     recommendation: record.recommendation ?? null,
     metadata: (record.metadata as Prisma.JsonValue | null) ?? null,
+    applicability: (record.applicability as Prisma.JsonValue | null) ?? null,
+    compatibility: (record.compatibility as Prisma.JsonValue | null) ?? null,
+    tradeoffs: (record.tradeoffs as Prisma.JsonValue | null) ?? null,
+    evidence: (record.evidence as Prisma.JsonValue | null) ?? null,
+    metrics: (record.metrics as Prisma.JsonValue | null) ?? null,
+    curation: (record.curation as Prisma.JsonValue | null) ?? null,
+    extensions: (record.extensions as Prisma.JsonValue | null) ?? null,
+    publishedAt: toIsoDateString(record.publishedAt),
+    lastVerifiedAt: toIsoDateString(record.lastVerifiedAt),
+    reviewAfter: toIsoDateString(record.reviewAfter),
+    archivedAt: toIsoDateString(record.archivedAt),
+    translations: record.translations.map((translation) => ({
+      language: translation.language,
+      title: translation.title,
+      summary: translation.summary ?? null,
+      body: translation.body ?? null,
+      problem: translation.problem ?? null,
+      recommendation: translation.recommendation ?? null,
+      metadata: (translation.metadata as Prisma.JsonValue | null) ?? null,
+    })),
     aliases: uniqueStrings(record.aliases.map((item) => item.alias)),
     keywords: uniqueStrings(record.keywords.map((item) => item.keyword)),
     tags: uniqueStrings(record.tags.map((item) => item.tag.name)),
@@ -309,6 +390,7 @@ async function prepareRecordWrite(
   });
   const tags = await ensureTags(tx, parsed.tags);
   const tagNames = tags.map((tag) => tag.name);
+  const snapshot = buildRecordSnapshot(parsed, slug, tagNames);
 
   return {
     parsed,
@@ -317,7 +399,8 @@ async function prepareRecordWrite(
     primaryChunk,
     chunkContentHash,
     searchIndex: buildSearchIndexPayload(parsed, tagNames),
-    snapshot: buildRecordSnapshot(parsed, slug, tagNames),
+    snapshot,
+    recordChecksum: hashContent(snapshot),
   };
 }
 
@@ -330,6 +413,8 @@ function buildRecordCreateData(
     slug,
     externalKey: parsed.externalKey ?? null,
     externalId: parsed.externalId ?? null,
+    checksum: artifacts.recordChecksum,
+    schemaVersion: parsed.schemaVersion,
     type: parsed.type,
     categoryCode: parsed.categoryCode,
     visibility: parsed.visibility,
@@ -343,7 +428,18 @@ function buildRecordCreateData(
     body: parsed.body ?? null,
     problem: parsed.problem ?? null,
     recommendation: parsed.recommendation ?? null,
-    metadata: parsed.metadata ?? Prisma.JsonNull,
+    metadata: jsonOrNull(parsed.metadata),
+    applicability: jsonOrNull(parsed.applicability),
+    compatibility: jsonOrNull(parsed.compatibility),
+    tradeoffs: jsonOrNull(parsed.tradeoffs),
+    evidence: jsonOrNull(parsed.evidence),
+    metrics: jsonOrNull(parsed.metrics),
+    curation: jsonOrNull(parsed.curation),
+    extensions: jsonOrNull(parsed.extensions),
+    publishedAt: toDate(parsed.publishedAt),
+    lastVerifiedAt: toDate(parsed.lastVerifiedAt),
+    reviewAfter: toDate(parsed.reviewAfter),
+    archivedAt: toDate(parsed.archivedAt),
   };
 }
 
@@ -357,6 +453,8 @@ function buildRecordUpdateData(
     slug,
     externalKey: parsed.externalKey ?? existing.externalKey ?? null,
     externalId: parsed.externalId ?? existing.externalId ?? null,
+    checksum: artifacts.recordChecksum,
+    schemaVersion: parsed.schemaVersion,
     type: parsed.type,
     categoryCode: parsed.categoryCode,
     visibility: parsed.visibility,
@@ -370,7 +468,18 @@ function buildRecordUpdateData(
     body: parsed.body ?? null,
     problem: parsed.problem ?? null,
     recommendation: parsed.recommendation ?? null,
-    metadata: parsed.metadata ?? Prisma.JsonNull,
+    metadata: jsonOrNull(parsed.metadata),
+    applicability: jsonOrNull(parsed.applicability),
+    compatibility: jsonOrNull(parsed.compatibility),
+    tradeoffs: jsonOrNull(parsed.tradeoffs),
+    evidence: jsonOrNull(parsed.evidence),
+    metrics: jsonOrNull(parsed.metrics),
+    curation: jsonOrNull(parsed.curation),
+    extensions: jsonOrNull(parsed.extensions),
+    publishedAt: toDate(parsed.publishedAt),
+    lastVerifiedAt: toDate(parsed.lastVerifiedAt),
+    reviewAfter: toDate(parsed.reviewAfter),
+    archivedAt: toDate(parsed.archivedAt),
   };
 }
 
@@ -432,6 +541,11 @@ async function syncRecordRelations(
       language: artifacts.parsed.language,
     },
   });
+  await tx.recordTranslation.deleteMany({
+    where: {
+      recordId,
+    },
+  });
 
   if (artifacts.tags.length) {
     await tx.knowledgeRecordTag.createMany({
@@ -461,6 +575,21 @@ async function syncRecordRelations(
         keyword,
         language: artifacts.parsed.language,
         weight: 1,
+      })),
+    });
+  }
+
+  if (artifacts.parsed.translations.length) {
+    await tx.recordTranslation.createMany({
+      data: artifacts.parsed.translations.map((translation) => ({
+        recordId,
+        language: translation.language,
+        title: translation.title,
+        summary: translation.summary ?? null,
+        body: translation.body ?? null,
+        problem: translation.problem ?? null,
+        recommendation: translation.recommendation ?? null,
+        metadata: jsonOrNull(translation.metadata),
       })),
     });
   }

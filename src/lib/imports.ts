@@ -14,7 +14,6 @@ import {
 
 type ImportRequest = z.infer<typeof importRequestSchema>;
 type ImportSourceInput = z.infer<typeof importSourceSchema>;
-type ListImportJobsQuery = z.infer<typeof listImportJobsQuerySchema>;
 
 const importJobListSelect = {
   id: true,
@@ -88,21 +87,43 @@ function buildJobStats(
   };
 }
 
-function resolveItemSource(
+function getSourceIdentity(input: ImportSourceInput) {
+  return [
+    input.role ?? "REFERENCE",
+    input.sourceKey ?? "",
+    input.uri ?? "",
+    input.checksum ?? "",
+    input.title ?? "",
+  ].join("|");
+}
+
+function resolveItemSources(
   jobSourceType: string,
   requestSource: ImportSourceInput | undefined,
   recordSource: ImportSourceInput | undefined,
+  recordSources: ImportSourceInput[],
 ) {
-  const merged = recordSource ?? requestSource;
+  const seen = new Set<string>();
+  const sources = [requestSource, recordSource, ...recordSources].filter(
+    (source): source is ImportSourceInput => Boolean(source),
+  );
+  const resolved: Array<ImportSourceInput & { sourceType: string }> = [];
 
-  if (!merged) {
-    return null;
+  for (const source of sources) {
+    const identity = getSourceIdentity(source);
+
+    if (seen.has(identity)) {
+      continue;
+    }
+
+    seen.add(identity);
+    resolved.push({
+      ...source,
+      sourceType: source.sourceType ?? jobSourceType,
+    });
   }
 
-  return {
-    ...merged,
-    sourceType: merged.sourceType ?? jobSourceType,
-  };
+  return resolved;
 }
 
 async function findOrCreateSource(
@@ -205,45 +226,66 @@ async function findOrCreateSource(
   });
 }
 
-async function attachSourceToRecord(
+async function attachSourcesToRecord(
   tx: Prisma.TransactionClient,
   recordId: string,
-  sourceInput: (ImportSourceInput & { sourceType: string }) | null,
+  managedSourceType: string,
+  sourceInputs: Array<ImportSourceInput & { sourceType: string }>,
 ) {
-  if (!sourceInput) {
-    return null;
-  }
-
-  const source = await findOrCreateSource(tx, sourceInput);
-  const role = sourceInput.role ?? "REFERENCE";
-
+  // GitHub JSON imports are treated as source-of-truth for their own source links.
+  // Other source types remain untouched.
   await tx.knowledgeRecordSource.deleteMany({
     where: {
       recordId,
-      role,
+      source: {
+        is: {
+          sourceType: managedSourceType,
+        },
+      },
     },
   });
 
-  const link = await tx.knowledgeRecordSource.create({
-    data: {
-      recordId,
-      sourceId: source.id,
-      role,
-      quote: sourceInput.quote ?? null,
-      note: sourceInput.note ?? null,
-      metadata: sourceInput.metadata ?? Prisma.JsonNull,
-    },
-    select: {
-      recordId: true,
-      sourceId: true,
-      role: true,
-    },
-  });
+  if (!sourceInputs.length) {
+    return [];
+  }
 
-  return {
-    source,
-    link,
-  };
+  const attachments = [];
+  const seenLinks = new Set<string>();
+
+  for (const sourceInput of sourceInputs) {
+    const source = await findOrCreateSource(tx, sourceInput);
+    const role = sourceInput.role ?? "REFERENCE";
+    const linkKey = `${source.id}:${role}`;
+
+    if (seenLinks.has(linkKey)) {
+      continue;
+    }
+
+    seenLinks.add(linkKey);
+
+    const link = await tx.knowledgeRecordSource.create({
+      data: {
+        recordId,
+        sourceId: source.id,
+        role,
+        quote: sourceInput.quote ?? null,
+        note: sourceInput.note ?? null,
+        metadata: sourceInput.metadata ?? Prisma.JsonNull,
+      },
+      select: {
+        recordId: true,
+        sourceId: true,
+        role: true,
+      },
+    });
+
+    attachments.push({
+      source,
+      link,
+    });
+  }
+
+  return attachments;
 }
 
 export async function runImportJob(input: unknown) {
@@ -277,15 +319,16 @@ export async function runImportJob(input: unknown) {
     action?: "CREATE" | "UPDATE";
     recordId?: string;
     slug?: string;
-    sourceId?: string;
+    sourceIds?: string[];
     error?: string;
   }> = [];
 
   for (const recordPayload of parsed.records) {
-    const itemSource = resolveItemSource(
+    const itemSources = resolveItemSources(
       parsed.sourceType,
       parsed.source,
       recordPayload.source,
+      recordPayload.sources,
     );
     const item = await prisma.importJobItem.create({
       data: {
@@ -322,10 +365,11 @@ export async function runImportJob(input: unknown) {
           } as Prisma.InputJsonValue,
         });
 
-        const sourceAttachment = await attachSourceToRecord(
+        const sourceAttachments = await attachSourcesToRecord(
           tx,
           upserted.record.id,
-          itemSource,
+          parsed.sourceType,
+          itemSources,
         );
 
         await tx.importJobItem.update({
@@ -347,7 +391,7 @@ export async function runImportJob(input: unknown) {
 
         return {
           ...upserted,
-          sourceAttachment,
+          sourceAttachments,
         };
       });
 
@@ -357,7 +401,7 @@ export async function runImportJob(input: unknown) {
         action: result.action,
         recordId: result.record.id,
         slug: result.record.slug,
-        sourceId: result.sourceAttachment?.source.id,
+        sourceIds: result.sourceAttachments.map((item) => item.source.id),
       });
     } catch (error) {
       const message = getErrorMessage(error);

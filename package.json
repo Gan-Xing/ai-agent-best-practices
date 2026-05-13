@@ -10,7 +10,12 @@
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:migrate:status": "prisma migrate status",
-    "db:seed": "node --env-file=.env prisma/seed.js"
+    "db:seed": "node --env-file=.env prisma/seed.js",
+    "content:fields": "tsx scripts/content-fields.ts",
+    "content:contract": "tsx scripts/content-contract-check.ts",
+    "content:validate": "tsx scripts/content-validate.ts",
+    "content:import": "tsx scripts/content-import.ts",
+    "content:verify": "tsx scripts/content-contract-check.ts && tsx scripts/content-validate.ts && tsx scripts/content-import.ts --dry-run"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans": "^5.2.8",
@@ -33,6 +38,7 @@
     "eslint-config-next": "16.2.6",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   },
   "pnpm": {
