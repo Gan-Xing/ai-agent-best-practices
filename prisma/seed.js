@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 const { readFile } = require("node:fs/promises");
 const path = require("node:path");
 
