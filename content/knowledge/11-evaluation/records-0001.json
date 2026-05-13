@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "sourceType": "GITHUB_JSON",
+  "sourceLabel": "content/knowledge/11-evaluation/records-0001.json",
+  "categoryCode": "11",
+  "categorySlug": "evaluation",
+  "batch": 1,
+  "metadata": {
+    "maintainer": "Gan-Xing",
+    "purpose": "Canonical GitHub-visible content source for knowledge records."
+  },
+  "source": {
+    "sourceType": "GITHUB_JSON",
+    "sourceKey": "content/knowledge/11-evaluation/records-0001.json",
+    "title": "Evaluation category content batch 0001",
+    "role": "COLLECTION",
+    "note": "Batch-level source for records stored in this JSON file."
+  },
+  "records": [
+    {
+      "slug": "tool-calling-evals-must-check-tool-result-obedience",
+      "externalKey": "kb-000003",
+      "externalId": "github-json-kb-000003",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "11",
+      "visibility": "PUBLIC",
+      "status": "DRAFT",
+      "maturity": "SEED",
+      "freshness": "NEEDS_REVIEW",
+      "confidence": 0.84,
+      "language": "zh",
+      "title": "工具调用评测必须检查模型是否服从工具返回值",
+      "summary": "Tool calling 评测不能只检查模型会不会生成工具调用，还要检查它是否相信工具返回值并把结果接到下一步。",
+      "body": "很多工具调用失败不是 schema 格式错误，而是模型在工具返回后没有把结果作为事实继续执行。典型例子是“先搜索冰岛人口，再计算它的 2%”：模型可能完成了搜索，却在计算阶段使用自己记忆里的旧人口数字。这个问题对 agent 很关键，因为真实工作流经常是 search -> read -> calculate -> write -> verify 的链条；只要其中一步不服从工具结果，最终输出就会偏离真实数据。评测集应该记录每一步工具返回、模型后续引用的数值、是否重复调用同一工具、是否在足够信息后停止调用。",
+      "problem": "只测试 tool syntax 会高估模型能力，因为模型可能会正确调用工具但错误使用工具结果。",
+      "recommendation": "设计 tool calling eval 时，把“工具结果服从”作为独立检查项：验证模型后续答案中的数字、实体、状态是否来自工具返回，而不是来自模型先验记忆。",
+      "metadata": {
+        "contentSource": "derived-practice",
+        "draftedFrom": "conversation",
+        "derivedFrom": "kb-000002",
+        "benchmark": "ToolCall-15"
+      },
+      "applicability": {
+        "audience": [
+          "agent-evaluation-designers",
+          "tool-api-designers",
+          "local-agent-builders"
+        ],
+        "projectStage": [
+          "evaluation",
+          "regression-testing",
+          "model-selection"
+        ],
+        "scenario": [
+          "multi-step-tool-use",
+          "search-and-calculate"
+        ]
+      },
+      "compatibility": {
+        "appliesTo": [
+          "local LLMs",
+          "hosted LLMs",
+          "tool-using agents"
+        ],
+        "evaluationSignals": [
+          "tool-call-correctness",
+          "tool-result-use",
+          "loop-control",
+          "final-answer-grounding"
+        ]
+      },
+      "tradeoffs": {
+        "pros": [
+          "能发现语法测试看不到的真实失败",
+          "适合做 agent 回归测试",
+          "能解释大模型使用先验覆盖工具结果的问题"
+        ],
+        "cons": [
+          "需要保存完整工具 trace",
+          "评测实现比单次函数调用判断更复杂"
+        ]
+      },
+      "evidence": {
+        "basis": "ToolCall-15 and supplied X summary show failures where models used memorized values after a search tool returned data.",
+        "confidenceReason": "该失败模式与真实 agent 多步工作流高度一致。",
+        "example": "search Iceland population, then calculate 2 percent"
+      },
+      "metrics": {
+        "requiredEvalAssertions": [
+          "called-correct-tool",
+          "used-returned-value",
+          "did-not-repeat-tool-unnecessarily",
+          "final-answer-matches-tool-data"
+        ],
+        "expectedBugCatchRate": "high for multi-step tool workflows"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "draft",
+        "sourceReviewedAt": "2026-05-13"
+      },
+      "extensions": {
+        "nextSteps": [
+          "把 tool result obedience 加入项目测试用例",
+          "保存 replayable trace",
+          "给每个工具返回值加可核验字段"
+        ]
+      },
+      "publishedAt": "2026-05-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
+      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "工具结果服从",
+        "tool result obedience",
+        "工具调用后验一致性"
+      ],
+      "keywords": [
+        "tool result obedience",
+        "tool calling eval",
+        "ToolCall-15",
+        "mock tool response",
+        "Iceland population",
+        "agent benchmark",
+        "tool trace",
+        "result grounding"
+      ],
+      "tags": [
+        "tool-calling",
+        "evaluation",
+        "agent-eval",
+        "tool-results",
+        "trace"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000002",
+          "relationType": "DERIVED_FROM",
+          "strength": 0.9,
+          "description": "从 ToolCall-15 的本地工具调用结果抽象出的评测原则。",
+          "metadata": {
+            "reason": "benchmark-to-practice"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "github:stevibe/ToolCall-15",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/stevibe/ToolCall-15",
+          "title": "ToolCall-15 benchmark repository",
+          "author": "stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "工具调用基准测试框架来源，用于确认测试场景、工具数量和方法。"
+        },
+        {
+          "sourceKey": "github:stevibe/ToolCall-15:METHODOLOGY.md",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/stevibe/ToolCall-15/blob/main/METHODOLOGY.md",
+          "title": "ToolCall-15 methodology",
+          "author": "stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "方法论来源，用于确认 temperature=0、mock responses、15 个场景和 12 个工具。"
+        },
+        {
+          "sourceKey": "url:x:TeksEdge:2036812197570253129",
+          "sourceType": "URL",
+          "uri": "https://x.com/TeksEdge/status/2036812197570253129",
+          "title": "Which local models can actually handle tool calling?",
+          "author": "@TeksEdge / @stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "用户提供的 X 帖子来源，用于记录 Qwen3.5 各模型工具调用测试结果摘要。"
+        },
+        {
+          "sourceKey": "chat:2026-05-13:qwen3-5-tool-calling-summary",
+          "sourceType": "CHAT",
+          "title": "用户提供的 Qwen3.5 ToolCall-15 摘要",
+          "author": "Gan-Xing",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "本次对话中用户提供的帖文主要内容和补充判断。"
+        }
+      ]
+    }
+  ]
+}

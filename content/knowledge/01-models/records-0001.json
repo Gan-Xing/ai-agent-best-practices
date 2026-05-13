@@ -10,16 +10,16 @@
     "purpose": "Canonical GitHub-visible content source for knowledge records."
   },
   "source": {
-    "sourceType": "GITHUB_JSON",
     "sourceKey": "content/knowledge/01-models/records-0001.json",
+    "sourceType": "GITHUB_JSON",
     "title": "Models category content batch 0001",
     "role": "COLLECTION",
     "note": "Batch-level source for records stored in this JSON file."
   },
   "records": [
     {
-      "externalKey": "kb-000001",
       "slug": "postgres-fts-and-vector-search-should-work-together",
+      "externalKey": "kb-000001",
       "externalId": "github-json-kb-000001",
       "schemaVersion": 1,
       "type": "PRACTICE",
@@ -35,26 +35,39 @@
       "body": "在知识库系统里，向量搜索不应该完全替代全文搜索。Postgres FTS 更适合处理明确关键词、工具名、错误信息、字段名和专有名词；向量搜索更适合处理同义表达、相似思路和上下文相关内容。长期可维护的做法是先做结构化过滤，再用 FTS 和 vector 分别召回候选，最后合并去重并按相关度、freshness 和 confidence 排序。",
       "problem": "只用向量搜索时，用户输入非常精确的关键词反而可能找不到最准确的记录；只用全文搜索时，又找不到表达不同但语义相近的想法。",
       "recommendation": "把 Postgres FTS 作为基础检索能力，把 pgvector 作为语义召回补充。第一版可以先上线 FTS，后续再加入云端 embedding 和向量召回。",
-      "tags": ["postgres", "fts", "pgvector", "hybrid-search", "rag"],
-      "aliases": ["全文搜索", "语义搜索", "混合检索"],
-      "keywords": ["PostgreSQL", "tsvector", "pgvector", "hybrid search", "RAG"],
       "metadata": {
         "difficulty": "intermediate",
         "useCase": "knowledge-base-search",
         "contentSource": "github-json"
       },
       "applicability": {
-        "audience": ["agent-builders", "knowledge-base-maintainers"],
-        "projectStage": ["prototype", "production"]
+        "audience": [
+          "agent-builders",
+          "knowledge-base-maintainers"
+        ],
+        "projectStage": [
+          "prototype",
+          "production"
+        ]
       },
       "compatibility": {
         "database": "PostgreSQL",
         "vectorStore": "pgvector",
-        "search": ["Postgres FTS", "semantic search"]
+        "search": [
+          "Postgres FTS",
+          "semantic search"
+        ]
       },
       "tradeoffs": {
-        "pros": ["精确关键词更稳", "语义召回更宽", "排序可解释性更好"],
-        "cons": ["实现复杂度高于单一向量搜索", "需要维护两套召回分数"]
+        "pros": [
+          "精确关键词更稳",
+          "语义召回更宽",
+          "排序可解释性更好"
+        ],
+        "cons": [
+          "实现复杂度高于单一向量搜索",
+          "需要维护两套召回分数"
+        ]
       },
       "evidence": {
         "basis": "Architecture recommendation for this project.",
@@ -69,7 +82,11 @@
         "reviewStatus": "reviewed"
       },
       "extensions": {
-        "nextSteps": ["query expansion", "cloud embedding", "hybrid reranking"]
+        "nextSteps": [
+          "query expansion",
+          "cloud embedding",
+          "hybrid reranking"
+        ]
       },
       "publishedAt": "2026-05-13T00:00:00.000Z",
       "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
@@ -87,16 +104,595 @@
           }
         }
       ],
+      "aliases": [
+        "全文搜索",
+        "语义搜索",
+        "混合检索"
+      ],
+      "keywords": [
+        "PostgreSQL",
+        "tsvector",
+        "pgvector",
+        "hybrid search",
+        "RAG"
+      ],
+      "tags": [
+        "postgres",
+        "fts",
+        "pgvector",
+        "hybrid-search",
+        "rag"
+      ],
+      "relations": [],
       "sources": [
         {
-          "sourceType": "GITHUB_JSON",
           "sourceKey": "content/knowledge/01-models/records-0001.json#kb-000001#secondary",
+          "sourceType": "GITHUB_JSON",
           "title": "GitHub JSON secondary source example",
           "role": "REFERENCE",
           "note": "Optional plural sources field aligned with the Prisma sources relation."
         }
+      ]
+    },
+    {
+      "slug": "toolcall-15-shows-local-tool-calling-is-not-size-only",
+      "externalKey": "kb-000002",
+      "externalId": "github-json-kb-000002",
+      "schemaVersion": 1,
+      "type": "EXPERIMENT",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "DRAFT",
+      "maturity": "SEED",
+      "freshness": "NEEDS_REVIEW",
+      "confidence": 0.72,
+      "language": "zh",
+      "title": "ToolCall-15 显示本地工具调用不是模型越大越稳",
+      "summary": "ToolCall-15 的 Qwen3.5 本地工具调用结果显示，27B dense 和 27B distilled 比更大模型更稳，说明本地 agent 选型不能只看总参数规模。",
+      "body": "这条记录保存 @stevibe / ToolCall-15 相关结论：测试框架覆盖 15 个场景和 12 个工具，使用 mock responses 与 temperature=0，重点比较 Qwen3.5 家族从小模型到 397B-A17B 的工具调用行为。用户提供的帖文摘要显示，27B dense 与 27B distilled 两个模型全绿；397B 失败 2 项，122B 失败 1 项，35B 失败 2 项。失败模式也有分层：小模型更容易卡循环或重复调用同一工具，大模型更容易不信工具返回值，转而使用自己记忆里的数字。这个结果的价值不在于证明某个模型永远最好，而在于提醒本地工具调用必须做任务级评测。",
+      "problem": "如果只按总参数规模选择本地 tool calling 模型，可能会选到更贵、更慢但在多步工具结果衔接上更不稳的模型。",
+      "recommendation": "本地 agent 选模型时要把 ToolCall-15 这类任务级评测作为依据，重点观察模型是否能正确调用工具、停止重复调用、接受工具返回值并继续完成后续推理。",
+      "metadata": {
+        "contentSource": "user-summary-plus-source-check",
+        "draftedFrom": "conversation",
+        "benchmark": "ToolCall-15",
+        "sourcePost": "https://x.com/TeksEdge/status/2036812197570253129"
+      },
+      "applicability": {
+        "audience": [
+          "local-agent-builders",
+          "model-selectors",
+          "ai-skill-maintainers"
+        ],
+        "projectStage": [
+          "model-selection",
+          "prototype",
+          "evaluation"
+        ],
+        "scenario": [
+          "local-tool-calling",
+          "agent-runtime"
+        ]
+      },
+      "compatibility": {
+        "benchmark": "ToolCall-15",
+        "modelFamily": "Qwen3.5",
+        "tools": 12,
+        "scenarios": 15,
+        "inferenceSetting": "temperature=0 with mocked tool responses"
+      },
+      "tradeoffs": {
+        "pros": [
+          "保留了模型选型的反直觉信号",
+          "能指导本地 agent 的候选模型筛选",
+          "把失败模式从语法问题提升到行为问题"
+        ],
+        "cons": [
+          "具体 pass/fail 结果依赖帖文和 benchmark snapshot",
+          "基准规模较小，不能替代真实业务回归测试"
+        ]
+      },
+      "evidence": {
+        "basis": "ToolCall-15 repo verifies benchmark design; user-provided X summary supplies model-level result counts.",
+        "confidenceReason": "方法论可核验，具体排行榜结果需要后续用原始 benchmark 或截图复核。",
+        "caveat": "X 内容和第三方镜像可能变化或不可访问。"
+      },
+      "metrics": {
+        "benchmarkCoverage": "15 scenarios / 12 tools",
+        "expectedSelectionRiskReduction": "high",
+        "observedFailureModes": [
+          "tool-looping",
+          "repeated-tool-call",
+          "ignoring-tool-result"
+        ]
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "draft",
+        "sourceReviewedAt": "2026-05-13"
+      },
+      "extensions": {
+        "nextSteps": [
+          "保存原始帖文截图或 benchmark 输出",
+          "在候选本地模型上复跑 ToolCall-15",
+          "加入项目自定义工具调用回归集"
+        ]
+      },
+      "publishedAt": "2026-05-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
+      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "ToolCall-15",
+        "Qwen3.5 工具调用测试",
+        "本地 tool calling 甜点模型"
       ],
-      "relations": []
+      "keywords": [
+        "ToolCall-15",
+        "Qwen3.5-27B",
+        "Qwen3.5-27B distilled",
+        "Qwen3.5-397B-A17B",
+        "tool calling",
+        "local LLM",
+        "mock responses",
+        "temperature 0",
+        "agent evaluation"
+      ],
+      "tags": [
+        "tool-calling",
+        "local-llm",
+        "qwen",
+        "model-selection",
+        "agent-eval"
+      ],
+      "relations": [],
+      "sources": [
+        {
+          "sourceKey": "github:stevibe/ToolCall-15",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/stevibe/ToolCall-15",
+          "title": "ToolCall-15 benchmark repository",
+          "author": "stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "工具调用基准测试框架来源，用于确认测试场景、工具数量和方法。"
+        },
+        {
+          "sourceKey": "github:stevibe/ToolCall-15:METHODOLOGY.md",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/stevibe/ToolCall-15/blob/main/METHODOLOGY.md",
+          "title": "ToolCall-15 methodology",
+          "author": "stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "方法论来源，用于确认 temperature=0、mock responses、15 个场景和 12 个工具。"
+        },
+        {
+          "sourceKey": "url:x:TeksEdge:2036812197570253129",
+          "sourceType": "URL",
+          "uri": "https://x.com/TeksEdge/status/2036812197570253129",
+          "title": "Which local models can actually handle tool calling?",
+          "author": "@TeksEdge / @stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "用户提供的 X 帖子来源，用于记录 Qwen3.5 各模型工具调用测试结果摘要。"
+        },
+        {
+          "sourceKey": "chat:2026-05-13:qwen3-5-tool-calling-summary",
+          "sourceType": "CHAT",
+          "title": "用户提供的 Qwen3.5 ToolCall-15 摘要",
+          "author": "Gan-Xing",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "本次对话中用户提供的帖文主要内容和补充判断。"
+        }
+      ]
+    },
+    {
+      "slug": "local-agent-model-selection-should-consider-dense-moe-and-active-params",
+      "externalKey": "kb-000004",
+      "externalId": "github-json-kb-000004",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "DRAFT",
+      "maturity": "SEED",
+      "freshness": "NEEDS_REVIEW",
+      "confidence": 0.74,
+      "language": "zh",
+      "title": "本地 agent 选模型要同时看 dense、MoE 和 active params",
+      "summary": "本地 agent 选模型不能只看 total parameters，还要区分 dense、MoE 和每 token active parameters，因为这些会影响工具调用稳定性、延迟和硬件成本。",
+      "body": "MoE 模型的 total parameters 和 active parameters不是同一个概念；dense 模型通常每次推理都会激活全部参数，而 MoE 每个 token 只激活部分专家。因此，本地部署时不能把一个 MoE 的总参数直接等价成同规模 dense 模型，也不能只按排行榜最大参数选择 tool calling 模型。ToolCall-15 的 Qwen3.5 结果提供了一个有价值信号：27B dense 在工具调用链路上可能比更大 MoE 或更大总参数模型更稳。这个结论不应被过度推广成“dense 永远更好”，而应转化为选型实践：记录模型架构、active params、显存占用、延迟、工具结果服从率和循环失败率。",
+      "problem": "如果把 MoE total parameters 当成 dense 等价规模，或只按最大模型选型，就可能误判本地 agent 的实际可靠性和成本。",
+      "recommendation": "本地 agent 模型选型表里必须同时记录架构类型、total parameters、active parameters、上下文长度、显存需求、工具调用通过率和失败模式。",
+      "metadata": {
+        "contentSource": "synthesis",
+        "draftedFrom": "conversation",
+        "relatedBenchmark": "ToolCall-15",
+        "architectureFocus": [
+          "dense",
+          "MoE",
+          "active-parameters"
+        ]
+      },
+      "applicability": {
+        "audience": [
+          "local-llm-operators",
+          "agent-builders",
+          "infra-planners"
+        ],
+        "projectStage": [
+          "model-selection",
+          "deployment-planning",
+          "evaluation"
+        ],
+        "scenario": [
+          "local-agent-runtime",
+          "tool-calling"
+        ]
+      },
+      "compatibility": {
+        "modelFamilies": [
+          "Qwen3.5",
+          "DeepSeek-V3",
+          "OpenAI gpt-oss",
+          "Gemini 2.5"
+        ],
+        "hardwareSignals": [
+          "VRAM",
+          "latency",
+          "throughput"
+        ],
+        "evalSignals": [
+          "tool-result-obedience",
+          "loop-rate",
+          "task-success-rate"
+        ]
+      },
+      "tradeoffs": {
+        "pros": [
+          "减少 total parameters 造成的误判",
+          "能把成本、速度和可靠性放在同一张表比较",
+          "适合本地部署决策"
+        ],
+        "cons": [
+          "closed models 可能不公开底层架构",
+          "不同厂商披露口径不一致",
+          "active params 不完全等价于工具调用能力"
+        ]
+      },
+      "evidence": {
+        "basis": "ToolCall-15 summary plus official MoE disclosures for gpt-oss and DeepSeek-V3; Qwen model cards disclose dense/MoE variants.",
+        "confidenceReason": "架构字段公开程度不一，因此实践建议可信，但具体厂商结论需逐项引用官方来源。"
+      },
+      "metrics": {
+        "selectionFields": [
+          "architecture",
+          "totalParameters",
+          "activeParameters",
+          "VRAM",
+          "latency",
+          "toolCallPassRate",
+          "toolResultObedienceRate"
+        ],
+        "expectedDecisionQualityLift": "medium-high"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "draft",
+        "sourceReviewedAt": "2026-05-13"
+      },
+      "extensions": {
+        "nextSteps": [
+          "建立本地模型选型表",
+          "把 ToolCall-15 结果和实际任务回归结果并列保存",
+          "对 closed models 标记 unknown 架构"
+        ]
+      },
+      "publishedAt": "2026-05-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
+      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "active params",
+        "MoE 参数误读",
+        "本地 agent 模型选型"
+      ],
+      "keywords": [
+        "dense model",
+        "MoE",
+        "active parameters",
+        "total parameters",
+        "Qwen3.5-27B",
+        "Qwen3.5-397B-A17B",
+        "gpt-oss",
+        "DeepSeek-V3",
+        "local agent",
+        "model selection"
+      ],
+      "tags": [
+        "model-selection",
+        "moe",
+        "dense-models",
+        "local-llm",
+        "tool-calling"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000002",
+          "relationType": "EXTENDS",
+          "strength": 0.82,
+          "description": "把 ToolCall-15 的 size-not-enough 结论扩展为 dense/MoE/active params 选型规则。",
+          "metadata": {
+            "reason": "model-selection-rule"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "hf:Qwen/Qwen3.5-27B",
+          "sourceType": "URL",
+          "uri": "https://huggingface.co/Qwen/Qwen3.5-27B",
+          "title": "Qwen3.5-27B model card",
+          "publisher": "Qwen",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "Qwen3.5 27B dense 模型公开模型卡。"
+        },
+        {
+          "sourceKey": "hf:Qwen/Qwen3.5-397B-A17B",
+          "sourceType": "URL",
+          "uri": "https://huggingface.co/Qwen/Qwen3.5-397B-A17B",
+          "title": "Qwen3.5-397B-A17B model card",
+          "publisher": "Qwen",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "Qwen3.5 397B-A17B MoE 模型公开模型卡。"
+        },
+        {
+          "sourceKey": "url:openai:introducing-gpt-oss",
+          "sourceType": "URL",
+          "uri": "https://openai.com/index/introducing-gpt-oss/",
+          "title": "Introducing gpt-oss",
+          "publisher": "OpenAI",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "OpenAI 官方 gpt-oss MoE 与 active parameters 信息。"
+        },
+        {
+          "sourceKey": "paper:deepseek-v3-technical-report",
+          "sourceType": "PAPER",
+          "uri": "https://arxiv.org/abs/2412.19437",
+          "title": "DeepSeek-V3 Technical Report",
+          "publisher": "DeepSeek-AI",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "DeepSeek-V3 技术报告，用于记录 MoE、total parameters 和 active parameters。"
+        },
+        {
+          "sourceKey": "github:stevibe/ToolCall-15",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/stevibe/ToolCall-15",
+          "title": "ToolCall-15 benchmark repository",
+          "author": "stevibe",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "工具调用基准测试框架来源，用于确认测试场景、工具数量和方法。"
+        },
+        {
+          "sourceKey": "chat:2026-05-13:qwen3-5-tool-calling-summary",
+          "sourceType": "CHAT",
+          "title": "用户提供的 Qwen3.5 ToolCall-15 摘要",
+          "author": "Gan-Xing",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "本次对话中用户提供的帖文主要内容和补充判断。"
+        }
+      ]
+    },
+    {
+      "slug": "model-architecture-claims-must-separate-disclosure-from-inference",
+      "externalKey": "kb-000005",
+      "externalId": "github-json-kb-000005",
+      "schemaVersion": 1,
+      "type": "PRINCIPLE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "DRAFT",
+      "maturity": "SEED",
+      "freshness": "NEEDS_REVIEW",
+      "confidence": 0.86,
+      "language": "zh",
+      "title": "模型架构结论必须区分公开披露和推断",
+      "summary": "记录 dense 或 MoE 结论时，必须区分官方公开、第三方推断和未知，不能把未披露的 GPT-5 或 Claude 架构写成事实。",
+      "body": "模型架构信息经常被社区讨论混在一起：有些模型官方明确披露为 MoE，例如 DeepSeek-V3、Gemini 2.5 和 OpenAI gpt-oss；有些模型只公开系统级 router、产品行为或安全卡，并没有公开底层 dense/MoE 结构。对知识库来说，这类字段必须保守保存：官方明确披露的可以写 confirmed；只有社区猜测的写 inferred；没有可靠公开来源的写 unknown。尤其是 GPT-5 和 Claude/Claude Code，不能因为使用体验、路由行为或某个产品形态，就武断写成 dense 或 MoE。",
+      "problem": "如果把未公开架构写成事实，后续模型选型、成本比较和 agent 设计会建立在错误前提上。",
+      "recommendation": "所有模型架构记录都增加 disclosureStatus：official、inferred、unknown。没有官方来源时，不要写“就是 dense”或“就是 MoE”，只写“未可靠公开披露”。",
+      "metadata": {
+        "contentSource": "source-verified-principle",
+        "draftedFrom": "conversation",
+        "disclosurePolicy": [
+          "official",
+          "inferred",
+          "unknown"
+        ]
+      },
+      "applicability": {
+        "audience": [
+          "knowledge-base-maintainers",
+          "model-selectors",
+          "agent-architects"
+        ],
+        "projectStage": [
+          "research",
+          "model-selection",
+          "documentation"
+        ],
+        "scenario": [
+          "architecture-comparison",
+          "vendor-claim-tracking"
+        ]
+      },
+      "compatibility": {
+        "confirmedMoEExamples": [
+          "Gemini 2.5",
+          "DeepSeek-V3",
+          "OpenAI gpt-oss"
+        ],
+        "unknownArchitectureExamples": [
+          "GPT-5",
+          "Claude",
+          "Claude Code"
+        ],
+        "policyField": "disclosureStatus"
+      },
+      "tradeoffs": {
+        "pros": [
+          "避免把社区传言写成事实",
+          "提高知识库证据质量",
+          "便于未来官方披露后更新"
+        ],
+        "cons": [
+          "记录会比一句话结论更保守",
+          "需要维护来源和更新时间"
+        ]
+      },
+      "evidence": {
+        "basis": "Official technical reports and system cards disclose some architectures while leaving others unspecified.",
+        "confidenceReason": "公开披露边界可以从官方文档核验；未知结论比猜测更安全。",
+        "caveat": "未来厂商可能更新披露。"
+      },
+      "metrics": {
+        "evidenceLevels": [
+          "official",
+          "inferred",
+          "unknown"
+        ],
+        "expectedHallucinationReduction": "high",
+        "reviewCadence": "quarterly or on model release"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "draft",
+        "sourceReviewedAt": "2026-05-13"
+      },
+      "extensions": {
+        "nextSteps": [
+          "给模型表增加 disclosureStatus 字段",
+          "为每条架构结论保存官方来源",
+          "定期复核 GPT-5 和 Claude 是否有新的官方披露"
+        ]
+      },
+      "publishedAt": "2026-05-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
+      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "模型架构披露状态",
+        "dense/MoE 证据等级",
+        "架构结论保守记录"
+      ],
+      "keywords": [
+        "model architecture disclosure",
+        "dense",
+        "MoE",
+        "GPT-5",
+        "Claude",
+        "Claude Code",
+        "Gemini 2.5",
+        "DeepSeek-V3",
+        "gpt-oss",
+        "system card"
+      ],
+      "tags": [
+        "model-architecture",
+        "moe",
+        "dense-models",
+        "evidence",
+        "model-selection"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000004",
+          "relationType": "EXTENDS",
+          "strength": 0.86,
+          "description": "为 dense/MoE/active params 选型规则补充证据等级和披露边界。",
+          "metadata": {
+            "reason": "evidence-policy"
+          }
+        },
+        {
+          "toExternalKey": "kb-000003",
+          "relationType": "RELATED_TO",
+          "strength": 0.62,
+          "description": "模型架构记录会影响 tool calling 评测结果的解释方式。",
+          "metadata": {
+            "reason": "architecture-affects-evaluation-interpretation"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "paper:google-deepmind:gemini-2-5-report",
+          "sourceType": "PAPER",
+          "uri": "https://storage.googleapis.com/deepmind-media/gemini/gemini_v2_5_report.pdf",
+          "title": "Gemini 2.5 Technical Report",
+          "publisher": "Google DeepMind",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "Gemini 2.5 官方技术报告，用于记录 sparse MoE 公开披露。"
+        },
+        {
+          "sourceKey": "paper:deepseek-v3-technical-report",
+          "sourceType": "PAPER",
+          "uri": "https://arxiv.org/abs/2412.19437",
+          "title": "DeepSeek-V3 Technical Report",
+          "publisher": "DeepSeek-AI",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "DeepSeek-V3 技术报告，用于记录 MoE、total parameters 和 active parameters。"
+        },
+        {
+          "sourceKey": "url:openai:introducing-gpt-oss",
+          "sourceType": "URL",
+          "uri": "https://openai.com/index/introducing-gpt-oss/",
+          "title": "Introducing gpt-oss",
+          "publisher": "OpenAI",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "OpenAI 官方 gpt-oss MoE 与 active parameters 信息。"
+        },
+        {
+          "sourceKey": "url:openai:gpt-5-system-card",
+          "sourceType": "URL",
+          "uri": "https://openai.com/index/gpt-5-system-card/",
+          "title": "GPT-5 System Card",
+          "publisher": "OpenAI",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "GPT-5 官方系统卡；公开的是系统级 router 和安全信息，不等于底层 dense/MoE 架构披露。"
+        },
+        {
+          "sourceKey": "url:anthropic:system-cards",
+          "sourceType": "URL",
+          "uri": "https://www.anthropic.com/system-cards",
+          "title": "Anthropic system cards",
+          "publisher": "Anthropic",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "Anthropic 官方系统卡集合；用于确认不要把未公开架构写成事实。"
+        },
+        {
+          "sourceKey": "chat:2026-05-13:qwen3-5-tool-calling-summary",
+          "sourceType": "CHAT",
+          "title": "用户提供的 Qwen3.5 ToolCall-15 摘要",
+          "author": "Gan-Xing",
+          "accessedAt": "2026-05-13T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "本次对话中用户提供的帖文主要内容和补充判断。"
+        }
+      ]
     }
   ]
 }
