@@ -1114,7 +1114,20 @@ export async function upsertRecordFromImportTx(
   input: unknown,
   options: ImportUpsertOptions = {},
 ): Promise<RecordWriteResult> {
-  const parsed = createRecordInputSchema.parse(input);
+  const recordInput =
+    input && typeof input === "object" && !Array.isArray(input)
+      ? { ...(input as Record<string, unknown>) }
+      : input;
+
+  if (
+    recordInput &&
+    typeof recordInput === "object" &&
+    !Array.isArray(recordInput)
+  ) {
+    delete (recordInput as Record<string, unknown>).sources;
+  }
+
+  const parsed = createRecordInputSchema.parse(recordInput);
   const existing = await resolveImportExistingRecord(tx, parsed);
 
   return writeRecord(tx, parsed, {

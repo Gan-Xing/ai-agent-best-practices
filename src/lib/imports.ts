@@ -58,6 +58,8 @@ type WrittenImportRecord = {
   };
 };
 
+const DEFAULT_IMPORT_TRANSACTION_TIMEOUT_MS = 300_000;
+
 const importJobListSelect = {
   id: true,
   sourceType: true,
@@ -102,6 +104,16 @@ function getErrorMessage(error: unknown) {
   }
 
   return "Unknown import error";
+}
+
+function getImportTransactionTimeoutMs() {
+  const configured = Number(process.env.IMPORT_TRANSACTION_TIMEOUT_MS);
+
+  if (Number.isFinite(configured) && configured > 0) {
+    return configured;
+  }
+
+  return DEFAULT_IMPORT_TRANSACTION_TIMEOUT_MS;
 }
 
 function toDate(value?: string) {
@@ -422,101 +434,108 @@ export async function runImportJob(input: unknown) {
   let activeItemId: string | null = null;
 
   try {
-    const transactionResults = await prisma.$transaction(async (tx) => {
-      const nextResults: ImportItemResult[] = [];
-      const writtenRecords: WrittenImportRecord[] = [];
+    const transactionResults = await prisma.$transaction(
+      async (tx) => {
+        const nextResults: ImportItemResult[] = [];
+        const writtenRecords: WrittenImportRecord[] = [];
 
-      for (const { item, itemSources, recordPayload } of importItems) {
-        activeItemId = item.id;
+        for (const { item, itemSources, recordPayload } of importItems) {
+          activeItemId = item.id;
 
-        await tx.importJobItem.update({
-          where: {
-            id: item.id,
-          },
-          data: {
-            status: "RUNNING",
-            action: "UPSERT",
-          },
-        });
+          await tx.importJobItem.update({
+            where: {
+              id: item.id,
+            },
+            data: {
+              status: "RUNNING",
+              action: "UPSERT",
+            },
+          });
 
-        const upserted = await upsertRecordFromImportTx(tx, recordPayload, {
-          note: `Imported from ${parsed.sourceType} job ${job.id}`,
-          auditMetadata: {
-            importJobId: job.id,
-            importJobItemId: item.id,
-            sourceType: parsed.sourceType,
-            sourceLabel: parsed.sourceLabel ?? null,
-            metadata: parsed.metadata ?? null,
-          } as Prisma.InputJsonValue,
-        });
+          const upserted = await upsertRecordFromImportTx(tx, recordPayload, {
+            note: `Imported from ${parsed.sourceType} job ${job.id}`,
+            auditMetadata: {
+              importJobId: job.id,
+              importJobItemId: item.id,
+              sourceType: parsed.sourceType,
+              sourceLabel: parsed.sourceLabel ?? null,
+              metadata: parsed.metadata ?? null,
+            } as Prisma.InputJsonValue,
+          });
 
-        const sourceAttachments = await attachSourcesToRecord(
-          tx,
-          upserted.record.id,
-          parsed.sourceType,
-          itemSources,
-        );
+          const sourceAttachments = await attachSourcesToRecord(
+            tx,
+            upserted.record.id,
+            parsed.sourceType,
+            itemSources,
+          );
 
-        writtenRecords.push({
-          itemId: item.id,
-          recordPayload,
-          result: {
-            ...upserted,
-            sourceAttachments,
-          },
-        });
-      }
+          writtenRecords.push({
+            itemId: item.id,
+            recordPayload,
+            result: {
+              ...upserted,
+              sourceAttachments,
+            },
+          });
+        }
 
-      for (const written of writtenRecords) {
-        activeItemId = written.itemId;
+        for (const written of writtenRecords) {
+          activeItemId = written.itemId;
 
-        await syncOutgoingRelationsTx(
-          tx,
-          written.result.record.id,
-          written.recordPayload.relations,
-        );
-        await refreshRecordSnapshotTx(tx, written.result.record.id, {
-          versionId: written.result.versionId,
-          auditLogId: written.result.auditLogId,
-        });
+          await syncOutgoingRelationsTx(
+            tx,
+            written.result.record.id,
+            written.recordPayload.relations,
+          );
+          await refreshRecordSnapshotTx(tx, written.result.record.id, {
+            versionId: written.result.versionId,
+            auditLogId: written.result.auditLogId,
+          });
 
-        await tx.importJobItem.update({
-          where: {
-            id: written.itemId,
-          },
-          data: {
+          await tx.importJobItem.update({
+            where: {
+              id: written.itemId,
+            },
+            data: {
+              status: "DONE",
+              action: written.result.action,
+              recordId: written.result.record.id,
+              slug: written.result.record.slug,
+              externalKey:
+                written.result.record.externalKey ??
+                written.recordPayload.externalKey ??
+                null,
+              externalId:
+                written.result.record.externalId ??
+                written.recordPayload.externalId ??
+                null,
+              error: null,
+            },
+          });
+
+          nextResults.push({
+            itemId: written.itemId,
             status: "DONE",
             action: written.result.action,
             recordId: written.result.record.id,
+            versionId: written.result.versionId,
+            auditLogId: written.result.auditLogId,
             slug: written.result.record.slug,
-            externalKey:
-              written.result.record.externalKey ??
-              written.recordPayload.externalKey ??
-              null,
-            externalId:
-              written.result.record.externalId ??
-              written.recordPayload.externalId ??
-              null,
-            error: null,
-          },
-        });
+            sourceIds: written.result.sourceAttachments.map(
+              (item) => item.source.id,
+            ),
+          });
+        }
 
-        nextResults.push({
-          itemId: written.itemId,
-          status: "DONE",
-          action: written.result.action,
-          recordId: written.result.record.id,
-          versionId: written.result.versionId,
-          auditLogId: written.result.auditLogId,
-          slug: written.result.record.slug,
-          sourceIds: written.result.sourceAttachments.map((item) => item.source.id),
-        });
-      }
+        await refreshInboundRelationSnapshotsTx(tx, writtenRecords);
 
-      await refreshInboundRelationSnapshotsTx(tx, writtenRecords);
-
-      return nextResults;
-    });
+        return nextResults;
+      },
+      {
+        timeout: getImportTransactionTimeoutMs(),
+      },
+    );
 
     results.splice(0, results.length, ...transactionResults);
   } catch (error) {
