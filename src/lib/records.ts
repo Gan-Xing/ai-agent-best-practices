@@ -33,8 +33,12 @@ const recordListInclude = {
 const recordDetailInclude = {
   ...recordListInclude,
   translations: true,
-  searchIndexes: true,
-  chunks: true,
+  versions: {
+    orderBy: {
+      versionNo: "desc" as const,
+    },
+    take: 10,
+  },
   sources: {
     include: {
       source: true,
@@ -46,6 +50,18 @@ const recordDetailInclude = {
         select: {
           externalKey: true,
           slug: true,
+          title: true,
+        },
+      },
+    },
+  },
+  incomingRelations: {
+    include: {
+      fromRecord: {
+        select: {
+          externalKey: true,
+          slug: true,
+          title: true,
         },
       },
     },
