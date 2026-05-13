@@ -22,6 +22,24 @@ Use this command to inspect the current writable JSON fields:
 pnpm content:fields
 ```
 
+## Repo-Local Skills
+
+This repository includes a project-local skill for KnowledgeRecord entry:
+
+```text
+skills/knowledge-record-entry/SKILL.md
+```
+
+Use it when turning raw notes into a confirmed KnowledgeRecord. The workflow is
+draft first, then write JSON only after confirmation, then validate and sync.
+
+```bash
+pnpm skill:knowledge-record:validate
+pnpm skill:knowledge-record:apply -- --draft /tmp/knowledge-record-draft.json
+DATABASE_URL="postgresql://knowledge:knowledge@localhost:5432/knowledge" pnpm content:verify
+DATABASE_URL="postgresql://knowledge:knowledge@localhost:5432/knowledge" pnpm content:import
+```
+
 ## API Contract
 
 The public write surface is intentionally RESTful and resource-based:

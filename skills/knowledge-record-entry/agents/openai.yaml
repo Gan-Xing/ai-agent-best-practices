@@ -1,0 +1,6 @@
+interface:
+  display_name: "Knowledge Record Entry"
+  short_description: "Draft and apply knowledge records"
+  default_prompt: "Use $knowledge-record-entry to turn this content into a confirmed KnowledgeRecord draft."
+policy:
+  allow_implicit_invocation: true

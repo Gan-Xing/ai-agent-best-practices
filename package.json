@@ -15,7 +15,9 @@
     "content:contract": "tsx scripts/content-contract-check.ts",
     "content:validate": "tsx scripts/content-validate.ts",
     "content:import": "tsx scripts/content-import.ts",
-    "content:verify": "tsx scripts/content-contract-check.ts && tsx scripts/content-validate.ts && tsx scripts/content-import.ts --dry-run"
+    "content:verify": "tsx scripts/content-contract-check.ts && tsx scripts/content-validate.ts && tsx scripts/content-import.ts --dry-run",
+    "skill:knowledge-record:apply": "tsx skills/knowledge-record-entry/scripts/apply-draft.ts",
+    "skill:knowledge-record:validate": "tsx skills/knowledge-record-entry/scripts/quick_validate.ts"
   },
   "dependencies": {
     "@fontsource/ibm-plex-sans": "^5.2.8",
