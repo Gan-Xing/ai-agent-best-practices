@@ -317,8 +317,20 @@ async function attachSourcesToRecord(
 
     seenLinks.add(linkKey);
 
-    const link = await tx.knowledgeRecordSource.create({
-      data: {
+    const link = await tx.knowledgeRecordSource.upsert({
+      where: {
+        recordId_sourceId_role: {
+          recordId,
+          sourceId: source.id,
+          role,
+        },
+      },
+      update: {
+        quote: sourceInput.quote ?? null,
+        note: sourceInput.note ?? null,
+        metadata: sourceInput.metadata ?? Prisma.JsonNull,
+      },
+      create: {
         recordId,
         sourceId: source.id,
         role,

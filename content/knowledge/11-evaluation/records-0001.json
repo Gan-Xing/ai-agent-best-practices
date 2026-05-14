@@ -25,9 +25,9 @@
       "type": "PRACTICE",
       "categoryCode": "11",
       "visibility": "PUBLIC",
-      "status": "DRAFT",
-      "maturity": "SEED",
-      "freshness": "NEEDS_REVIEW",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
       "confidence": 0.84,
       "language": "zh",
       "title": "工具调用评测必须检查模型是否服从工具返回值",
@@ -97,8 +97,8 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "draft",
-        "sourceReviewedAt": "2026-05-13"
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-14"
       },
       "extensions": {
         "nextSteps": [
@@ -108,8 +108,8 @@
         ]
       },
       "publishedAt": "2026-05-13T00:00:00.000Z",
-      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
-      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-14T00:00:00.000Z",
       "translations": [],
       "aliases": [
         "工具结果服从",

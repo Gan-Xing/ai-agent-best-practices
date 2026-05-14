@@ -25,9 +25,9 @@
       "type": "PRACTICE",
       "categoryCode": "01",
       "visibility": "PUBLIC",
-      "status": "PUBLISHED",
+      "status": "ARCHIVED",
       "maturity": "REVIEWED",
-      "freshness": "FRESH",
+      "freshness": "STALE",
       "confidence": 0.86,
       "language": "zh",
       "title": "Postgres FTS 和向量搜索应该分工使用",
@@ -79,7 +79,8 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "reviewed"
+        "reviewStatus": "archived",
+        "sourceReviewedAt": "2026-05-14"
       },
       "extensions": {
         "nextSteps": [
@@ -89,8 +90,9 @@
         ]
       },
       "publishedAt": "2026-05-13T00:00:00.000Z",
-      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
       "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "archivedAt": "2026-05-14T00:00:00.000Z",
       "translations": [
         {
           "language": "en",
@@ -142,9 +144,9 @@
       "type": "EXPERIMENT",
       "categoryCode": "01",
       "visibility": "PUBLIC",
-      "status": "DRAFT",
-      "maturity": "SEED",
-      "freshness": "NEEDS_REVIEW",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
       "confidence": 0.72,
       "language": "zh",
       "title": "ToolCall-15 显示本地工具调用不是模型越大越稳",
@@ -208,8 +210,8 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "draft",
-        "sourceReviewedAt": "2026-05-13"
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-14"
       },
       "extensions": {
         "nextSteps": [
@@ -219,8 +221,8 @@
         ]
       },
       "publishedAt": "2026-05-13T00:00:00.000Z",
-      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
-      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-14T00:00:00.000Z",
       "translations": [],
       "aliases": [
         "ToolCall-15",
@@ -296,9 +298,9 @@
       "type": "PRACTICE",
       "categoryCode": "01",
       "visibility": "PUBLIC",
-      "status": "DRAFT",
-      "maturity": "SEED",
-      "freshness": "NEEDS_REVIEW",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
       "confidence": 0.74,
       "language": "zh",
       "title": "本地 agent 选模型要同时看 dense、MoE 和 active params",
@@ -380,8 +382,8 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "draft",
-        "sourceReviewedAt": "2026-05-13"
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-14"
       },
       "extensions": {
         "nextSteps": [
@@ -391,8 +393,8 @@
         ]
       },
       "publishedAt": "2026-05-13T00:00:00.000Z",
-      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
-      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-14T00:00:00.000Z",
       "translations": [],
       "aliases": [
         "active params",
@@ -499,9 +501,9 @@
       "type": "PRINCIPLE",
       "categoryCode": "01",
       "visibility": "PUBLIC",
-      "status": "DRAFT",
-      "maturity": "SEED",
-      "freshness": "NEEDS_REVIEW",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
       "confidence": 0.86,
       "language": "zh",
       "title": "模型架构结论必须区分公开披露和推断",
@@ -574,8 +576,8 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "draft",
-        "sourceReviewedAt": "2026-05-13"
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-14"
       },
       "extensions": {
         "nextSteps": [
@@ -585,8 +587,8 @@
         ]
       },
       "publishedAt": "2026-05-13T00:00:00.000Z",
-      "lastVerifiedAt": "2026-05-13T00:00:00.000Z",
-      "reviewAfter": "2026-08-13T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-14T00:00:00.000Z",
       "translations": [],
       "aliases": [
         "模型架构披露状态",
