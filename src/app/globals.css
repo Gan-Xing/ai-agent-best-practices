@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4eee2;
-  --foreground: #1f1711;
-  --surface: rgba(255, 253, 249, 0.72);
-  --surface-strong: #fffdf8;
-  --muted: #706456;
-  --line: rgba(135, 117, 91, 0.24);
-  --line-strong: rgba(95, 80, 59, 0.48);
-  --accent: #16615c;
-  --accent-strong: #0f4c48;
-  --accent-soft: rgba(22, 97, 92, 0.12);
-  --shadow: 0 32px 90px rgba(48, 36, 24, 0.12);
+  --background: #f3f6f8;
+  --foreground: #17202a;
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-strong: #ffffff;
+  --muted: #5d6a75;
+  --line: rgba(23, 32, 42, 0.1);
+  --line-strong: rgba(23, 32, 42, 0.2);
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --accent-soft: rgba(15, 118, 110, 0.1);
+  --shadow: 0 18px 48px rgba(15, 23, 42, 0.06);
 }
 
 @theme inline {
@@ -39,16 +39,13 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at top left, rgba(22, 97, 92, 0.14), transparent 24rem),
-    radial-gradient(circle at 82% 18%, rgba(199, 151, 81, 0.18), transparent 22rem),
-    linear-gradient(180deg, #fcf8ef 0%, #f3ecdf 100%);
+  background: linear-gradient(180deg, #f8fafb 0%, #f2f5f8 100%);
   color: var(--foreground);
   font-family: "IBM Plex Sans", sans-serif;
 }
 
 ::selection {
-  background: rgba(22, 97, 92, 0.18);
+  background: rgba(15, 118, 110, 0.16);
 }
 
 @keyframes rise-in {

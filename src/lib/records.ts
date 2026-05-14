@@ -1059,6 +1059,10 @@ function getListWhere(input: ListRecordsQuery): Prisma.KnowledgeRecordWhereInput
 
   if (input.status) {
     where.status = input.status;
+  } else {
+    where.status = {
+      not: "ARCHIVED",
+    };
   }
 
   if (input.type) {

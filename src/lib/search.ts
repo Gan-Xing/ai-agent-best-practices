@@ -16,6 +16,8 @@ type SearchRecordRow = {
   categoryName: string;
   categoryNameZh: string | null;
   status: string;
+  freshness: string;
+  confidence: number | null;
   visibility: string;
   updatedAt: Date;
   score: number;
@@ -47,6 +49,8 @@ function buildWhereClauses(input: SearchInput) {
 
   if (input.status) {
     clauses.push(Prisma.sql`kr."status" = ${input.status}`);
+  } else {
+    clauses.push(Prisma.sql`kr."status" <> 'ARCHIVED'`);
   }
 
   if (input.type) {
@@ -99,6 +103,8 @@ function buildSearchQuery(input: SearchInput) {
       c."name" AS "categoryName",
       c."nameZh" AS "categoryNameZh",
       kr."status"::text AS "status",
+      kr."freshness"::text AS "freshness",
+      kr."confidence",
       kr."visibility"::text AS "visibility",
       kr."updatedAt",
       ${scoreSql} AS "score",

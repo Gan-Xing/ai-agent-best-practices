@@ -8,6 +8,9 @@ type RecordPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams: Promise<{
+    from?: string | string[];
+  }>;
 };
 
 /* ---------- tiny JSON-safe helpers ---------- */
@@ -239,6 +242,12 @@ function formatDate(d: Date | string | null | undefined) {
   }).format(new Date(d));
 }
 
+function normalizeReturnHref(from: string | string[] | undefined) {
+  const raw = Array.isArray(from) ? from[0] ?? "" : from ?? "";
+  const normalized = new URLSearchParams(raw).toString();
+  return normalized ? `/?${normalized}` : "/";
+}
+
 /* ---------- data fetching ---------- */
 
 async function getRecordOrNotFound(slug: string) {
@@ -254,9 +263,14 @@ async function getRecordOrNotFound(slug: string) {
 
 /* ---------- page ---------- */
 
-export default async function RecordPage({ params }: RecordPageProps) {
+export default async function RecordPage({
+  params,
+  searchParams,
+}: RecordPageProps) {
   const { slug } = await params;
+  const { from } = await searchParams;
   const record = await getRecordOrNotFound(slug);
+  const backHref = normalizeReturnHref(from);
 
   const metadata = asRecord(record.metadata);
   const applicability = asRecord(record.applicability);
@@ -277,7 +291,7 @@ export default async function RecordPage({ params }: RecordPageProps) {
         {/* ── navigation & status bar ── */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
-            href={record.title ? `/?q=${encodeURIComponent(record.title)}` : "/"}
+            href={backHref}
             className="inline-flex items-center gap-2 rounded-full border border-line bg-white/70 px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-muted transition hover:border-line-strong hover:text-foreground"
           >
             <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 12 6 8l4-4" /></svg>
