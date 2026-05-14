@@ -695,6 +695,197 @@
           "note": "本次对话中用户提供的帖文主要内容和补充判断。"
         }
       ]
+    },
+    {
+      "slug": "local-qwen-27b-inference-optimization-should-follow-layered-path",
+      "externalKey": "kb-000006",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
+      "confidence": 0.82,
+      "language": "zh",
+      "title": "本地 Qwen 27B 推理优化应按量化、MTP、推测解码和 KV Cache 分层推进",
+      "summary": "本地大模型提速不应只看单个框架或单次峰值，而应按量化、MTP、DFlash/DDTree、KV Cache 量化逐层验证，并区分单请求速度和高并发吞吐。",
+      "body": "小天fotos 在 BV1ZyoXBHEp3 中实测了 Qwen3.6 27B 的本地推理优化路径。基础线是单卡 RTX 4090 以 FP8 运行约 20 token/s；第一层优化是量化，GGUF 或 AWQ 可把速度提升到约 45-48 token/s；第二层是 MTP，多 token 预测或投机解码路线中，AWQ + MTP n=5 约可到 108 token/s；双卡 4090 的价值更多体现在多 agent、多请求并发吞吐，而不是单条请求线性暴涨；更激进的 DFlash/DDTree 路线在作者测试中平均约 141 token/s、峰值约 184 token/s；最后 TurboQuant 这类 KV cache 量化更适合长上下文和 agent 场景。这个记录应作为本地模型性能优化路线参考，而不是固定性能承诺。",
+      "problem": "本地大模型性能优化容易被单个峰值数字误导。只记录 184 token/s 会忽略基础线、硬件、量化方式、并发模型、上下文长度和推测解码成熟度，导致 agent 系统选型时错误估计稳定吞吐。",
+      "recommendation": "评估本地 Qwen 27B 级模型时，应先建立 FP8 基线，再优先验证 AWQ/GGUF 量化，然后测试 MTP 或投机解码，最后再评估 DFlash/DDTree 这类激进路线。生产环境优先采用相对稳妥的 FP8 或 AWQ + vLLM + MTP，并把 DFlash/DDTree 标记为实验性优化。长上下文和 agent 场景应额外评估 KV cache 量化对显存和吞吐的影响。",
+      "metadata": {
+        "contentSource": "bilibili-video-summary",
+        "bvid": "BV1ZyoXBHEp3",
+        "ownerName": "小天fotos",
+        "durationSec": 1090,
+        "localPublishedDate": "2026-04-26",
+        "draftedFrom": "user-provided summary plus public Bilibili metadata probe"
+      },
+      "applicability": {
+        "audience": [
+          "local-llm-users",
+          "agent-builders",
+          "inference-optimization"
+        ],
+        "hardware": [
+          "RTX 4090",
+          "24GB VRAM class GPU"
+        ],
+        "useCases": [
+          "local agent runtime",
+          "single-user productivity",
+          "multi-agent concurrency testing"
+        ]
+      },
+      "compatibility": {
+        "models": [
+          "Qwen3.6 27B"
+        ],
+        "quantization": [
+          "FP8",
+          "GGUF",
+          "AWQ",
+          "TurboQuant"
+        ],
+        "decoding": [
+          "MTP",
+          "speculative decoding",
+          "DFlash",
+          "DDTree"
+        ],
+        "runtime": [
+          "vLLM"
+        ],
+        "notes": "Reported numbers are source-specific and should be re-benchmarked before production use."
+      },
+      "tradeoffs": {
+        "pros": [
+          "分层优化路径比单看峰值更可复现",
+          "量化和 MTP 是优先级更高、相对稳妥的提速步骤",
+          "DFlash/DDTree 提供极限单请求速度参考",
+          "KV cache 量化对长上下文 agent 场景有潜在价值"
+        ],
+        "cons": [
+          "DFlash/DDTree 成熟度不足，不适合直接默认生产化",
+          "单请求速度和高并发吞吐不是同一个指标",
+          "视频中的性能结果依赖硬件、框架版本和参数设置",
+          "24GB 显存卡在长上下文场景仍需要谨慎评估"
+        ]
+      },
+      "evidence": {
+        "basis": "Public Bilibili video metadata and user-provided technical summary.",
+        "reportedResults": {
+          "baselineFp8Single4090TokensPerSecond": 20,
+          "quantizedTokensPerSecondRange": "45-48",
+          "awqMtpN5TokensPerSecond": 108,
+          "dflashAverageTokensPerSecond": 141,
+          "dflashPeakTokensPerSecond": 184
+        },
+        "confidenceReason": "The metadata and optimization path are concrete, but benchmark numbers should be treated as source-reported and environment-dependent."
+      },
+      "metrics": {
+        "baselineSpeed": "20 token/s",
+        "quantizedSpeed": "45-48 token/s",
+        "mtpSpeed": "108 token/s",
+        "dflashAverageSpeed": "141 token/s",
+        "dflashPeakSpeed": "184 token/s",
+        "riskLevel": "medium",
+        "productionReadiness": "prefer AWQ/FP8 + vLLM + MTP; treat DFlash/DDTree as experimental"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "reviewed",
+        "needsRebenchmark": true,
+        "reviewNotes": "可在后续补充作者 repo 或原始 benchmark 配置。"
+      },
+      "extensions": {
+        "nextSteps": [
+          "补充同硬件复测结果",
+          "记录 vLLM/MTP 具体参数",
+          "区分单请求 latency 和多并发 throughput",
+          "后续可关联到本地 agent runtime 选型记录"
+        ],
+        "freshnessAutomation": {
+          "recommended": true,
+          "rule": "Keep new published records FRESH until reviewAfter, then automatically mark NEEDS_REVIEW if not reverified."
+        }
+      },
+      "publishedAt": "2026-05-14T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-12T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "本地大模型提速",
+        "Qwen 27B 优化",
+        "4090 跑大模型",
+        "投机解码",
+        "KV Cache 量化"
+      ],
+      "keywords": [
+        "Qwen3.6 27B",
+        "RTX 4090",
+        "20 token/s",
+        "184 token/s",
+        "AWQ",
+        "GGUF",
+        "MTP",
+        "DFlash",
+        "DDTree",
+        "TurboQuant",
+        "KV cache quantization",
+        "vLLM",
+        "speculative decoding",
+        "local LLM inference"
+      ],
+      "tags": [
+        "qwen",
+        "local-llm",
+        "inference-optimization",
+        "quantization",
+        "mtp",
+        "speculative-decoding",
+        "kv-cache",
+        "vllm"
+      ],
+      "relations": [],
+      "sources": [
+        {
+          "sourceKey": "bilibili:BV1ZyoXBHEp3",
+          "sourceType": "BILIBILI_VIDEO",
+          "uri": "https://www.bilibili.com/video/BV1ZyoXBHEp3/",
+          "title": "离谱，Qwen3.6 27B生成速度飙到184t/s,我是怎么做到的？",
+          "author": "小天fotos",
+          "publisher": "Bilibili",
+          "publishedAt": "2026-04-25T23:00:00.000Z",
+          "accessedAt": "2026-05-14T10:19:41.156Z",
+          "metadata": {
+            "bvid": "BV1ZyoXBHEp3",
+            "aid": 116466410066980,
+            "cid": 37825939917,
+            "durationSec": 1090,
+            "ownerMid": 28554995
+          },
+          "role": "PRIMARY",
+          "note": "Primary source video for the reported local inference optimization results."
+        },
+        {
+          "sourceKey": "youtube:edHNTFt5jYk",
+          "sourceType": "YOUTUBE_MIRROR",
+          "uri": "https://www.youtube.com/watch?v=edHNTFt5jYk",
+          "title": "Qwen3.6 27B optimization mirror",
+          "publisher": "YouTube",
+          "role": "REFERENCE",
+          "note": "User-supplied mirror used as supporting source for subtitle-based review."
+        },
+        {
+          "sourceKey": "blog:terrencemiao:qwen-3-6-27b-20-to-184-tps",
+          "sourceType": "TECHNICAL_NOTE",
+          "uri": "https://terrencemiao.github.io/blog/2026/04/26/Qwen-3-6-27B%EF%BC%8C%E5%A4%9A%E7%A7%8D%E4%BC%98%E5%8C%96%E6%96%B9%E5%BC%8C%E4%BB%8E-20t-s-%E9%A3%99%E5%88%B0-184t-s/",
+          "title": "Qwen 3.6 27B，多种优化方式，从 20t/s 飙到 184t/s",
+          "role": "REFERENCE",
+          "note": "User-supplied technical note for cross-checking the optimization path."
+        }
+      ]
     }
   ]
 }
