@@ -987,6 +987,568 @@
           "note": "用户在本次对话中提供，称为作者自己的 vLLM 配置；用于补充可复测参数，不等同于本机验证结果。"
         }
       ]
+    },
+    {
+      "slug": "llm-inference-hardware-sizing-should-separate-vram-bandwidth-concurrency-and-kv-cache",
+      "externalKey": "kb-000007",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "DRAFT",
+      "maturity": "SEED",
+      "freshness": "FRESH",
+      "confidence": 0.74,
+      "language": "zh",
+      "title": "大模型推理硬件选型要把显存容量、带宽、并发和 KV Cache 分开估算",
+      "summary": "这条记录基于公众号“AI实战笔记”的文章《大模型推理速度、显存带宽与显卡选型指南》整理，保留了显存、带宽、并发、KV Cache 和 GPU 选型里最能直接复用的工程经验。",
+      "body": "这条记录明确基于公众号“AI实战笔记”的文章《大模型推理速度、显存带宽与显卡选型指南》整理，目标不是保存原文，而是把其中最值得长期复用的经验值和判断逻辑留下来。 我保留了八部分内容。1. 参数与精度口径：参数量不等于显存占用，显存首先取决于精度；Dense 模型通常每步都激活全部参数，MoE 需要同时记录 total params 和 active params，不能只写一个“多少 B”。2. 推理阶段和用户体感：Prefill 更偏算力瓶颈，决定 TTFT；Decode 更偏显存带宽瓶颈，决定 TPOT 和流式输出速度。作者的关键提醒是，不要拿超大 SaaS 集群的 TTFT 目标来要求私有化部署。3. Decode 的带宽经验公式：单用户、低 batch 下，单流 tok/s 先用“显存带宽 ÷ 权重大小 × 0.7 到 0.85 利用率”做第一轮估算。文章里 7B FP16 和 4090 的例子说明，真实速度常常更接近带宽上限，而不是峰值 TFLOPS 推出来的数字。4. 总显存组成：总显存至少拆成权重、KV Cache、激活值、框架开销四部分，第一轮估算可先用“权重 × 1.2 + 并发数 × 上下文长度 × 单 token KV”。这条经验最实用的地方在于，它会逼着人把 KV Cache 真正算进去。5. KV Cache 的工程意义：长上下文和高并发时，先炸的可能不是模型权重，而是缓存；也就是说，能装下模型不等于能支撑业务场景。作者举这一点是为了纠正“模型都能放进去所以肯定能跑”的误判。6. 需求反推硬件的方法：先问清四个输入，模型规模 P、目标单用户输出速度 T、峰值并发 N、最大上下文长度 L；然后按三步做显存、带宽、Prefill 校验。这比直接按在线人数或模型名拍硬件靠谱得多。7. 量化和 serving 路线：Hopper 这一代优先看 FP8；Blackwell 再系统考虑 NVFP4/MXFP4；显存紧张时 INT4、AWQ、GPTQ 仍然现实。真正上生产时，默认优先 vLLM、SGLang、TensorRT-LLM，而不是调试路径。8. 容易踩坑的结论：MoE 省的是算力，不是显存；消费卡可以做验证和原型，但企业生产还要补看 NVLink、ECC、驱动许可、散热噪音和长期稳定性。整体上，我保留的是这位作者在工程选型上的判断顺序、经验公式、约束边界和踩坑提醒，删掉的是公众号文章常见的铺垫、互动文案和那些离开测试条件就容易被误抄的细碎表格描述。",
+      "problem": "很多 GPU 选型讨论只看“模型多少 B”“显卡多少 TFLOPS”或某次 benchmark 峰值，忽略了 Decode 带宽瓶颈、KV Cache 膨胀、并发稀释效应以及 Dense/MoE 的口径差异，最终容易报出能启动但体验差、或单用户很快但并发就崩的配置。",
+      "recommendation": "在做大模型推理选型时，先把需求写成 P、T、N、L 四个输入；先算权重显存，再算 KV Cache，再用显存带宽估单流 Decode 上限，最后再补 Prefill 算力和框架优化项。把文章中的经验值当成第一轮容量规划和采购筛选依据，再在目标模型、量化格式、serving 框架、上下文长度和并发分布下做本地复测。对生产环境，优先用企业或数据中心卡做正式方案，把消费卡定位成原型验证或成本敏感测试平台。",
+      "metadata": {
+        "contentSource": "user-pasted-article-plus-source-check",
+        "draftedFrom": "conversation",
+        "sourcePublication": "公众号 AI实战笔记",
+        "sourceArticleTitle": "大模型推理速度、显存带宽与显卡选型指南",
+        "attributionLabel": "公众号 AI实战笔记",
+        "attributionNote": "Public attribution preserved at the WeChat public-account level because a stable personal byline was not confirmed from public web results during this turn.",
+        "sourceDate": "2026-05",
+        "emphasis": "engineering heuristics over exact benchmark guarantees"
+      },
+      "applicability": {
+        "audience": [
+          "local-llm-users",
+          "inference-engineers",
+          "hardware-selectors",
+          "private-deployment-planners"
+        ],
+        "projectStage": [
+          "capacity-planning",
+          "pilot",
+          "production"
+        ],
+        "scenario": [
+          "local-deployment",
+          "private-inference",
+          "gpu-sizing"
+        ]
+      },
+      "compatibility": {
+        "models": [
+          "dense LLMs",
+          "MoE LLMs"
+        ],
+        "runtimes": [
+          "vLLM",
+          "SGLang",
+          "TensorRT-LLM"
+        ],
+        "hardware": [
+          "consumer GPUs",
+          "NVIDIA datacenter GPUs"
+        ],
+        "focusAreas": [
+          "weight memory",
+          "KV cache",
+          "memory-bandwidth-bound decode",
+          "prefill vs decode",
+          "quantization"
+        ],
+        "notes": "The heuristics are most useful for first-pass sizing and should be re-benchmarked on the exact model, precision, context length, concurrency mix, and serving stack."
+      },
+      "tradeoffs": {
+        "pros": [
+          "比只看参数量或峰值算力更贴近真实部署瓶颈",
+          "能把显存、带宽、并发和上下文几个维度拆开讨论",
+          "适合作为采购初筛和方案沟通口径",
+          "对 Dense、MoE、长上下文和量化路线都有可执行提醒"
+        ],
+        "cons": [
+          "文章里的很多数值是经验值或内部实测，不能直接当 SLA",
+          "具体 tok/s 与 TTFT 仍会随框架、kernel、量化和上下文而波动",
+          "硬件产品线和推理框架迭代很快，需要定期复查",
+          "如果不做目标环境复测，容易把经验公式误当成确定性能"
+        ]
+      },
+      "evidence": {
+        "basis": "User-pasted long-form article plus source checks against public serving papers, official model cards, vLLM documentation, and official or primary-source hardware/precision references.",
+        "confidenceReason": "The article's main value lies in its practical heuristics, which align with public explanations of prefill/decode asymmetry, KV cache growth, and serving optimizations even though many numeric tables remain environment-dependent.",
+        "sourceAttribution": "公众号 AI实战笔记，《大模型推理速度、显存带宽与显卡选型指南》",
+        "coreHeuristics": [
+          "single-user decode often scales with memory bandwidth more than peak FLOPS",
+          "total inference memory should include weight, KV cache, activation/headroom, and framework overhead",
+          "capacity planning should start from P, T, N, L instead of user count or model name alone",
+          "MoE memory planning should not use active params as a substitute for total deployed weights"
+        ],
+        "caveat": "Specific benchmark tables and card-by-card comparisons should be treated as planning references, not portable guarantees."
+      },
+      "metrics": {
+        "singleUserDecodeHeuristic": "tokens/s ≈ memory bandwidth / model weight size × 0.7-0.85",
+        "memorySizingHeuristic": "total VRAM ≈ weight × 1.2 + concurrency × context × per-token KV",
+        "selectionInputs": [
+          "P model params",
+          "T target single-user tok/s",
+          "N peak concurrency",
+          "L max context"
+        ],
+        "selectionChecks": [
+          "memory fit",
+          "decode bandwidth",
+          "prefill compute"
+        ],
+        "moeRuleOfThumb": "memory by total params; compute by active params; bandwidth benefit depends on scheduling and runtime optimization",
+        "operationalRisk": "medium-high if copied without local benchmarking"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "draft",
+        "sourceReviewedAt": "2026-05-14",
+        "note": "This record intentionally preserves engineering heuristics from a practitioner article rather than collapsing them into only source-verified hard facts."
+      },
+      "extensions": {
+        "savedHighlights": [
+          "来源明确标注为公众号 AI实战笔记 的《大模型推理速度、显存带宽与显卡选型指南》",
+          "参数量、显存占用、active params 必须分开记",
+          "Prefill 看算力，Decode 看带宽，TTFT 和 TPOT不要混",
+          "单用户 decode 先用带宽除以权重大小估上限",
+          "总显存必须把 KV Cache 算进去，长上下文时它可能比权重更大",
+          "选型前先问清 P、T、N、L，再做显存、带宽、Prefill 三步校验",
+          "MoE 省算力不省显存，消费卡可验证但不等于生产方案"
+        ],
+        "discardedContent": [
+          "公众号式开场和互动文案",
+          "离开测试条件就容易被误用的细碎 benchmark 表述",
+          "不影响选型判断的铺垫性解释"
+        ],
+        "nextSteps": [
+          "根据常用模型尺寸补一版 7B 到 70B 的内部速查表",
+          "把 H20、H200、4090、5090 等常见卡型拆成单独记录",
+          "后续补入你们自己实测的 tok/s、TTFT、TPOT 和并发曲线",
+          "可以再拆一条专门讲 KV Cache 和长上下文成本"
+        ],
+        "followupTopics": [
+          "speculative decoding",
+          "MTP",
+          "PD disaggregation",
+          "FP4 vs FP8",
+          "consumer-vs-datacenter GPU policy"
+        ]
+      },
+      "publishedAt": "2026-05-14T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-14T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "GPU 选型",
+        "推理带宽公式",
+        "KV Cache 估算",
+        "TTFT 和 TPOT",
+        "MoE 显存估算"
+      ],
+      "keywords": [
+        "LLM inference sizing",
+        "GPU selection",
+        "memory bandwidth",
+        "KV Cache",
+        "TTFT",
+        "TPOT",
+        "Prefill",
+        "Decode",
+        "MoE",
+        "FP8",
+        "INT4",
+        "NVFP4",
+        "MXFP4",
+        "H100",
+        "H200",
+        "H20",
+        "RTX 4090",
+        "RTX 5090",
+        "vLLM",
+        "SGLang",
+        "TensorRT-LLM",
+        "PagedAttention",
+        "continuous batching",
+        "DistServe",
+        "Mooncake"
+      ],
+      "tags": [
+        "inference-sizing",
+        "gpu-selection",
+        "memory-bandwidth",
+        "kv-cache",
+        "prefill-decode",
+        "moe",
+        "quantization",
+        "vllm",
+        "private-deployment"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000006",
+          "relationType": "COMPLEMENTS",
+          "strength": 0.72,
+          "description": "这条记录提供更通用的显存、带宽、并发和 GPU 选型框架，可作为本地 Qwen 27B 提速记录的上位容量规划背景。",
+          "metadata": {
+            "reason": "general-sizing-to-concrete-qwen-example"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "content/knowledge/01-models/records-0001.json#kb-000007",
+          "sourceType": "GITHUB_JSON",
+          "title": "大模型推理硬件选型要把显存容量、带宽、并发和 KV Cache 分开估算",
+          "role": "PRIMARY",
+          "note": "Record-level canonical source."
+        },
+        {
+          "sourceKey": "chat:2026-05-14:ai-practice-note-llm-inference-hardware-sizing",
+          "sourceType": "CHAT",
+          "title": "用户粘贴的“大模型推理速度、显存带宽与显卡选型指南”全文",
+          "author": "Gan-Xing",
+          "publisher": "公众号 AI实战笔记",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "用户提供的原始文章文本，来源明确为公众号“AI实战笔记”；当前归档先保留公众号级署名。"
+        },
+        {
+          "sourceKey": "url:kipply:transformer-inference-arithmetic",
+          "sourceType": "URL",
+          "uri": "https://kipply.github.io/blog/transformer-inference-arithmetic/",
+          "title": "Transformer Inference Arithmetic",
+          "author": "Kipply",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 decode 受显存带宽约束和推理算术的基础解释。"
+        },
+        {
+          "sourceKey": "paper:mlsys2023:efficiently-scaling-transformer-inference",
+          "sourceType": "PAPER",
+          "uri": "https://proceedings.mlsys.org/paper_files/paper/2023/file/c4be71ab8d24cdfb45e3d06dbfca2780-Paper-mlsys2023.pdf",
+          "title": "Efficiently Scaling Transformer Inference",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑权重加载、KV cache 和跨卡通信等推理成本分析。"
+        },
+        {
+          "sourceKey": "url:vllm:welcome",
+          "sourceType": "URL",
+          "uri": "https://docs.vllm.ai/en/v0.5.3.post1/index.html",
+          "title": "Welcome to vLLM!",
+          "publisher": "vLLM",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 PagedAttention、continuous batching、OpenAI-compatible serving 和量化路线。"
+        },
+        {
+          "sourceKey": "paper:osdi2024:distserve",
+          "sourceType": "PAPER",
+          "uri": "https://arxiv.org/abs/2401.09670",
+          "title": "DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 TTFT/TPOT 分离和 Prefill/Decode 资源解耦的工程方向。"
+        },
+        {
+          "sourceKey": "paper:arxiv:2407.00079:mooncake",
+          "sourceType": "PAPER",
+          "uri": "https://arxiv.org/abs/2407.00079",
+          "title": "Mooncake: A KVCache-centric Disaggregated Architecture for LLM Serving",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑长上下文、KV cache 导向的 serving 架构参考。"
+        },
+        {
+          "sourceKey": "url:qwen:qwen3-6-35b-a3b-model-card",
+          "sourceType": "URL",
+          "uri": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B",
+          "title": "Qwen3.6-35B-A3B model card",
+          "publisher": "Hugging Face",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 Qwen3.6 系列部署建议、MTP serving 示例和超长上下文设置。"
+        },
+        {
+          "sourceKey": "url:zai:glm-5-overview",
+          "sourceType": "URL",
+          "uri": "https://docs.z.ai/guides/llm/glm-5",
+          "title": "GLM-5 overview",
+          "publisher": "Z.AI",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 GLM 级 MoE 模型的参数规模、active params 和上下文口径。"
+        },
+        {
+          "sourceKey": "url:ocp:mxfp4-spec",
+          "sourceType": "URL",
+          "uri": "https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf",
+          "title": "OCP Microscaling Formats (MX) Specification",
+          "publisher": "Open Compute Project",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 MXFP4 的块缩放与格式定义。"
+        },
+        {
+          "sourceKey": "url:nvidia:nvfp4-blog",
+          "sourceType": "URL",
+          "uri": "https://developer.nvidia.com/blog/?p=102000",
+          "title": "Introducing NVFP4 for Efficient and Accurate Low-Precision Inference",
+          "publisher": "NVIDIA",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑 NVFP4 与 MXFP4 的精度和缩放差异。"
+        },
+        {
+          "sourceKey": "url:nvidia:geforce-license",
+          "sourceType": "URL",
+          "uri": "https://www.nvidia.com/en-gb/drivers/geforce-license/",
+          "title": "License for Customer use of GeForce Software",
+          "publisher": "NVIDIA",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于支撑消费级 GeForce 软件许可不面向数据中心部署的提醒。"
+        }
+      ]
+    },
+    {
+      "slug": "gpu-sizing-quick-reference-for-7b-14b-27b-32b-and-70b-llms",
+      "externalKey": "kb-000008",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "DRAFT",
+      "maturity": "SEED",
+      "freshness": "FRESH",
+      "confidence": 0.76,
+      "language": "zh",
+      "title": "7B/14B/27B/32B/70B 大模型 GPU 选型速查表应按精度、显存和带宽分档",
+      "summary": "这条速查表基于公众号“AI实战笔记”的《大模型推理速度、显存带宽与显卡选型指南》拆出，按 7B、14B、27B、32B、70B 五档整理出更适合本地和私有化部署的显存、卡型和场景判断。",
+      "body": "这条速查表基于公众号“AI实战笔记”的《大模型推理速度、显存带宽与显卡选型指南》拆出，目标是把长文里的判断压缩成能直接查的选型表。 先说明口径：这里优先按 Dense 模型估算；MoE 不能直接拿 total params 对齐到同尺寸 Dense。权重显存先按参数量乘精度字节数粗算，真正部署还要额外留 KV Cache、激活值和框架余量。下面是更适合快速决策的五档。 1. 7B：FP16 权重大约 14 GB，INT4/AWQ 大约 4 到 5 GB。24GB 卡已经很舒服，4090、3090、A10 这类卡都能做本地开发；如果只是个人或小团队单模型问答，7B 是最不容易踩坑的起步档。若追求更高并发或更稳定企业部署，再看 L40S、H20 这种高带宽卡。文章里用 4090 举例时给出的单流体验量级大约在 50 到 80 tok/s，这一档通常先受带宽而不是算力限制。 2. 14B：FP16 权重大约 28 GB，INT4/AWQ 大约 7 到 8 GB。24GB 卡跑量化版通常没问题，32GB 卡会更从容；如果想要 FP16 或更长上下文，最好直接上 32GB 以上或数据中心卡。14B 是“质量明显高于 7B，但还没进入重资产部署”的甜点位，适合预算敏感型内部助手。 3. 27B：FP16 权重大约 54 GB，INT4/AWQ 大约 13.5 到 16 GB。24GB 消费卡已经可以跑量化版，所以 4090/5090 很适合本地验证和单人使用；但如果要稳定私有化，尤其是并发、长上下文、工具调用链路都要兼顾，H20、H100 80G、H200 141G 这类卡更像正式方案。27B 是文章里讨论最集中的档位，它的现实意义是：性能和效果已经足够做很多内部生产力任务，但硬件选择必须把“能跑”和“好用”分开。 4. 32B：FP16 权重大约 64 GB，INT4/AWQ 大约 16 到 20 GB。5090 32GB 或 4090 24GB 跑量化版通常可以作为个人和实验平台；如果要 FP16、FP8 或较大上下文，还是要看 80GB 级卡。32B 是很多团队私有化部署时很容易选到的档位，因为它比 70B 便宜得多，但如果量化得当，效果往往已经足以覆盖知识库问答、代码辅助和内部办公 agent。 5. 70B：FP16 权重大约 140 GB，INT4/AWQ 大约 35 到 40 GB。这个档位不应该按“单卡能不能点亮”思考，而应按“多卡、互联、并发、运维成本”思考。理论上 H200 141GB 接近能装下 FP16 权重，但实际还要给 KV Cache 和框架留空间，所以真实生产依然更常见多卡或量化方案。两张或更多消费卡跑 70B 量化版可以做学习和验证，但不应直接等同于企业生产方案。 这张表真正想保留的判断顺序是：7B 和 14B 更像低风险起步档，27B 和 32B 是当前最常见的本地/私有化甜点位，70B 开始进入“硬件拓扑和运维成本比模型名字更重要”的区间。 如果只是想快速拍板，可以按这个顺序走：个人本地验证优先看 24GB 到 32GB 消费卡配量化；小团队私有化以 27B/32B 量化为主，正式环境优先 H20/L40S/H100/H200；70B 除非业务明确需要，否则先证明 27B/32B 不够，再考虑多卡和更高运维复杂度。",
+      "problem": "很多人会直接问“某某模型能不能在某张卡上跑”，但真正影响决策的不只是能不能启动，还包括精度、显存余量、KV Cache、单流输出速度、并发和是否打算上生产；缺少一张按模型尺寸分档的速查表时，很容易在 27B、32B 和 70B 这些临界档位误判成本和体验。",
+      "recommendation": "把 7B、14B、27B、32B、70B 作为第一层决策分档，先看权重显存和量化后能否落在 24GB、32GB、48GB、80GB、96GB、141GB 这些常见显存档位，再结合是否需要长上下文、峰值并发、正式生产、NVLink 和 ECC 来决定是消费卡验证、工作站卡过渡，还是直接上数据中心卡。",
+      "metadata": {
+        "contentSource": "derived-quick-reference-from-public-account-article",
+        "draftedFrom": "kb-000007",
+        "sourcePublication": "公众号 AI实战笔记",
+        "sourceArticleTitle": "大模型推理速度、显存带宽与显卡选型指南",
+        "attributionLabel": "公众号 AI实战笔记",
+        "sourceDate": "2026-05",
+        "format": "quick-reference-table"
+      },
+      "applicability": {
+        "audience": [
+          "local-llm-users",
+          "inference-engineers",
+          "it-purchasers",
+          "private-deployment-planners"
+        ],
+        "projectStage": [
+          "pre-sales-sizing",
+          "capacity-planning",
+          "pilot",
+          "production"
+        ],
+        "scenario": [
+          "model-size-screening",
+          "gpu-sizing",
+          "local-and-private-deployment"
+        ]
+      },
+      "compatibility": {
+        "modelClasses": [
+          "7B dense",
+          "14B dense",
+          "27B dense",
+          "32B dense",
+          "70B dense"
+        ],
+        "gpuTiers": [
+          "24GB consumer",
+          "32GB consumer",
+          "48GB workstation",
+          "80GB datacenter",
+          "96GB datacenter",
+          "141GB datacenter"
+        ],
+        "deploymentModes": [
+          "local validation",
+          "small-team private deployment",
+          "formal production"
+        ],
+        "notes": "This quick reference is intended for first-pass deployment sizing. MoE models, very long contexts, and high concurrency should be re-estimated separately."
+      },
+      "tradeoffs": {
+        "pros": [
+          "把长文经验压缩成按模型尺寸分档的可查表",
+          "能快速区分本地验证、私有化试点和正式生产三种口径",
+          "对 27B/32B/70B 这些常见临界档位更容易做预算判断",
+          "保留了公众号文章最有用的工程经验而不是只抄参数表"
+        ],
+        "cons": [
+          "14B 和 32B 的部分结论是基于同一套经验公式外推，不是逐卡实测",
+          "单流 tok/s 和并发表现仍会受框架、量化和上下文长度影响",
+          "这张表不适合直接套到 MoE 或超长上下文服务",
+          "消费卡是否适用生产还要结合许可、ECC、互联和维护策略"
+        ]
+      },
+      "evidence": {
+        "basis": "Derived from the public-account article supplied by the user and the sizing heuristics already captured in kb-000007.",
+        "confidenceReason": "The per-tier recommendations are grounded in the article's engineering logic on weight size, KV cache, decode bandwidth, and deployment tradeoffs, with some interpolation added for 14B and 32B classes.",
+        "sourceAttribution": "公众号 AI实战笔记，《大模型推理速度、显存带宽与显卡选型指南》",
+        "caveat": "Use as a screening table, then re-benchmark the target model and runtime on the actual hardware."
+      },
+      "metrics": {
+        "assumptions": [
+          "dense-model-first heuristic",
+          "weights estimated before large-context KV cache inflation",
+          "single-model serving unless otherwise stated"
+        ],
+        "quickReferenceRows": [
+          {
+            "modelClass": "7B",
+            "fp16WeightGb": 14,
+            "int4OrAwqWeightGb": "4-5",
+            "localDefault": "24GB consumer GPU is comfortable",
+            "productionBias": "L40S or H20 if concurrency and stability matter",
+            "fitSummary": "easy starter tier"
+          },
+          {
+            "modelClass": "14B",
+            "fp16WeightGb": 28,
+            "int4OrAwqWeightGb": "7-8",
+            "localDefault": "24GB quantized or 32GB for more headroom",
+            "productionBias": "32GB+ or datacenter card if using longer contexts",
+            "fitSummary": "budget-friendly quality step-up from 7B"
+          },
+          {
+            "modelClass": "27B",
+            "fp16WeightGb": 54,
+            "int4OrAwqWeightGb": "13.5-16",
+            "localDefault": "24GB consumer card works well for quantized local use",
+            "productionBias": "H20, H100 80G, or H200 for formal private deployment",
+            "fitSummary": "common local/private sweet spot"
+          },
+          {
+            "modelClass": "32B",
+            "fp16WeightGb": 64,
+            "int4OrAwqWeightGb": "16-20",
+            "localDefault": "5090 32GB or 4090 24GB with quantization",
+            "productionBias": "80GB-class datacenter card if avoiding aggressive quantization",
+            "fitSummary": "strong private-deployment sweet spot"
+          },
+          {
+            "modelClass": "70B",
+            "fp16WeightGb": 140,
+            "int4OrAwqWeightGb": "35-40",
+            "localDefault": "multi-consumer-card experimentation only",
+            "productionBias": "multi-card or large-memory datacenter deployment",
+            "fitSummary": "operations and topology dominate"
+          }
+        ],
+        "decisionRules": [
+          "24GB cards are strongest when paired with quantized 7B/14B/27B/32B deployments",
+          "27B and 32B are the most practical current sweet spots for many internal assistants",
+          "70B should be treated as a topology and operations problem, not only a weight-fit problem"
+        ],
+        "riskLevel": "medium"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "draft",
+        "sourceReviewedAt": "2026-05-14",
+        "note": "Quick-reference derivative record created from the public-account article and the more general sizing note in kb-000007."
+      },
+      "extensions": {
+        "savedHighlights": [
+          "7B 和 14B 适合作为低风险起步档",
+          "27B 和 32B 是当前本地与私有化部署最值得优先验证的甜点位",
+          "70B 开始更像多卡拓扑和运维问题，而不是单纯的能不能装下",
+          "24GB 到 32GB 消费卡最适合量化版本地验证",
+          "正式生产要把消费卡口径和数据中心卡口径分开"
+        ],
+        "nextSteps": [
+          "后续把 7B 到 70B 每档再补成单流速度和上下文风险对照表",
+          "可以再拆一条 MoE 专用速查表，避免和 Dense 档位混用",
+          "若积累了本地 benchmark，可把 H20/H100/H200/4090/5090 的实测值补进去"
+        ],
+        "derivedFrom": [
+          "kb-000007"
+        ]
+      },
+      "publishedAt": "2026-05-14T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-14T00:00:00.000Z",
+      "reviewAfter": "2026-08-14T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "7B 选卡",
+        "27B 选卡",
+        "32B 选卡",
+        "70B 选卡",
+        "GPU 速查表"
+      ],
+      "keywords": [
+        "7B GPU sizing",
+        "14B GPU sizing",
+        "27B GPU sizing",
+        "32B GPU sizing",
+        "70B GPU sizing",
+        "H20",
+        "H100",
+        "H200",
+        "RTX 4090",
+        "RTX 5090",
+        "AWQ",
+        "INT4",
+        "private deployment",
+        "local LLM"
+      ],
+      "tags": [
+        "gpu-selection",
+        "quick-reference",
+        "model-sizing",
+        "quantization",
+        "private-deployment",
+        "local-llm"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000007",
+          "relationType": "DERIVED_FROM",
+          "strength": 0.88,
+          "description": "这条记录把公众号文章中更通用的推理选型经验拆成了 7B 到 70B 的速查表版本，方便后续检索和预估。",
+          "metadata": {
+            "reason": "quick-reference-derived-from-general-sizing-note"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "content/knowledge/01-models/records-0001.json#kb-000008",
+          "sourceType": "GITHUB_JSON",
+          "title": "7B/14B/27B/32B/70B 大模型 GPU 选型速查表应按精度、显存和带宽分档",
+          "role": "PRIMARY",
+          "note": "Record-level canonical source."
+        },
+        {
+          "sourceKey": "chat:2026-05-14:ai-practice-note-llm-inference-hardware-sizing",
+          "sourceType": "CHAT",
+          "title": "用户粘贴的“大模型推理速度、显存带宽与显卡选型指南”全文",
+          "author": "Gan-Xing",
+          "publisher": "公众号 AI实战笔记",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "role": "EVIDENCE",
+          "note": "用户提供的原始文章文本，来源明确为公众号“AI实战笔记”；这张速查表从该文中拆出。"
+        },
+        {
+          "sourceKey": "content:kb-000007",
+          "sourceType": "GITHUB_JSON",
+          "title": "大模型推理硬件选型要把显存容量、带宽、并发和 KV Cache 分开估算",
+          "role": "REFERENCE",
+          "note": "作为这张速查表的上位经验记录，用于复用显存、带宽和容量规划口径。"
+        }
+      ]
     }
   ]
 }
