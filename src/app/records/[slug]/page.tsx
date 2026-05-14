@@ -84,6 +84,29 @@ const FIELD_LABELS: Record<string, string> = {
   reviewStatus: "审核状态",
   sourceReviewedAt: "来源审核时间",
   nextSteps: "后续步骤",
+  runtimeConfigSource: "运行配置来源",
+  vllmServeExample: "vLLM Serve 示例",
+  commandLines: "命令行",
+  command: "命令",
+  env: "环境变量",
+  runner: "运行方式",
+  servedModelName: "服务模型名",
+  port: "端口",
+  speculativeConfig: "推测解码配置",
+  method: "方法",
+  numSpeculativeTokens: "推测 token 数",
+  maxNumSeqs: "最大并发序列",
+  maxModelLen: "最大上下文",
+  enablePrefixCaching: "启用前缀缓存",
+  gpuMemoryUtilization: "GPU 显存利用率",
+  reasoningParser: "推理解析器",
+  enableAutoToolChoice: "启用自动工具选择",
+  toolCallParser: "工具调用解析器",
+  modelDistribution: "模型分发",
+  inferenceBackends: "推理后端",
+  parsers: "解析器",
+  authorVllmServeConfig: "作者 vLLM 配置",
+  interpretation: "解释",
 };
 
 function friendlyLabel(key: string): string {
@@ -92,16 +115,16 @@ function friendlyLabel(key: string): string {
 
 /* ---------- source type helpers ---------- */
 
-const SOURCE_STYLE: Record<string, { icon: string; color: string }> = {
-  PAPER: { icon: "📄", color: "border-indigo-200 bg-indigo-50/50" },
-  REPOSITORY: { icon: "📦", color: "border-cyan-200 bg-cyan-50/50" },
-  URL: { icon: "🔗", color: "border-amber-200 bg-amber-50/50" },
-  CHAT: { icon: "💬", color: "border-pink-200 bg-pink-50/50" },
-  GITHUB_JSON: { icon: "📁", color: "border-emerald-200 bg-emerald-50/50" },
+const SOURCE_STYLE: Record<string, { label: string; color: string }> = {
+  PAPER: { label: "DOC", color: "border-indigo-200 bg-indigo-50/50" },
+  REPOSITORY: { label: "REPO", color: "border-cyan-200 bg-cyan-50/50" },
+  URL: { label: "URL", color: "border-amber-200 bg-amber-50/50" },
+  CHAT: { label: "CHAT", color: "border-pink-200 bg-pink-50/50" },
+  GITHUB_JSON: { label: "JSON", color: "border-emerald-200 bg-emerald-50/50" },
 };
 
 function sourceStyle(type: string) {
-  return SOURCE_STYLE[type] ?? { icon: "📎", color: "border-line bg-background/60" };
+  return SOURCE_STYLE[type] ?? { label: "SRC", color: "border-line bg-background/60" };
 }
 
 /* ---------- shared UI primitives ---------- */
@@ -110,15 +133,17 @@ function Section({
   title,
   children,
   id,
+  className,
 }: Readonly<{
   title: string;
   children: React.ReactNode;
   id?: string;
+  className?: string;
 }>) {
   return (
     <section
       id={id}
-      className="rounded-[1.5rem] border border-line bg-surface px-5 py-5 shadow-[var(--shadow)]"
+      className={`break-inside-avoid rounded-[1.5rem] border border-line bg-surface px-5 py-5 shadow-[var(--shadow)] ${className ?? ""}`}
     >
       <h2 className="font-mono text-xs uppercase tracking-[0.28em] text-muted">
         {title}
@@ -194,7 +219,7 @@ function KeyValueRow({ label, children }: { label: string; children: React.React
   return (
     <div className="flex justify-between gap-4">
       <dt className="shrink-0 text-muted">{label}</dt>
-      <dd className="text-right">{children}</dd>
+      <dd className="min-w-0 break-words text-right">{children}</dd>
     </div>
   );
 }
@@ -210,24 +235,229 @@ function TagGroup({ items, variant = "default" }: { items: string[]; variant?: "
   );
 }
 
-/** Render a JSON object with friendly labels instead of raw keys */
+function isJsonObject(value: JsonValue): value is Record<string, JsonValue> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isScalar(value: JsonValue): value is string | number | boolean | null {
+  return value === null || ["string", "number", "boolean"].includes(typeof value);
+}
+
+function scalarText(value: string | number | boolean | null) {
+  if (value === null) return "—";
+  if (typeof value === "boolean") return value ? "true" : "false";
+  return String(value);
+}
+
+function isCommandField(key: string) {
+  const normalized = key.toLowerCase();
+  return (
+    normalized.includes("command") ||
+    normalized.includes("cli") ||
+    normalized.includes("shell")
+  );
+}
+
+function looksLikeCommandLine(value: string) {
+  const trimmed = value.trim();
+  return (
+    trimmed.startsWith("--") ||
+    trimmed.startsWith("uv ") ||
+    trimmed.startsWith("vllm ") ||
+    trimmed.includes(" vllm ") ||
+    /^[-_A-Z0-9]+=.*/.test(trimmed)
+  );
+}
+
+function commandTextForValue(fieldKey: string, value: JsonValue) {
+  if (typeof value === "string") {
+    if (isCommandField(fieldKey) || value.includes("\n")) {
+      return value;
+    }
+    return null;
+  }
+
+  if (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((item) => typeof item === "string")
+  ) {
+    const lines = value as string[];
+    if (isCommandField(fieldKey) || lines.some(looksLikeCommandLine)) {
+      return lines.join("\n");
+    }
+  }
+
+  return null;
+}
+
+function CommandBlock({
+  label,
+  command,
+}: Readonly<{
+  label: string;
+  command: string;
+}>) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-800 bg-[#101820] text-slate-100 shadow-[0_18px_50px_rgba(15,23,42,0.18)]">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-white/[0.03] px-4 py-2">
+        <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-slate-300">
+          {label}
+        </span>
+        <span className="rounded-full border border-white/10 px-2 py-0.5 font-mono text-[10px] text-slate-400">
+          shell
+        </span>
+      </div>
+      <pre className="max-h-[28rem] overflow-x-auto whitespace-pre p-4 text-xs leading-6">
+        <code>{command}</code>
+      </pre>
+    </div>
+  );
+}
+
+function ConfigTile({
+  label,
+  value,
+}: Readonly<{
+  label: string;
+  value: JsonValue | undefined;
+}>) {
+  if (value === undefined || !isScalar(value)) return null;
+  return (
+    <div className="rounded-lg border border-line/60 bg-white/70 px-3 py-2">
+      <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted">
+        {label}
+      </p>
+      <p className="mt-1 break-words font-mono text-xs text-foreground">
+        {scalarText(value)}
+      </p>
+    </div>
+  );
+}
+
+function RuntimeConfigCard({ data }: { data: Record<string, JsonValue> }) {
+  const env = isJsonObject(data.env) ? data.env : null;
+  const speculativeConfig = isJsonObject(data.speculativeConfig)
+    ? data.speculativeConfig
+    : null;
+  const command = commandTextForValue("commandLines", data.commandLines);
+
+  return (
+    <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+      <div className="grid gap-2 sm:grid-cols-2">
+        <ConfigTile label="模型" value={data.model} />
+        <ConfigTile label="运行方式" value={data.runner} />
+        <ConfigTile label="服务模型名" value={data.servedModelName} />
+        <ConfigTile label="端口" value={data.port} />
+        <ConfigTile label="最大并发序列" value={data.maxNumSeqs} />
+        <ConfigTile label="最大上下文" value={data.maxModelLen} />
+        <ConfigTile label="GPU 显存利用率" value={data.gpuMemoryUtilization} />
+        <ConfigTile label="推理解析器" value={data.reasoningParser} />
+        <ConfigTile label="工具调用解析器" value={data.toolCallParser} />
+        <ConfigTile label="自动工具选择" value={data.enableAutoToolChoice} />
+        <ConfigTile label="前缀缓存" value={data.enablePrefixCaching} />
+      </div>
+
+      {env ? (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            环境变量
+          </p>
+          <SmartJsonSection data={env} />
+        </div>
+      ) : null}
+
+      {speculativeConfig ? (
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            推测解码
+          </p>
+          <SmartJsonSection data={speculativeConfig} />
+        </div>
+      ) : null}
+
+      {command ? <CommandBlock label="vLLM Serve 命令" command={command} /> : null}
+    </div>
+  );
+}
+
+function SmartJsonValue({
+  fieldKey,
+  value,
+  variant,
+}: Readonly<{
+  fieldKey: string;
+  value: JsonValue;
+  variant: "default" | "green" | "amber" | "red" | "blue" | "purple";
+}>) {
+  const command = commandTextForValue(fieldKey, value);
+
+  if (command) {
+    return <CommandBlock label={friendlyLabel(fieldKey)} command={command} />;
+  }
+
+  if (fieldKey === "vllmServeExample" && isJsonObject(value)) {
+    return <RuntimeConfigCard data={value} />;
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return <p className="text-sm text-muted">—</p>;
+    }
+
+    if (value.every(isScalar)) {
+      return <TagGroup items={value.map((item) => scalarText(item))} variant={variant} />;
+    }
+
+    return (
+      <div className="space-y-3">
+        {value.map((item, index) =>
+          isJsonObject(item) ? (
+            <div
+              key={`${fieldKey}-${index}`}
+              className="rounded-lg border border-line/50 bg-background/40 p-3"
+            >
+              <SmartJsonSection data={item} variant={variant} />
+            </div>
+          ) : (
+            <p key={`${fieldKey}-${index}`} className="text-sm">
+              {isScalar(item) ? scalarText(item) : JSON.stringify(item)}
+            </p>
+          ),
+        )}
+      </div>
+    );
+  }
+
+  if (isJsonObject(value)) {
+    return (
+      <div className="rounded-lg border border-line/50 bg-background/40 p-3">
+        <SmartJsonSection data={value} variant={variant} />
+      </div>
+    );
+  }
+
+  if (typeof value === "boolean") {
+    return (
+      <Badge variant={value ? "green" : "default"}>
+        {scalarText(value)}
+      </Badge>
+    );
+  }
+
+  return <p className="break-words font-mono text-sm">{scalarText(value)}</p>;
+}
+
+/** Render a JSON object with friendly labels and command-aware formatting */
 function SmartJsonSection({ data, variant = "default" }: { data: Record<string, JsonValue>; variant?: "default" | "green" | "amber" | "red" | "blue" | "purple" }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {Object.entries(data).map(([key, val]) => (
-        <div key={key}>
+        <div key={key} className="min-w-0">
           <p className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted">
             {friendlyLabel(key)}
           </p>
-          {Array.isArray(val) ? (
-            <TagGroup items={val.map(String)} variant={variant} />
-          ) : val && typeof val === "object" ? (
-            <div className="rounded-lg border border-line/50 bg-background/40 p-3">
-              <SmartJsonSection data={val as Record<string, JsonValue>} variant={variant} />
-            </div>
-          ) : (
-            <p className="text-sm">{String(val)}</p>
-          )}
+          <SmartJsonValue fieldKey={key} value={val} variant={variant} />
         </div>
       ))}
     </div>
@@ -337,31 +567,31 @@ export default async function RecordPage({
           </div>
         </header>
 
-        {/* ── two-column layout ── */}
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+        {/* ── balanced card flow ── */}
+        <div className="gap-6 xl:columns-2">
           {/* ── main content column ── */}
-          <div className="space-y-6">
+          <div className="contents">
             {record.body ? (
-              <Section title="正文" id="body">
+              <Section title="正文" id="body" className="mb-6">
                 <p className="whitespace-pre-wrap">{record.body}</p>
               </Section>
             ) : null}
 
             {record.problem ? (
-              <Section title="问题" id="problem">
+              <Section title="问题" id="problem" className="mb-6">
                 <p className="whitespace-pre-wrap">{record.problem}</p>
               </Section>
             ) : null}
 
             {record.recommendation ? (
-              <Section title="建议" id="recommendation">
+              <Section title="建议" id="recommendation" className="mb-6">
                 <p className="whitespace-pre-wrap">{record.recommendation}</p>
               </Section>
             ) : null}
 
             {/* ── tradeoffs: pros & cons ── */}
             {(pros.length > 0 || cons.length > 0) ? (
-              <Section title="利弊权衡" id="tradeoffs">
+              <Section title="利弊权衡" id="tradeoffs" className="mb-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   {pros.length > 0 ? (
                     <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-4">
@@ -401,7 +631,7 @@ export default async function RecordPage({
 
             {/* ── evidence ── */}
             {evidence ? (
-              <Section title="证据与依据" id="evidence">
+              <Section title="证据与依据" id="evidence" className="mb-6">
                 <div className="space-y-3">
                   {asString(evidence.basis) ? (
                     <div className="rounded-xl border border-sky-200/60 bg-sky-50/40 p-4">
@@ -427,7 +657,7 @@ export default async function RecordPage({
 
             {/* ── sources with type-specific styling ── */}
             {record.sources.length > 0 ? (
-              <Section title={`参考来源 (${record.sources.length})`} id="sources">
+              <Section title={`参考来源 (${record.sources.length})`} id="sources" className="mb-6">
                 <div className="space-y-3">
                   {record.sources.map((link) => {
                     const src = link.source;
@@ -440,7 +670,9 @@ export default async function RecordPage({
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-base" aria-hidden="true">{style.icon}</span>
+                              <span className="rounded-full border border-line bg-white/70 px-2 py-0.5 font-mono text-[10px] text-muted">
+                                {style.label}
+                              </span>
                               <Badge variant="purple">{link.role}</Badge>
                               <Badge>{src.sourceType}</Badge>
                             </div>
@@ -477,7 +709,7 @@ export default async function RecordPage({
 
             {/* ── outgoing relations (show title instead of slug) ── */}
             {record.outgoingRelations.length > 0 ? (
-              <Section title={`关联记录 (${record.outgoingRelations.length})`} id="relations">
+              <Section title={`关联记录 (${record.outgoingRelations.length})`} id="relations" className="mb-6">
                 <div className="space-y-3">
                   {record.outgoingRelations.map((rel) => (
                     <Link
@@ -517,7 +749,7 @@ export default async function RecordPage({
 
             {/* ── incoming relations (reverse links) ── */}
             {record.incomingRelations.length > 0 ? (
-              <Section title={`被引用记录 (${record.incomingRelations.length})`} id="incoming-relations">
+              <Section title={`被引用记录 (${record.incomingRelations.length})`} id="incoming-relations" className="mb-6">
                 <div className="space-y-3">
                   {record.incomingRelations.map((rel) => (
                     <Link
@@ -543,7 +775,7 @@ export default async function RecordPage({
 
             {/* ── translations ── */}
             {record.translations.length > 0 ? (
-              <Section title={`翻译 (${record.translations.length})`} id="translations">
+              <Section title={`翻译 (${record.translations.length})`} id="translations" className="mb-6">
                 <div className="space-y-4">
                   {record.translations.map((t) => (
                     <div
@@ -583,7 +815,7 @@ export default async function RecordPage({
             ) : null}
 
             {/* ── versions ── */}
-            <Section title="版本历史" id="versions">
+            <Section title="版本历史" id="versions" className="mb-6">
               <div className="space-y-3">
                 {record.versions.map((version) => (
                   <div
@@ -610,9 +842,9 @@ export default async function RecordPage({
           </div>
 
           {/* ── sidebar ── */}
-          <aside className="space-y-6">
+          <aside className="contents">
             {/* meta */}
-            <Section title="记录信息" id="meta">
+            <Section title="记录信息" id="meta" className="mb-6">
               <dl className="space-y-3">
                 <KeyValueRow label="分类">{record.category.name}</KeyValueRow>
                 <KeyValueRow label="类型">{record.type}</KeyValueRow>
@@ -641,7 +873,7 @@ export default async function RecordPage({
 
             {/* curation */}
             {curation ? (
-              <Section title="内容管理" id="curation">
+              <Section title="内容管理" id="curation" className="mb-6">
                 <dl className="space-y-2">
                   {asString(curation.owner) ? (
                     <KeyValueRow label="负责人">{asString(curation.owner)}</KeyValueRow>
@@ -662,28 +894,28 @@ export default async function RecordPage({
 
             {/* applicability — now with friendly labels */}
             {applicability ? (
-              <Section title="适用范围" id="applicability">
+              <Section title="适用范围" id="applicability" className="mb-6">
                 <SmartJsonSection data={applicability} variant="blue" />
               </Section>
             ) : null}
 
             {/* compatibility — now with friendly labels */}
             {compatibility ? (
-              <Section title="兼容性信息" id="compatibility">
+              <Section title="兼容性信息" id="compatibility" className="mb-6">
                 <SmartJsonSection data={compatibility} variant="green" />
               </Section>
             ) : null}
 
             {/* metrics — now with friendly labels */}
             {metrics ? (
-              <Section title="指标" id="metrics">
+              <Section title="指标" id="metrics" className="mb-6">
                 <SmartJsonSection data={metrics} />
               </Section>
             ) : null}
 
             {/* next steps */}
             {nextSteps.length > 0 ? (
-              <Section title="后续步骤" id="next-steps">
+              <Section title="后续步骤" id="next-steps" className="mb-6">
                 <ol className="space-y-2">
                   {nextSteps.map((step, i) => (
                     <li key={step} className="flex items-start gap-3 text-sm leading-6">
@@ -699,21 +931,21 @@ export default async function RecordPage({
 
             {/* aliases */}
             {record.aliases.length > 0 ? (
-              <Section title="别名" id="aliases">
+              <Section title="别名" id="aliases" className="mb-6">
                 <TagGroup items={record.aliases.map((a) => a.alias)} />
               </Section>
             ) : null}
 
             {/* keywords */}
             {record.keywords.length > 0 ? (
-              <Section title="关键词" id="keywords">
+              <Section title="关键词" id="keywords" className="mb-6">
                 <TagGroup items={record.keywords.map((k) => k.keyword)} />
               </Section>
             ) : null}
 
             {/* metadata — now with friendly labels */}
             {metadata ? (
-              <Section title="元数据" id="metadata">
+              <Section title="元数据" id="metadata" className="mb-6">
                 <SmartJsonSection data={metadata} />
               </Section>
             ) : null}

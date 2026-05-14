@@ -710,16 +710,51 @@
       "language": "zh",
       "title": "本地 Qwen 27B 推理优化应按量化、MTP、推测解码和 KV Cache 分层推进",
       "summary": "本地大模型提速不应只看单个框架或单次峰值，而应按量化、MTP、DFlash/DDTree、KV Cache 量化逐层验证，并区分单请求速度和高并发吞吐。",
-      "body": "小天fotos 在 BV1ZyoXBHEp3 中实测了 Qwen3.6 27B 的本地推理优化路径。基础线是单卡 RTX 4090 以 FP8 运行约 20 token/s；第一层优化是量化，GGUF 或 AWQ 可把速度提升到约 45-48 token/s；第二层是 MTP，多 token 预测或投机解码路线中，AWQ + MTP n=5 约可到 108 token/s；双卡 4090 的价值更多体现在多 agent、多请求并发吞吐，而不是单条请求线性暴涨；更激进的 DFlash/DDTree 路线在作者测试中平均约 141 token/s、峰值约 184 token/s；最后 TurboQuant 这类 KV cache 量化更适合长上下文和 agent 场景。这个记录应作为本地模型性能优化路线参考，而不是固定性能承诺。",
+      "body": "小天fotos 在 BV1ZyoXBHEp3 中实测了 Qwen3.6 27B 的本地推理优化路径。基础线是单卡 RTX 4090 以 FP8 运行约 20 token/s；第一层优化是量化，GGUF 或 AWQ 可把速度提升到约 45-48 token/s；第二层是 MTP，多 token 预测或投机解码路线中，AWQ + MTP n=5 约可到 108 token/s；双卡 4090 的价值更多体现在多 agent、多请求并发吞吐，而不是单条请求线性暴涨；更激进的 DFlash/DDTree 路线在作者测试中平均约 141 token/s、峰值约 184 token/s；最后 TurboQuant 这类 KV cache 量化更适合长上下文和 agent 场景。这个记录应作为本地模型性能优化路线参考，而不是固定性能承诺。 用户补充的作者 vLLM 配置示例使用 ModelScope 拉取 qwen/Qwen3.6-27B-FP8，开启 MTP speculative config num_speculative_tokens=4、max-num-seqs=10、prefix caching、gpu-memory-utilization=0.92、Qwen3 reasoning parser、auto tool choice 和 qwen3_coder tool-call parser，端口为 5000；这应作为复测起点，不应视为跨环境保证。",
       "problem": "本地大模型性能优化容易被单个峰值数字误导。只记录 184 token/s 会忽略基础线、硬件、量化方式、并发模型、上下文长度和推测解码成熟度，导致 agent 系统选型时错误估计稳定吞吐。",
-      "recommendation": "评估本地 Qwen 27B 级模型时，应先建立 FP8 基线，再优先验证 AWQ/GGUF 量化，然后测试 MTP 或投机解码，最后再评估 DFlash/DDTree 这类激进路线。生产环境优先采用相对稳妥的 FP8 或 AWQ + vLLM + MTP，并把 DFlash/DDTree 标记为实验性优化。长上下文和 agent 场景应额外评估 KV cache 量化对显存和吞吐的影响。",
+      "recommendation": "评估本地 Qwen 27B 级模型时，应先建立 FP8 基线，再优先验证 AWQ/GGUF 量化，然后测试 MTP 或投机解码，最后再评估 DFlash/DDTree 这类激进路线。生产环境优先采用相对稳妥的 FP8 或 AWQ + vLLM + MTP，并把 DFlash/DDTree 标记为实验性优化。长上下文和 agent 场景应额外评估 KV cache 量化对显存和吞吐的影响。 记录作者配置时，应把它作为可复现基线：先保持模型、MTP token 数、max-num-seqs、上下文长度、prefix cache、GPU memory utilization、reasoning parser 和 tool-call parser 参数不变复测，再逐项调整。",
       "metadata": {
         "contentSource": "bilibili-video-summary",
         "bvid": "BV1ZyoXBHEp3",
         "ownerName": "小天fotos",
         "durationSec": 1090,
         "localPublishedDate": "2026-04-26",
-        "draftedFrom": "user-provided summary plus public Bilibili metadata probe"
+        "draftedFrom": "user-provided summary plus public Bilibili metadata probe",
+        "runtimeConfigSource": "user-provided author vLLM command",
+        "vllmServeExample": {
+          "env": {
+            "VLLM_USE_MODELSCOPE": "true"
+          },
+          "runner": "uv run vllm serve",
+          "model": "qwen/Qwen3.6-27B-FP8",
+          "servedModelName": "qwen3.6",
+          "port": 5000,
+          "speculativeConfig": {
+            "method": "mtp",
+            "numSpeculativeTokens": 4
+          },
+          "maxNumSeqs": 10,
+          "maxModelLen": "auto",
+          "enablePrefixCaching": true,
+          "gpuMemoryUtilization": 0.92,
+          "reasoningParser": "qwen3",
+          "enableAutoToolChoice": true,
+          "toolCallParser": "qwen3_coder",
+          "commandLines": [
+            "VLLM_USE_MODELSCOPE=true",
+            "uv run vllm serve qwen/Qwen3.6-27B-FP8 \\",
+            "--speculative-config '{\"method\":\"mtp\",\"num_speculative_tokens\":4}' \\",
+            "--max-num-seqs 10 \\",
+            "--max-model-len auto \\",
+            "--port 5000 \\",
+            "--enable-prefix-caching \\",
+            "--gpu-memory-utilization 0.92 \\",
+            "--reasoning-parser qwen3 \\",
+            "--enable-auto-tool-choice \\",
+            "--served-model-name qwen3.6 \\",
+            "--tool-call-parser qwen3_coder"
+          ]
+        }
       },
       "applicability": {
         "audience": [
@@ -754,9 +789,21 @@
           "DDTree"
         ],
         "runtime": [
+          "vLLM",
+          "uv",
+          "ModelScope"
+        ],
+        "notes": "Reported numbers are source-specific and should be re-benchmarked before production use.",
+        "inferenceBackends": [
           "vLLM"
         ],
-        "notes": "Reported numbers are source-specific and should be re-benchmarked before production use."
+        "modelDistribution": [
+          "ModelScope"
+        ],
+        "parsers": [
+          "qwen3",
+          "qwen3_coder"
+        ]
       },
       "tradeoffs": {
         "pros": [
@@ -781,7 +828,12 @@
           "dflashAverageTokensPerSecond": 141,
           "dflashPeakTokensPerSecond": 184
         },
-        "confidenceReason": "The metadata and optimization path are concrete, but benchmark numbers should be treated as source-reported and environment-dependent."
+        "confidenceReason": "The metadata and optimization path are concrete, but benchmark numbers should be treated as source-reported and environment-dependent.",
+        "authorVllmServeConfig": {
+          "source": "User-provided author command in chat on 2026-05-14.",
+          "command": "VLLM_USE_MODELSCOPE=true\nuv run vllm serve qwen/Qwen3.6-27B-FP8 \\\n--speculative-config '{\"method\":\"mtp\",\"num_speculative_tokens\":4}' \\\n--max-num-seqs 10 \\\n--max-model-len auto \\\n--port 5000 \\\n--enable-prefix-caching \\\n--gpu-memory-utilization 0.92 \\\n--reasoning-parser qwen3 \\\n--enable-auto-tool-choice \\\n--served-model-name qwen3.6 \\\n--tool-call-parser qwen3_coder",
+          "interpretation": "Use as a reproducible configuration hint for vLLM + MTP testing, not as a verified performance guarantee on every machine."
+        }
       },
       "metrics": {
         "baselineSpeed": "20 token/s",
@@ -790,18 +842,23 @@
         "dflashAverageSpeed": "141 token/s",
         "dflashPeakSpeed": "184 token/s",
         "riskLevel": "medium",
-        "productionReadiness": "prefer AWQ/FP8 + vLLM + MTP; treat DFlash/DDTree as experimental"
+        "productionReadiness": "prefer AWQ/FP8 + vLLM + MTP; treat DFlash/DDTree as experimental",
+        "vllmMaxNumSeqs": 10,
+        "vllmMtpSpeculativeTokens": 4,
+        "vllmGpuMemoryUtilization": 0.92,
+        "vllmExamplePort": 5000,
+        "vllmConfigStatus": "author-provided example; requires local rebenchmark"
       },
       "curation": {
         "owner": "Gan-Xing",
         "reviewStatus": "reviewed",
         "needsRebenchmark": true,
-        "reviewNotes": "可在后续补充作者 repo 或原始 benchmark 配置。"
+        "reviewNotes": "已补充用户提供的作者 vLLM serve 配置；性能数字和参数组合仍需在目标硬件、vLLM 版本和上下文长度下复测。"
       },
       "extensions": {
         "nextSteps": [
           "补充同硬件复测结果",
-          "记录 vLLM/MTP 具体参数",
+          "用作者 vLLM 配置在目标硬件上复测吞吐、显存和工具调用行为",
           "区分单请求 latency 和多并发 throughput",
           "后续可关联到本地 agent runtime 选型记录"
         ],
@@ -819,7 +876,10 @@
         "Qwen 27B 优化",
         "4090 跑大模型",
         "投机解码",
-        "KV Cache 量化"
+        "KV Cache 量化",
+        "vLLM MTP 配置",
+        "ModelScope Qwen3.6",
+        "qwen3_coder tool parser"
       ],
       "keywords": [
         "Qwen3.6 27B",
@@ -835,7 +895,21 @@
         "KV cache quantization",
         "vLLM",
         "speculative decoding",
-        "local LLM inference"
+        "local LLM inference",
+        "VLLM_USE_MODELSCOPE",
+        "qwen/Qwen3.6-27B-FP8",
+        "uv run vllm serve",
+        "--speculative-config",
+        "num_speculative_tokens",
+        "--max-num-seqs",
+        "--max-model-len auto",
+        "--enable-prefix-caching",
+        "--gpu-memory-utilization",
+        "--reasoning-parser qwen3",
+        "--enable-auto-tool-choice",
+        "--served-model-name qwen3.6",
+        "--tool-call-parser qwen3_coder",
+        "ModelScope"
       ],
       "tags": [
         "qwen",
@@ -845,7 +919,9 @@
         "mtp",
         "speculative-decoding",
         "kv-cache",
-        "vllm"
+        "vllm",
+        "modelscope",
+        "vllm-config"
       ],
       "relations": [],
       "sources": [
@@ -884,6 +960,31 @@
           "title": "Qwen 3.6 27B，多种优化方式，从 20t/s 飙到 184t/s",
           "role": "REFERENCE",
           "note": "User-supplied technical note for cross-checking the optimization path."
+        },
+        {
+          "sourceKey": "chat:2026-05-14:qwen3-6-vllm-author-config",
+          "sourceType": "CHAT",
+          "title": "用户提供的作者 vLLM 配置",
+          "author": "Gan-Xing",
+          "accessedAt": "2026-05-14T00:00:00.000Z",
+          "rawPayload": {
+            "commandLines": [
+              "VLLM_USE_MODELSCOPE=true",
+              "uv run vllm serve qwen/Qwen3.6-27B-FP8 \\",
+              "--speculative-config '{\"method\":\"mtp\",\"num_speculative_tokens\":4}' \\",
+              "--max-num-seqs 10 \\",
+              "--max-model-len auto \\",
+              "--port 5000 \\",
+              "--enable-prefix-caching \\",
+              "--gpu-memory-utilization 0.92 \\",
+              "--reasoning-parser qwen3 \\",
+              "--enable-auto-tool-choice \\",
+              "--served-model-name qwen3.6 \\",
+              "--tool-call-parser qwen3_coder"
+            ]
+          },
+          "role": "EVIDENCE",
+          "note": "用户在本次对话中提供，称为作者自己的 vLLM 配置；用于补充可复测参数，不等同于本机验证结果。"
         }
       ]
     }
