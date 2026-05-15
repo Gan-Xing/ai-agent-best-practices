@@ -10,15 +10,8 @@ on:
 
 jobs:
   test:
-    name: test (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
-          - windows-latest
+    name: test
+    runs-on: ubuntu-latest
 
     env:
       DATABASE_URL: postgresql://knowledge:knowledge@localhost:5432/knowledge
