@@ -347,7 +347,7 @@ export default async function Home({ searchParams }: HomeProps) {
                 href="/resources/github"
                 className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
               >
-                浏览 GitHub Reference Library
+                浏览开源项目参考库
               </Link>
             </div>
           </section>
@@ -405,7 +405,7 @@ export default async function Home({ searchParams }: HomeProps) {
               href="/resources/github"
               className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
             >
-              打开 GitHub Reference Library
+              打开开源项目参考库
             </Link>
           </div>
 

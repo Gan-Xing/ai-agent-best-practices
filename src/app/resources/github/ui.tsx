@@ -1,17 +1,17 @@
 import Link from "next/link";
 
 export const GITHUB_STATUS_OPTIONS = [
-  { value: "inbox", label: "Inbox" },
-  { value: "watching", label: "Watching" },
-  { value: "curated", label: "Curated" },
-  { value: "archived", label: "Archived" },
+  { value: "inbox", label: "待整理" },
+  { value: "watching", label: "值得关注" },
+  { value: "curated", label: "已精选" },
+  { value: "archived", label: "已归档" },
 ] as const;
 
 export const GITHUB_SORT_OPTIONS = [
-  { value: "review", label: "Recently reviewed" },
-  { value: "upstream", label: "Recently updated upstream" },
-  { value: "stars", label: "Most stars" },
-  { value: "name", label: "Repository name" },
+  { value: "review", label: "最近整理" },
+  { value: "upstream", label: "最近更新" },
+  { value: "stars", label: "Star 最多" },
+  { value: "name", label: "项目名称" },
 ] as const;
 
 export function Badge({
@@ -184,6 +184,12 @@ export function statusTone(status: string) {
     default:
       return "amber";
   }
+}
+
+export function statusLabel(status: string) {
+  return (
+    GITHUB_STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status
+  );
 }
 
 export function formatDate(value: string | null | undefined) {

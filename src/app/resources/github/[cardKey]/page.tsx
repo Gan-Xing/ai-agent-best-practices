@@ -11,6 +11,7 @@ import {
   LinkButton,
   Section,
   formatDate,
+  statusLabel,
   statusTone,
 } from "@/app/resources/github/ui";
 
@@ -70,12 +71,12 @@ export async function generateMetadata({
 
   if (!card) {
     return {
-      title: "GitHub Card Not Found",
+      title: "参考项目未找到",
     };
   }
 
   return {
-    title: `${card.repo.fullName} · GitHub Reference`,
+    title: `${card.repo.fullName} · 开源项目参考`,
     description: card.summary,
   };
 }
@@ -103,19 +104,19 @@ export default async function GitHubResourceDetailPage({
       <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="teal">GitHub Card</Badge>
-            <Badge tone={statusTone(card.status)}>{card.status}</Badge>
+            <Badge tone="teal">开源项目</Badge>
+            <Badge tone={statusTone(card.status)}>{statusLabel(card.status)}</Badge>
             <Badge>{typeLabel(card.classification.recordType)}</Badge>
-            {!card.upstream.synced ? <Badge tone="amber">Snapshot pending</Badge> : null}
+            {!card.upstream.synced ? <Badge tone="amber">资料更新中</Badge> : null}
           </div>
           <div className="flex flex-wrap gap-2">
             <LinkButton href={listHref} tone="secondary">
-              Back to library
+              返回项目库
             </LinkButton>
             <LinkButton href={card.repo.url} tone="secondary">
-              GitHub repo
+              打开 GitHub
             </LinkButton>
-            {card.links?.docs ? <LinkButton href={card.links.docs}>Docs</LinkButton> : null}
+            {card.links?.docs ? <LinkButton href={card.links.docs}>项目文档</LinkButton> : null}
           </div>
         </div>
 
@@ -153,7 +154,7 @@ export default async function GitHubResourceDetailPage({
             {card.notes ? (
               <div className="mt-8 rounded-[1.6rem] border border-line bg-surface px-5 py-5 shadow-[var(--shadow)]">
                 <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted">
-                  Study Focus
+                  重点看什么
                 </p>
                 <p className="mt-3 text-sm leading-8 text-foreground">{card.notes}</p>
               </div>
@@ -161,7 +162,7 @@ export default async function GitHubResourceDetailPage({
           </div>
 
           <aside className="motion-rise-delayed space-y-4">
-            <Section title="Snapshot" eyebrow="At A Glance">
+            <Section title="项目概览" eyebrow="快速判断">
               <dl className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <dt className="text-muted">Stars</dt>
@@ -170,31 +171,31 @@ export default async function GitHubResourceDetailPage({
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">Language</dt>
+                  <dt className="text-muted">主要语言</dt>
                   <dd className="text-right font-medium text-foreground">
                     {card.upstream.language ?? "—"}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">License</dt>
+                  <dt className="text-muted">许可证</dt>
                   <dd className="text-right font-medium text-foreground">
                     {card.upstream.license ?? "—"}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">Default branch</dt>
+                  <dt className="text-muted">默认分支</dt>
                   <dd className="text-right font-medium text-foreground">
                     {card.upstream.defaultBranch ?? "—"}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">Last upstream push</dt>
+                  <dt className="text-muted">最近更新</dt>
                   <dd className="text-right font-medium text-foreground">
                     {formatDate(card.upstream.pushedAt)}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">Review after</dt>
+                  <dt className="text-muted">下次复看</dt>
                   <dd className="text-right font-medium text-foreground">
                     {formatDate(card.review.reviewAfter)}
                   </dd>
@@ -205,10 +206,10 @@ export default async function GitHubResourceDetailPage({
         </section>
 
         <section className="mt-10 grid gap-5 xl:grid-cols-[1fr_1fr]">
-          <Section title="Classification" eyebrow="Curation">
+          <Section title="为什么收录" eyebrow="整理判断">
             <dl className="space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <dt className="text-muted">Primary category</dt>
+                <dt className="text-muted">主要方向</dt>
                 <dd className="text-right text-foreground">
                   {primaryCategory
                     ? `${primaryCategory.code} · ${primaryCategory.nameZh ?? primaryCategory.name}`
@@ -216,13 +217,13 @@ export default async function GitHubResourceDetailPage({
                 </dd>
               </div>
               <div className="flex items-start justify-between gap-4">
-                <dt className="text-muted">Record type</dt>
+                <dt className="text-muted">项目类型</dt>
                 <dd className="text-right text-foreground">
                   {typeLabel(card.classification.recordType)}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted">Tags</dt>
+                <dt className="text-muted">标签</dt>
                 <dd className="mt-3 flex flex-wrap gap-2">
                   {card.classification.tags.map((tag) => (
                     <span
@@ -235,7 +236,7 @@ export default async function GitHubResourceDetailPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-muted">Keywords</dt>
+                <dt className="text-muted">关键词</dt>
                 <dd className="mt-3 flex flex-wrap gap-2">
                   {card.classification.keywords.map((keyword) => (
                     <span
@@ -250,14 +251,14 @@ export default async function GitHubResourceDetailPage({
             </dl>
           </Section>
 
-          <Section title="Upstream Signals" eyebrow="Repository Facts">
+          <Section title="项目动态" eyebrow="公开信息">
             {!card.upstream.synced ? (
               <p className="text-sm leading-8 text-muted">
-                这张卡片的仓库概览还没有刷新完成，稍后再看会更完整。
+                这个项目的公开信息还在更新中，稍后再看会更完整。
               </p>
             ) : null}
             <p className="text-sm leading-8 text-foreground">
-              {card.upstream.description ?? "No upstream description was stored."}
+              {card.upstream.description ?? "暂时没有项目简介。"}
             </p>
             {card.upstream.topics.length ? (
               <div className="mt-5 flex flex-wrap gap-2">
@@ -274,7 +275,7 @@ export default async function GitHubResourceDetailPage({
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Homepage
+                  官网
                 </dt>
                 <dd className="mt-2 break-words text-foreground">
                   {card.upstream.homepage ?? "—"}
@@ -282,7 +283,7 @@ export default async function GitHubResourceDetailPage({
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Last fetched
+                  最近同步
                 </dt>
                 <dd className="mt-2 text-foreground">
                   {formatDate(card.upstream.lastFetchedAt)}
@@ -290,15 +291,15 @@ export default async function GitHubResourceDetailPage({
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Archived upstream
+                  是否归档
                 </dt>
                 <dd className="mt-2 text-foreground">
-                  {card.upstream.archived ? "Yes" : "No"}
+                  {card.upstream.archived ? "是" : "否"}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Docs link
+                  文档链接
                 </dt>
                 <dd className="mt-2 break-words text-foreground">
                   {card.links?.docs ?? "—"}
@@ -309,17 +310,17 @@ export default async function GitHubResourceDetailPage({
         </section>
 
         <section className="mt-10 grid gap-5 xl:grid-cols-[1fr_1fr]">
-          <Section title="Review Lifecycle" eyebrow="Curation Clock">
+          <Section title="整理节奏" eyebrow="复看计划">
             <dl className="grid gap-4 sm:grid-cols-3">
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Added
+                  收录时间
                 </dt>
                 <dd className="mt-2 text-foreground">{formatDate(card.review.addedAt)}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Last reviewed
+                  最近整理
                 </dt>
                 <dd className="mt-2 text-foreground">
                   {formatDate(card.review.lastReviewedAt)}
@@ -327,7 +328,7 @@ export default async function GitHubResourceDetailPage({
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  Review after
+                  建议复看
                 </dt>
                 <dd className="mt-2 text-foreground">
                   {formatDate(card.review.reviewAfter)}
@@ -336,11 +337,11 @@ export default async function GitHubResourceDetailPage({
             </dl>
           </Section>
 
-          <Section title="Connections" eyebrow="Optional Graph">
+          <Section title="相关知识" eyebrow="知识关联">
             {card.connections?.relatedRecordSlugs?.length ? (
               <div className="space-y-4">
                 <p className="text-sm leading-8 text-muted">
-                  这张卡片当前和正式 records 有明确关联。
+                  这个项目已经关联到知识库里的相关记录。
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {card.connections.relatedRecordSlugs.map((slug) => (
@@ -359,8 +360,8 @@ export default async function GitHubResourceDetailPage({
               </div>
             ) : (
               <p className="text-sm leading-8 text-muted">
-                当前没有显式关联的 record。这是正常的，GitHub 卡片和 records
-                是并列资产，不要求互相依赖。
+                当前还没有关联到具体知识记录。你仍然可以把它作为实现参考，
+                后续形成明确结论后再补充关联。
               </p>
             )}
           </Section>

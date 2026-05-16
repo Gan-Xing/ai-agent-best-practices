@@ -1,70 +1,95 @@
 # AI Agent Best Practices
 
-Knowledge-base app for searchable AI-agent best-practice records.
+一个面向 AI Agent 工程实践的最佳实践知识库。
 
-## Content Source
+这个项目的目标不是做 AI 新闻聚合，而是沉淀可以反复搜索、引用和复用的实践判断：
 
-Repository JSON content lives under:
+- 企业 Agent 如何安全调用工具和业务系统
+- RAG、知识库、评测、追踪和安全边界应该怎么设计
+- 开源项目、论文、文档和真实案例中有哪些值得长期复看的实现
+- 一条经验为什么可信、适合什么场景、有哪些风险和取舍
+
+网站当前包含两类内容：
+
+- **最佳实践记录**：已经形成明确结论的知识条目。
+- **开源项目参考库**：值得反复打开的 AI Agent 相关项目，用来帮助理解实现方式和工程取舍。
+
+## Website
+
+生产站点：
+
+```text
+https://aiagent.byganxing.com/
+```
+
+主要入口：
+
+- [最佳实践搜索](https://aiagent.byganxing.com/)：搜索和浏览知识记录。
+- [项目路线图](https://aiagent.byganxing.com/roadmap)：查看这个知识库接下来怎么建设。
+- [开源项目参考库](https://aiagent.byganxing.com/resources/github)：浏览值得复看的 AI Agent 开源项目。
+
+## What Makes A Good Record
+
+一条好的记录不只是“某个框架介绍”，而应该回答：
+
+- 它解决什么 AI Agent 落地问题？
+- 为什么这个问题值得记录？
+- 推荐架构或做法是什么？
+- 适用边界、失败风险和安全问题在哪里？
+- 如何评测它是否真的有效？
+- 来源是什么，是否可追溯？
+
+## Maintainer Notes
+
+下面是维护者和自动化脚本需要关心的内容。普通读者只需要使用网站即可。
+
+### Content Source
+
+知识记录的 JSON source of truth 位于：
 
 ```text
 content/knowledge/{categoryCode}-{categorySlug}/records-0001.json
 ```
 
-The local JSON contract is defined in:
+本地 JSON 合同定义在：
 
 ```text
 src/lib/validation/content.ts
 ```
 
-Use this command to inspect the current writable JSON fields:
+查看当前可写字段：
 
 ```bash
 pnpm content:fields
 ```
 
-## GitHub Resource Cards
+### Open Source References
 
-Use lightweight GitHub repo cards for fast capture and classified browsing
-alongside the main knowledge records:
+开源项目参考库使用轻量 JSON 保存策展判断：
 
 ```text
 content/resources/github/cards/{owner}__{repo}.json
 ```
 
-Each card keeps:
+动态信息，例如 stars、README 摘要、最近 push 时间，不写进 JSON，走数据库快照层。
 
-- your own tags, summary, and judgment
-- a primary `categoryCode` and `recordType` that stay compatible with the main
-  knowledge model
-- stable repo identity plus curation lifecycle fields in Git
-- dynamic upstream facts in the database snapshot layer
-- optional links to related records when a repo is relevant to your internal
-  best-practice notes
-
-Design notes and workflow:
+维护文档：
 
 ```text
 docs/github-resource-cards.md
 content/resources/github/README.md
 ```
 
-Validate the lightweight card layer with:
+校验与同步：
 
 ```bash
 pnpm resources:github:validate
 pnpm resources:github:sync-upstreams -- --card-key owner__repo
 ```
 
-Batch and weekly sync note:
+批量和每周同步建议配置 `GITHUB_TOKEN`，否则卡片库增长后容易碰到 GitHub 匿名限流。
 
-- set `GITHUB_TOKEN` in `.env` or `.env.local` before enabling `--all` sync in
-  production
-- the current sync pipeline can use up to about 4 GitHub API requests per repo
-  during one refresh pass
-- anonymous GitHub rate limits are therefore only safe for a very small card
-  library
-
-Production weekly refresh is designed to run through:
+生产环境每周刷新使用：
 
 ```text
 ops/systemd/ai-agent-best-practices-github-sync.service
@@ -72,24 +97,7 @@ ops/systemd/ai-agent-best-practices-github-sync.timer
 ops/systemd/ai-agent-best-practices-github-sync-alert@.service
 ```
 
-Failure alerts are written locally under:
-
-```text
-runtime/alerts/github-sync/latest-failure.json
-runtime/alerts/github-sync/latest-failure.txt
-runtime/alerts/github-sync/history/
-```
-
-If `GITHUB_SYNC_ALERT_WEBHOOK_URL` is configured in `.env`, the same failure
-payload is also sent to that webhook as JSON.
-
-Public-repo boundary:
-
-- this repository only ships a generic webhook failure hook
-- personal Telegram, WeChat, Slack, or other destination-specific sender code
-  must live outside this public repo
-- if you want Telegram delivery, run your own private webhook consumer or
-  bridge service and point `GITHUB_SYNC_ALERT_WEBHOOK_URL` at that endpoint
+公开仓库只保留通用 webhook 告警出口。Telegram、微信、Slack 等个人通知链路应放在私有服务里。
 
 ## Repo-Local Skills
 
