@@ -68,6 +68,7 @@ export type GithubRepoUpstreamView = {
   rootEntries: string[];
   rootManifests: string[];
   metadata: Record<string, JsonValue> | null;
+  rawPayload: Record<string, JsonValue> | null;
 };
 
 function toView(
@@ -96,6 +97,7 @@ function toView(
     rootEntries: toStringArray(row.rootEntries),
     rootManifests: toStringArray(row.rootManifests),
     metadata: toRecord(row.metadata),
+    rawPayload: toRecord(row.rawPayload),
   };
 }
 

@@ -44,6 +44,21 @@ export type GithubRepoUpstreamSnapshotInput = {
   rawPayload: Record<string, unknown>;
 };
 
+export type GithubRateLimitState = {
+  limit: number | null;
+  remaining: number | null;
+  resetAt: string | null;
+  resource: string | null;
+  retryAfterSeconds: number | null;
+};
+
+export type GithubRepoSyncDiagnostics = {
+  requestsMade: number;
+  conditionalHits: number;
+  reusedCachedSections: string[];
+  rateLimit: GithubRateLimitState | null;
+};
+
 export type GithubRepoContext = {
   repo: RepoIdentity;
   upstreamSnapshot: GithubRepoUpstreamSnapshotInput;
@@ -86,10 +101,11 @@ export type GithubRepoContext = {
       lastReviewedAt: string;
       reviewAfter: string;
     };
-    links: {
-      docs?: string;
+      links: {
+        docs?: string;
+      };
     };
-  };
+  diagnostics: GithubRepoSyncDiagnostics;
 };
 
 type FetchGithubRepoContextInput = {
@@ -97,6 +113,10 @@ type FetchGithubRepoContextInput = {
   repo?: string;
   readmeChars?: number;
   headings?: number;
+  existingUpstream?: {
+    metadata?: Record<string, unknown> | null;
+    rawPayload?: Record<string, unknown> | null;
+  } | null;
 };
 
 type GitHubRepoApi = {
@@ -129,6 +149,34 @@ type GitHubContentApi = Array<{
   name: string;
   type: string;
 }>;
+
+type GitHubRequestResult<T> = {
+  data: T;
+  etag: string | null;
+  notModified: boolean;
+  requestsMade: number;
+  rateLimit: GithubRateLimitState | null;
+};
+
+type GithubRepoSyncMetadata = {
+  source?: string;
+  staleDays?: number | null;
+  sync?: {
+    etags?: {
+      repo?: string | null;
+      languages?: string | null;
+      readme?: string | null;
+      rootContents?: string | null;
+    };
+    lastRequestedAt?: string | null;
+    lastModifiedAt?: string | null;
+    lastNotModifiedAt?: string | null;
+    requestCountEstimate?: number | null;
+    conditionalHits?: number | null;
+    reusedCachedSections?: string[] | null;
+    rateLimit?: Partial<GithubRateLimitState> | null;
+  };
+};
 
 const CATEGORY_KEYWORDS: Array<{
   code: string;
@@ -398,33 +446,171 @@ function githubHeaders() {
   return headers;
 }
 
-async function requestGitHubJson<T>(pathname: string): Promise<T> {
-  const response = await fetch(`https://api.github.com${pathname}`, {
-    headers: githubHeaders(),
-  });
+function toGitHubRateLimitState(response: Response): GithubRateLimitState | null {
+  const limitHeader = response.headers.get("x-ratelimit-limit");
+  const remainingHeader = response.headers.get("x-ratelimit-remaining");
+  const resetHeader = response.headers.get("x-ratelimit-reset");
+  const resourceHeader = response.headers.get("x-ratelimit-resource");
+  const retryAfterHeader = response.headers.get("retry-after");
+  const limit = limitHeader ? Number.parseInt(limitHeader, 10) : Number.NaN;
+  const remaining = remainingHeader ? Number.parseInt(remainingHeader, 10) : Number.NaN;
+  const resetSeconds = resetHeader ? Number.parseInt(resetHeader, 10) : Number.NaN;
+  const retryAfterSeconds = retryAfterHeader
+    ? Number.parseInt(retryAfterHeader, 10)
+    : Number.NaN;
 
-  if (!response.ok) {
-    let detail = `${response.status} ${response.statusText}`;
-
-    try {
-      const body = (await response.json()) as { message?: string };
-      if (body.message) {
-        detail = `${detail}: ${body.message}`;
-      }
-    } catch {}
-
-    if (response.status === 403) {
-      const remaining = response.headers.get("x-ratelimit-remaining");
-      const reset = response.headers.get("x-ratelimit-reset");
-      if (remaining === "0" && reset) {
-        detail = `${detail}. Rate limit exhausted; try again after UNIX ${reset} or set GITHUB_TOKEN.`;
-      }
-    }
-
-    throw new Error(detail);
+  if (
+    Number.isNaN(limit) &&
+    Number.isNaN(remaining) &&
+    Number.isNaN(resetSeconds) &&
+    !resourceHeader &&
+    Number.isNaN(retryAfterSeconds)
+  ) {
+    return null;
   }
 
-  return (await response.json()) as T;
+  return {
+    limit: Number.isNaN(limit) ? null : limit,
+    remaining: Number.isNaN(remaining) ? null : remaining,
+    resetAt: Number.isNaN(resetSeconds) ? null : new Date(resetSeconds * 1000).toISOString(),
+    resource: resourceHeader,
+    retryAfterSeconds: Number.isNaN(retryAfterSeconds) ? null : retryAfterSeconds,
+  };
+}
+
+function parseGithubSyncMetadata(value: Record<string, unknown> | null | undefined) {
+  if (!value || typeof value !== "object") {
+    return {};
+  }
+
+  return value as GithubRepoSyncMetadata;
+}
+
+function toRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
+function readCachedJson<T>(record: Record<string, unknown> | null | undefined, key: string) {
+  if (!record || !(key in record)) {
+    return null;
+  }
+
+  const value = record[key];
+  return value === undefined ? null : (value as T);
+}
+
+function hasCachedJsonKey(record: Record<string, unknown> | null | undefined, key: string) {
+  return Boolean(record && key in record);
+}
+
+function shouldRetryGithubRequest(response: Response, detail: string) {
+  if (response.status === 429) {
+    return true;
+  }
+
+  if (response.status !== 403) {
+    return false;
+  }
+
+  const retryAfter = response.headers.get("retry-after");
+  if (retryAfter) {
+    return true;
+  }
+
+  return /secondary rate limit/i.test(detail);
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function requestGitHubJson<T>(
+  pathname: string,
+  options?: {
+    etag?: string | null;
+    fallbackData?: T | null;
+    allowNotModified?: boolean;
+    notFoundFallbackData?: T;
+  },
+): Promise<GitHubRequestResult<T>> {
+  const fallbackData =
+    options && "fallbackData" in options ? (options.fallbackData as T | null) : null;
+  const allowNotModified = Boolean(options?.allowNotModified && fallbackData !== null);
+  let attempts = 0;
+
+  while (attempts < 2) {
+    attempts += 1;
+    const headers = githubHeaders();
+    if (options?.etag && allowNotModified) {
+      headers["If-None-Match"] = options.etag;
+    }
+
+    const response = await fetch(`https://api.github.com${pathname}`, {
+      headers,
+    });
+    const rateLimit = toGitHubRateLimitState(response);
+
+    if (response.status === 304 && allowNotModified && fallbackData !== null) {
+      return {
+        data: fallbackData,
+        etag: options?.etag ?? response.headers.get("etag"),
+        notModified: true,
+        requestsMade: 1,
+        rateLimit,
+      };
+    }
+
+    if (!response.ok) {
+      if (response.status === 404 && options && "notFoundFallbackData" in options) {
+        return {
+          data: options.notFoundFallbackData as T,
+          etag: null,
+          notModified: false,
+          requestsMade: 1,
+          rateLimit,
+        };
+      }
+
+      let detail = `${response.status} ${response.statusText}`;
+
+      try {
+        const body = (await response.json()) as { message?: string };
+        if (body.message) {
+          detail = `${detail}: ${body.message}`;
+        }
+      } catch {}
+
+      if (shouldRetryGithubRequest(response, detail) && attempts < 2) {
+        const retryAfterSeconds = rateLimit?.retryAfterSeconds ?? 2;
+        await sleep(Math.max(1, retryAfterSeconds) * 1000);
+        continue;
+      }
+
+      if (response.status === 403) {
+        const remaining = response.headers.get("x-ratelimit-remaining");
+        const reset = response.headers.get("x-ratelimit-reset");
+        if (remaining === "0" && reset) {
+          detail = `${detail}. Rate limit exhausted; try again after UNIX ${reset} or set GITHUB_TOKEN.`;
+        }
+      }
+
+      throw new Error(detail);
+    }
+
+    return {
+      data: (await response.json()) as T,
+      etag: response.headers.get("etag"),
+      notModified: false,
+      requestsMade: 1,
+      rateLimit,
+    };
+  }
+
+  throw new Error(`GitHub request failed for ${pathname}`);
 }
 
 function stripMarkdownInline(text: string) {
@@ -635,19 +821,144 @@ export async function fetchGithubRepoContext(
 
   const identity = parseRepoInput(input.url ?? input.repo ?? "");
   const now = new Date();
+  const existingMetadata = parseGithubSyncMetadata(input.existingUpstream?.metadata ?? null);
+  const existingRawPayload = toRecord(input.existingUpstream?.rawPayload ?? null);
+  const syncMetadata = existingMetadata.sync ?? {};
+  const etags = syncMetadata.etags ?? {};
+  const previousRepo = readCachedJson<GitHubRepoApi>(existingRawPayload, "repo");
+  const hasPreviousLanguages = hasCachedJsonKey(existingRawPayload, "languages");
+  const previousLanguages =
+    readCachedJson<Record<string, number>>(existingRawPayload, "languages") ?? {};
+  const hasPreviousReadme = hasCachedJsonKey(existingRawPayload, "readme");
+  const previousReadme =
+    readCachedJson<GitHubReadmeApi | null>(existingRawPayload, "readme") ?? null;
+  const hasPreviousRootContents = hasCachedJsonKey(existingRawPayload, "rootContents");
+  const previousRootContents =
+    readCachedJson<GitHubContentApi>(existingRawPayload, "rootContents") ?? [];
+  let requestCount = 0;
+  let conditionalHits = 0;
+  const reusedCachedSections: string[] = [];
 
-  const [repo, languages, readmeResponse, rootContents] = await Promise.all([
-    requestGitHubJson<GitHubRepoApi>(`/repos/${identity.owner}/${identity.name}`),
-    requestGitHubJson<Record<string, number>>(
-      `/repos/${identity.owner}/${identity.name}/languages`,
-    ).catch(() => ({})),
-    requestGitHubJson<GitHubReadmeApi>(
-      `/repos/${identity.owner}/${identity.name}/readme`,
-    ).catch(() => null),
-    requestGitHubJson<GitHubContentApi>(
-      `/repos/${identity.owner}/${identity.name}/contents`,
-    ).catch(() => []),
-  ]);
+  const repoResult = await requestGitHubJson<GitHubRepoApi>(
+    `/repos/${identity.owner}/${identity.name}`,
+    {
+      etag: etags.repo,
+      fallbackData: previousRepo,
+      allowNotModified: true,
+    },
+  );
+  requestCount += repoResult.requestsMade;
+  conditionalHits += repoResult.notModified ? 1 : 0;
+
+  const repo = repoResult.data;
+  const previousRepoPushedAt = previousRepo?.pushed_at ?? null;
+  const repoContentLikelyChanged =
+    !repoResult.notModified &&
+    (!previousRepo ||
+      previousRepoPushedAt !== repo.pushed_at ||
+      previousRepo.default_branch !== repo.default_branch);
+
+  let languagesResult: GitHubRequestResult<Record<string, number>> | null = null;
+  let readmeResult: GitHubRequestResult<GitHubReadmeApi | null> | null = null;
+  let rootContentsResult: GitHubRequestResult<GitHubContentApi> | null = null;
+
+  if (!repoContentLikelyChanged && previousRepo && !repoResult.notModified) {
+    reusedCachedSections.push("languages", "readme", "rootContents");
+    languagesResult = {
+      data: previousLanguages,
+      etag: etags.languages ?? null,
+      notModified: false,
+      requestsMade: 0,
+      rateLimit: repoResult.rateLimit,
+    };
+    readmeResult = {
+      data: previousReadme,
+      etag: etags.readme ?? null,
+      notModified: false,
+      requestsMade: 0,
+      rateLimit: repoResult.rateLimit,
+    };
+    rootContentsResult = {
+      data: previousRootContents,
+      etag: etags.rootContents ?? null,
+      notModified: false,
+      requestsMade: 0,
+      rateLimit: repoResult.rateLimit,
+    };
+  } else if (repoResult.notModified && previousRepo) {
+    reusedCachedSections.push("languages", "readme", "rootContents");
+    languagesResult = {
+      data: previousLanguages,
+      etag: etags.languages ?? null,
+      notModified: false,
+      requestsMade: 0,
+      rateLimit: repoResult.rateLimit,
+    };
+    readmeResult = {
+      data: previousReadme,
+      etag: etags.readme ?? null,
+      notModified: false,
+      requestsMade: 0,
+      rateLimit: repoResult.rateLimit,
+    };
+    rootContentsResult = {
+      data: previousRootContents,
+      etag: etags.rootContents ?? null,
+      notModified: false,
+      requestsMade: 0,
+      rateLimit: repoResult.rateLimit,
+    };
+  } else {
+    const [languagesResponse, readmeResponse, rootContentsResponse] = await Promise.all([
+      requestGitHubJson<Record<string, number>>(
+        `/repos/${identity.owner}/${identity.name}/languages`,
+        {
+          etag: etags.languages,
+          fallbackData: previousLanguages,
+          allowNotModified: hasPreviousLanguages,
+        },
+      ),
+      requestGitHubJson<GitHubReadmeApi | null>(
+        `/repos/${identity.owner}/${identity.name}/readme`,
+        {
+          etag: etags.readme,
+          fallbackData: previousReadme,
+          allowNotModified: hasPreviousReadme,
+          notFoundFallbackData: null,
+        },
+      ),
+      requestGitHubJson<GitHubContentApi>(
+        `/repos/${identity.owner}/${identity.name}/contents`,
+        {
+          etag: etags.rootContents,
+          fallbackData: previousRootContents,
+          allowNotModified: hasPreviousRootContents,
+        },
+      ),
+    ]);
+
+    languagesResult = languagesResponse;
+    readmeResult = readmeResponse;
+    rootContentsResult = rootContentsResponse;
+    requestCount +=
+      languagesResponse.requestsMade +
+      readmeResponse.requestsMade +
+      rootContentsResponse.requestsMade;
+    conditionalHits +=
+      (languagesResponse.notModified ? 1 : 0) +
+      (readmeResponse.notModified ? 1 : 0) +
+      (rootContentsResponse.notModified ? 1 : 0);
+  }
+
+  const languages = languagesResult.data ?? {};
+  const readmeResponse = readmeResult.data ?? null;
+  const rootContents = rootContentsResult.data ?? [];
+  const latestRateLimit =
+    rootContentsResult.rateLimit ??
+    readmeResult.rateLimit ??
+    languagesResult.rateLimit ??
+    repoResult.rateLimit ??
+    null;
 
   const readmeMarkdown =
     readmeResponse && readmeResponse.encoding === "base64"
@@ -761,10 +1072,31 @@ export async function fetchGithubRepoContext(
       metadata: {
         source: "github-api",
         staleDays,
+        sync: {
+          etags: {
+            repo: repoResult.etag,
+            languages: languagesResult.etag,
+            readme: readmeResult.etag,
+            rootContents: rootContentsResult.etag,
+          },
+          lastRequestedAt: now.toISOString(),
+          lastModifiedAt:
+            repoResult.notModified && conditionalHits > 0
+              ? syncMetadata.lastModifiedAt ?? null
+              : now.toISOString(),
+          lastNotModifiedAt:
+            conditionalHits > 0 ? now.toISOString() : syncMetadata.lastNotModifiedAt ?? null,
+          requestCountEstimate: requestCount,
+          conditionalHits,
+          reusedCachedSections,
+          rateLimit: latestRateLimit,
+        },
       },
       rawPayload: {
         repo,
         languages,
+        readme: readmeResponse,
+        rootContents,
       },
     },
     readme: {
@@ -816,6 +1148,12 @@ export async function fetchGithubRepoContext(
             docs: repo.homepage,
           }
         : {},
+    },
+    diagnostics: {
+      requestsMade: requestCount,
+      conditionalHits,
+      reusedCachedSections,
+      rateLimit: latestRateLimit,
     },
   };
 }

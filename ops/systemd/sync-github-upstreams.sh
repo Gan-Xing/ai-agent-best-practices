@@ -14,7 +14,7 @@ export NODE_ENV="${NODE_ENV:-production}"
 
 status=0
 /usr/bin/flock -n -E 75 "$LOCK_FILE" \
-  "$PNPM_BIN" resources:github:sync-upstreams -- --all || status=$?
+  "$PNPM_BIN" resources:github:sync-upstreams -- --scheduled || status=$?
 
 if [ "$status" -eq 0 ]; then
   exit 0

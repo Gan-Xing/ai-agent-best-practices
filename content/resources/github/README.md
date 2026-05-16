@@ -23,9 +23,10 @@ content/resources/github/examples/repo-card.v1.example.json
 4. Run `pnpm resources:github:validate`
 5. Run `pnpm resources:github:sync-upstreams -- --card-key {owner}__{repo}`
 
-For weekly or batch `--all` sync, set `GITHUB_TOKEN` in `.env` or `.env.local`.
-The current sync path can use up to about 4 GitHub API requests per repo, so
-anonymous rate limits are only safe for a very small library.
+For production scheduled sync, set `GITHUB_TOKEN` in `.env` or `.env.local`.
+The sync path now uses conditional requests plus incremental scheduled batches,
+but first-time or changed repos can still use about 4 GitHub API requests per
+repo, so anonymous rate limits are only safe for a very small library.
 
 ## Conventions
 

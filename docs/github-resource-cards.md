@@ -146,8 +146,9 @@ content/resources/github/cards/langgenius__dify.json
 4. 运行 `pnpm resources:github:validate`
 5. 运行 `pnpm resources:github:sync-upstreams -- --card-key {owner}__{repo}`
 
-如果你要跑批量或每周自动刷新，请在 `.env` 或 `.env.local` 里设置
-`GITHUB_TOKEN`。当前同步链路一次最多会对每个仓库发起约 4 个 GitHub API
+如果你要跑生产环境的自动刷新，请在 `.env` 或 `.env.local` 里设置
+`GITHUB_TOKEN`。当前同步链路已经支持条件请求、缓存复用和 scheduled
+增量刷新，但单个仓库首次同步或内容变更时，仍可能发起约 4 个 GitHub API
 请求，所以匿名额度只适合很小的卡片库。
 
 ### 维护
@@ -162,7 +163,7 @@ content/resources/github/cards/langgenius__dify.json
 - `lastFetchedAt`
   - 表示你最后一次同步 GitHub 元数据的时间
 
-生产环境建议用每周定时任务刷新数据库快照，而不是在人工录卡时顺手批量刷新全库。
+生产环境建议用分批分时的增量定时任务刷新数据库快照，而不是在人工录卡时顺手批量刷新全库。
 本仓库当前的运维文件放在：
 
 ```text
@@ -182,8 +183,9 @@ runtime/alerts/github-sync/history/
 如果环境变量里提供 `GITHUB_SYNC_ALERT_WEBHOOK_URL`，同一份结构化 payload
 也会被 POST 到该 webhook。
 
-生产部署建议同时提供 `GITHUB_TOKEN`，否则卡片库一旦增长，`--all` 刷新会很快
-撞到 GitHub 匿名限流。
+当前定时任务默认会按“每次小批量、一天多次、到期优先”的方式执行
+`--scheduled` 同步，并通过 ETag 条件请求尽量复用已有快照。生产部署建议
+同时提供 `GITHUB_TOKEN`，否则卡片库一旦增长，匿名额度仍会成为瓶颈。
 
 这里有一条明确边界，适合公开项目直接写清楚：
 

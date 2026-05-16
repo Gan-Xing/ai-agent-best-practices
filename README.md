@@ -87,9 +87,9 @@ pnpm resources:github:validate
 pnpm resources:github:sync-upstreams -- --card-key owner__repo
 ```
 
-批量和每周同步建议配置 `GITHUB_TOKEN`，否则卡片库增长后容易碰到 GitHub 匿名限流。
+生产同步建议配置 `GITHUB_TOKEN`。当前链路已经改成条件请求 + 增量批次 + 分批分时定时刷新，但卡片库增长后，匿名额度依然不适合作为常态方案。
 
-生产环境每周刷新使用：
+生产环境的增量定时刷新使用：
 
 ```text
 ops/systemd/ai-agent-best-practices-github-sync.service
