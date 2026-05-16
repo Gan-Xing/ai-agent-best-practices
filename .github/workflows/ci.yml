@@ -41,7 +41,13 @@ jobs:
         run: pnpm lint
 
       - name: Validate content JSON
-        run: pnpm content:contract && pnpm content:validate
+        run: pnpm content:verify
+
+      - name: Validate GitHub resource cards
+        run: pnpm resources:github:validate
+
+      - name: Audit production dependencies
+        run: pnpm audit --prod
 
       - name: Build
         run: pnpm run build

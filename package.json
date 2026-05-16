@@ -32,8 +32,8 @@
     "@prisma/client": "^7.8.0",
     "next": "16.2.6",
     "pg": "^8.20.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -46,10 +46,14 @@
     "eslint-config-next": "16.2.6",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
-    "tsx": "^4.21.0",
+    "tsx": "^4.22.0",
     "typescript": "^5"
   },
   "pnpm": {
+    "overrides": {
+      "@hono/node-server": "1.19.13",
+      "postcss": "8.5.14"
+    },
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
