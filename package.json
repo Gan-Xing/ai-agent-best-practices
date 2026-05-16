@@ -15,8 +15,13 @@
     "content:fields": "tsx scripts/content-fields.ts",
     "content:contract": "tsx scripts/content-contract-check.ts",
     "content:validate": "tsx scripts/content-validate.ts",
+    "resources:github:validate": "tsx scripts/github-cards-validate.ts",
+    "resources:github:sync-upstreams": "tsx scripts/github-upstreams-sync.ts",
+    "github:repo:fetch": "tsx skills/github-reference-entry/scripts/fetch-repo-context.ts",
     "content:import": "tsx scripts/content-import.ts",
     "content:verify": "tsx scripts/content-contract-check.ts && tsx scripts/content-validate.ts && tsx scripts/content-import.ts --dry-run",
+    "skill:github-reference:apply": "tsx skills/github-reference-entry/scripts/apply-draft.ts",
+    "skill:github-reference:validate": "tsx skills/github-reference-entry/scripts/quick_validate.ts",
     "skill:knowledge-record:apply": "tsx skills/knowledge-record-entry/scripts/apply-draft.ts",
     "skill:knowledge-record:validate": "tsx skills/knowledge-record-entry/scripts/quick_validate.ts"
   },

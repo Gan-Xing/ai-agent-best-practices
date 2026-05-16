@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ai-agent-best-practices.local/schema/github-repo-card.v1.json",
+  "title": "GitHub Repo Card v1",
+  "description": "Lightweight curated GitHub repository card for the AI Agent Best Practices repo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "cardKey",
+    "repo",
+    "classification",
+    "summary",
+    "whyItMatters",
+    "status",
+    "review"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "kind": {
+      "const": "github-repo-card"
+    },
+    "cardKey": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,38}__[a-z0-9][a-z0-9._-]*$"
+    },
+    "repo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "owner",
+        "name",
+        "fullName",
+        "url"
+      ],
+      "properties": {
+        "host": {
+          "const": "github"
+        },
+        "owner": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,38}$"
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "fullName": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,38}/[a-z0-9][a-z0-9._-]*$"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "categoryCode",
+        "recordType",
+        "tags",
+        "keywords"
+      ],
+      "properties": {
+        "categoryCode": {
+          "type": "string",
+          "pattern": "^\\d{2}$"
+        },
+        "secondaryCategoryCodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\d{2}$"
+          },
+          "uniqueItems": true
+        },
+        "recordType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "keywords": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1
+    },
+    "whyItMatters": {
+      "type": "string",
+      "minLength": 1
+    },
+    "notes": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "inbox",
+        "watching",
+        "curated",
+        "archived"
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "addedAt",
+        "lastReviewedAt",
+        "reviewAfter"
+      ],
+      "properties": {
+        "addedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastReviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewAfter": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "links": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "docs": {
+          "type": "string",
+          "format": "uri"
+        },
+        "demo": {
+          "type": "string",
+          "format": "uri"
+        },
+        "examples": {
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    },
+    "connections": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "relatedRecordSlugs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

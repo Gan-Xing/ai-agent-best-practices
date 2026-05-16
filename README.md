@@ -22,6 +22,75 @@ Use this command to inspect the current writable JSON fields:
 pnpm content:fields
 ```
 
+## GitHub Resource Cards
+
+Use lightweight GitHub repo cards for fast capture and classified browsing
+alongside the main knowledge records:
+
+```text
+content/resources/github/cards/{owner}__{repo}.json
+```
+
+Each card keeps:
+
+- your own tags, summary, and judgment
+- a primary `categoryCode` and `recordType` that stay compatible with the main
+  knowledge model
+- stable repo identity plus curation lifecycle fields in Git
+- dynamic upstream facts in the database snapshot layer
+- optional links to related records when a repo is relevant to your internal
+  best-practice notes
+
+Design notes and workflow:
+
+```text
+docs/github-resource-cards.md
+content/resources/github/README.md
+```
+
+Validate the lightweight card layer with:
+
+```bash
+pnpm resources:github:validate
+pnpm resources:github:sync-upstreams -- --card-key owner__repo
+```
+
+Batch and weekly sync note:
+
+- set `GITHUB_TOKEN` in `.env` or `.env.local` before enabling `--all` sync in
+  production
+- the current sync pipeline can use up to about 4 GitHub API requests per repo
+  during one refresh pass
+- anonymous GitHub rate limits are therefore only safe for a very small card
+  library
+
+Production weekly refresh is designed to run through:
+
+```text
+ops/systemd/ai-agent-best-practices-github-sync.service
+ops/systemd/ai-agent-best-practices-github-sync.timer
+ops/systemd/ai-agent-best-practices-github-sync-alert@.service
+```
+
+Failure alerts are written locally under:
+
+```text
+runtime/alerts/github-sync/latest-failure.json
+runtime/alerts/github-sync/latest-failure.txt
+runtime/alerts/github-sync/history/
+```
+
+If `GITHUB_SYNC_ALERT_WEBHOOK_URL` is configured in `.env`, the same failure
+payload is also sent to that webhook as JSON.
+
+Public-repo boundary:
+
+- this repository only ships a generic webhook failure hook
+- personal Telegram, WeChat, Slack, or other destination-specific sender code
+  must live outside this public repo
+- if you want Telegram delivery, run your own private webhook consumer or
+  bridge service and point `GITHUB_SYNC_ALERT_WEBHOOK_URL` at that endpoint
+
 ## Repo-Local Skills
 
 This repository includes a project-local skill for KnowledgeRecord entry:
@@ -161,6 +230,7 @@ Record relations are written in JSON with stable business keys, never database I
 ## Verification
 
 ```bash
+pnpm resources:github:validate
 pnpm content:verify
 pnpm lint
 DATABASE_URL="postgresql://knowledge:knowledge@localhost:5432/knowledge" pnpm build

@@ -1,0 +1,21 @@
+[Unit]
+Description=AI Agent Best Practices GitHub Upstream Sync
+After=network-online.target
+Wants=network-online.target
+OnFailure=ai-agent-best-practices-github-sync-alert@%p.service
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/dev/ai-agent-best-practices
+Environment=NODE_ENV=production
+EnvironmentFile=/home/ubuntu/dev/ai-agent-best-practices/.env
+ExecStart=/bin/sh /home/ubuntu/dev/ai-agent-best-practices/ops/systemd/sync-github-upstreams.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStartSec=45min
+SyslogIdentifier=ai-agent-best-practices-github-sync

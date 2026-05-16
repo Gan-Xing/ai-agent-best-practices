@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "example-org__agent-runtime-starter",
+  "repo": {
+    "host": "github",
+    "owner": "example-org",
+    "name": "agent-runtime-starter",
+    "fullName": "example-org/agent-runtime-starter",
+    "url": "https://github.com/example-org/agent-runtime-starter"
+  },
+  "classification": {
+    "categoryCode": "09",
+    "secondaryCategoryCodes": [
+      "03"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "workflow",
+      "multi-agent",
+      "runtime"
+    ],
+    "keywords": [
+      "agent runtime starter",
+      "workflow engine",
+      "multi-agent orchestrator"
+    ]
+  },
+  "summary": "一个值得跟踪的 Agent workflow / runtime 参考项目。",
+  "whyItMatters": "适合用来观察工作流编排、状态管理和多 Agent 拆分的工程做法。",
+  "notes": "如果后续发现它更像 demo 而不是 production framework，仍然可以保留这张参考卡片，只是不需要和 records 建立关联。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-15T00:00:00.000Z",
+    "lastReviewedAt": "2026-05-15T00:00:00.000Z",
+    "reviewAfter": "2026-08-15T00:00:00.000Z"
+  },
+  "links": {
+    "docs": "https://example.com/agent-runtime-starter/docs",
+    "demo": "https://example.com/agent-runtime-starter/demo",
+    "examples": "https://example.com/agent-runtime-starter/examples"
+  },
+  "connections": {
+    "relatedRecordSlugs": [
+      "example-agent-runtime-state-machine"
+    ],
+    "note": "只有当这个仓库确实和某条正式最佳实践记录有关时，才需要填写这里。"
+  }
+}

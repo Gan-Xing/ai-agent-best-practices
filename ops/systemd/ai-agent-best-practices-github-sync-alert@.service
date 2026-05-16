@@ -1,0 +1,17 @@
+[Unit]
+Description=GitHub Sync Failure Alert for %i.service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/dev/ai-agent-best-practices
+Environment=NODE_ENV=production
+EnvironmentFile=/home/ubuntu/dev/ai-agent-best-practices/.env
+ExecStart=/bin/sh /home/ubuntu/dev/ai-agent-best-practices/ops/systemd/on-github-sync-failure.sh %i.service
+NoNewPrivileges=true
+PrivateTmp=true
+TimeoutStartSec=10min
+SyslogIdentifier=ai-agent-best-practices-github-sync-alert

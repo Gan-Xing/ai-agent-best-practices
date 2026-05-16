@@ -326,6 +326,42 @@ model Source {
   @@map("sources")
 }
 
+model GithubRepoUpstream {
+  id                String   @id @default(cuid())
+  host              String   @default("github")
+  owner             String
+  name              String
+  fullName          String   @unique
+  repoUrl           String?
+  description       String?
+  homepage          String?
+  stars             Int?
+  primaryLanguage   String?
+  dominantLanguages Json?
+  license           String?
+  topics            Json?
+  archived          Boolean  @default(false)
+  defaultBranch     String?
+  pushedAt          DateTime?
+  lastFetchedAt     DateTime?
+  readmeTitle       String?
+  readmeIntro       String?
+  readmeHeadings    Json?
+  rootEntries       Json?
+  rootManifests     Json?
+  metadata          Json?
+  rawPayload        Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([owner, name])
+  @@index([stars])
+  @@index([pushedAt])
+  @@index([lastFetchedAt])
+  @@map("github_repo_upstreams")
+}
+
 model KnowledgeRecordSource {
   recordId String
   sourceId String

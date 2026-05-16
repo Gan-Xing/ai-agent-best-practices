@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "future-agi__future-agi",
+  "repo": {
+    "host": "github",
+    "owner": "future-agi",
+    "name": "future-agi",
+    "fullName": "future-agi/future-agi",
+    "url": "https://github.com/future-agi/future-agi"
+  },
+  "classification": {
+    "categoryCode": "12",
+    "secondaryCategoryCodes": [
+      "11",
+      "03"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "agent-observability",
+      "tracing",
+      "agent-eval",
+      "hallucination",
+      "simulation",
+      "guardrails",
+      "llmops",
+      "agent-runtime"
+    ],
+    "keywords": [
+      "future-agi/future-agi",
+      "future agi",
+      "agent observability",
+      "agent evaluation",
+      "hallucination detection",
+      "langfuse",
+      "langsmith",
+      "helicone",
+      "opentelemetry",
+      "prompt regression testing"
+    ]
+  },
+  "summary": "面向 LLM 与 AI Agent 应用的开源端到端平台，覆盖 tracing、evals、simulations、datasets、gateway 与 guardrails，可自托管。",
+  "whyItMatters": "适合作为 AI Agent 生产环境观测、追踪、自动评测与反馈闭环平台的参考仓库，尤其适合研究 tracing、replay、eval、simulation 与 guardrails 如何围绕 agent runtime 形成工程化闭环。",
+  "notes": "更像 AI Agent 的 Datadog + Sentry + Jaeger，而不是新的模型或 agent runtime 本身。重点值得研究 trace schema、eval system、replay、dataset 回流和 prompt regression testing。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-15T17:26:22.246Z",
+    "lastReviewedAt": "2026-05-15T17:26:22.246Z",
+    "reviewAfter": "2026-08-13T17:26:22.246Z"
+  },
+  "links": {
+    "docs": "https://futureagi.com"
+  }
+}

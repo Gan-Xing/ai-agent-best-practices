@@ -341,6 +341,15 @@ export default async function Home({ searchParams }: HomeProps) {
               <Badge>关系可跳转</Badge>
               <Badge>版本可追踪</Badge>
             </div>
+
+            <div className="mt-6 flex justify-center">
+              <Link
+                href="/resources/github"
+                className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
+              >
+                浏览 GitHub Reference Library
+              </Link>
+            </div>
           </section>
         </div>
       </main>
@@ -389,6 +398,15 @@ export default async function Home({ searchParams }: HomeProps) {
                 hint={searchResult.queryLogId ? `log ${searchResult.queryLogId.slice(0, 8)}` : "当前没有写入搜索日志"}
               />
             </div>
+          </div>
+
+          <div className="flex justify-end">
+            <Link
+              href="/resources/github"
+              className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
+            >
+              打开 GitHub Reference Library
+            </Link>
           </div>
 
           <form action="/" method="GET" className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))_auto]">
