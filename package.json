@@ -15,6 +15,7 @@
     "content:fields": "tsx scripts/content-fields.ts",
     "content:contract": "tsx scripts/content-contract-check.ts",
     "content:validate": "tsx scripts/content-validate.ts",
+    "providers:smoke": "tsx scripts/providers-smoke.ts",
     "resources:github:validate": "tsx scripts/github-cards-validate.ts",
     "resources:github:sync-upstreams": "tsx scripts/github-upstreams-sync.ts",
     "github:repo:fetch": "tsx skills/github-reference-entry/scripts/fetch-repo-context.ts",
