@@ -243,3 +243,29 @@ pnpm content:verify
 pnpm lint
 DATABASE_URL="postgresql://knowledge:knowledge@localhost:5432/knowledge" pnpm build
 ```
+
+## Provider Smoke Tests
+
+Use this lightweight script to probe provider API basics before doing deeper
+agent workflow experiments:
+
+```bash
+pnpm providers:smoke
+pnpm providers:smoke -- --provider deepseek,qwen
+pnpm providers:smoke -- --provider openrouter --out runtime/provider-smoke/openrouter.json
+```
+
+What it checks:
+
+- plain text completion
+- JSON / structured-output style response
+- function / tool calling
+
+The script reads `.env` by default and supports these optional variables:
+
+```text
+DEEPSEEK_API_KEY / DEEPSEEK_BASE_URL / DEEPSEEK_DEFAULT_MODEL
+MINIMAX_API_KEY / MINIMAX_BASE_URL / MINIMAX_MODEL
+QWEN_API_KEY / QWEN_BASE_URL / QWEN_DEFAULT_MODEL
+OPENROUTER_API_KEY / OPENROUTER_BASE_URL / OPENROUTER_MODEL
+```
