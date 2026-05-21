@@ -99,6 +99,69 @@ ops/systemd/ai-agent-best-practices-github-sync-alert@.service
 
 公开仓库只保留通用 webhook 告警出口。Telegram、微信、Slack 等个人通知链路应放在私有服务里。
 
+### Practice
+
+所有“自己实践出来的小脚本、小工具、小实验代码”统一放在 `practice/`
+目录下，而不是混进仓库维护脚本 `scripts/`。
+
+当前模型能力 smoke 测试位于：
+
+```text
+practice/model/capability-smoke/
+```
+
+运行与测试：
+
+```bash
+pnpm practice:model:capability-smoke -- --model deepseek-v4-pro
+pnpm practice:model:capability-smoke -- --model qwen3.6-plus,gpt-5.5
+pnpm practice:model:capability-smoke:test
+```
+
+更详细的命令、日志和输出说明见：
+
+```text
+practice/model/capability-smoke/README.md
+```
+
+### Practice Output vs Final Artifact
+
+`practice/`、`runtime/`、`public/artifacts/` 和 `records` 在这个仓库里不是一回事：
+
+- `practice/`
+  - 放实践代码、测试脚本、小工具源码
+- `runtime/practice/`
+  - 放运行结果、日志、JSON 快照、本地汇总页
+  - 这是工作区，当前被 `.gitignore` 忽略，不作为最终发布内容
+- `public/artifacts/`
+  - 放已经确认要保留、要提交、要部署、要被 record 引用的最终静态页面
+- `records`
+  - 放整理后的结论、判断和长期知识记录
+  - record 正文引用 `public/artifacts/...` 下的最终页面，而不是直接引用 `runtime/...`
+
+当前模型能力矩阵的工作副本位于：
+
+```text
+runtime/practice/model/summary/model-capability-matrix-2026-05-17.html
+```
+
+当前已晋升的最终页面位于：
+
+```text
+public/artifacts/model/summary/model-capability-matrix-2026-05-17.html
+```
+
+也就是说：
+
+- `runtime/...` 继续做实验和快照
+- `public/artifacts/...` 才是最终要进 Git、能部署、能被 records 引用的页面
+
+更完整的目录约定见：
+
+```text
+docs/practice-artifacts-and-records.md
+```
+
 ## Repo-Local Skills
 
 This repository includes a project-local skill for KnowledgeRecord entry:
