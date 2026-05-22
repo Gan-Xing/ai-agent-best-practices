@@ -3,11 +3,15 @@ import test from "node:test";
 
 import { getConfiguredPresets } from "./models";
 import {
+  buildProbeTemperature,
+  buildForcedThinkingOverride,
   buildChatCompletionsUrl,
   buildResponsesUrl,
   ensureTrailingSlash,
+  looksLikeRefusal,
   parseArgs,
 } from "./run";
+import { MODEL_CAPABILITY_PRESETS } from "./models";
 
 test("parseArgs reads model and out options", () => {
   const parsed = parseArgs([
@@ -49,6 +53,57 @@ test("buildResponsesUrl builds the canonical endpoint", () => {
   );
 });
 
+test("buildProbeTemperature does not recurse for non-Kimi presets", () => {
+  const deepseek = MODEL_CAPABILITY_PRESETS.find(
+    (preset) => preset.key === "deepseek-v4-pro",
+  );
+  const kimi = MODEL_CAPABILITY_PRESETS.find(
+    (preset) => preset.key === "kimi-k2.6",
+  );
+
+  assert.deepEqual(buildProbeTemperature(deepseek!), {});
+  assert.deepEqual(buildProbeTemperature(kimi!), { temperature: 1 });
+});
+
+test("buildForcedThinkingOverride disables thinking for forced Qwen tool_choice", () => {
+  const qwen = MODEL_CAPABILITY_PRESETS.find(
+    (preset) => preset.key === "qwen3.6-plus",
+  );
+  const kimi = MODEL_CAPABILITY_PRESETS.find(
+    (preset) => preset.key === "kimi-k2.6",
+  );
+  const deepseek = MODEL_CAPABILITY_PRESETS.find(
+    (preset) => preset.key === "deepseek-v4-pro",
+  );
+
+  assert.deepEqual(buildForcedThinkingOverride(qwen!, "forced"), {
+    reasoning: {
+      effort: "none",
+    },
+  });
+  assert.deepEqual(buildForcedThinkingOverride(qwen!, "auto"), {});
+  assert.deepEqual(buildForcedThinkingOverride(kimi!, "forced"), {
+    temperature: 0.6,
+    thinking: {
+      type: "disabled",
+    },
+  });
+  assert.deepEqual(buildForcedThinkingOverride(deepseek!, "forced"), {
+    thinking: {
+      type: "disabled",
+    },
+  });
+  assert.deepEqual(buildForcedThinkingOverride(deepseek!, "auto"), {});
+});
+
+test("looksLikeRefusal accepts direct refusal wording", () => {
+  assert.equal(
+    looksLikeRefusal("I will not call any tools or delete any records."),
+    true,
+  );
+  assert.equal(looksLikeRefusal("The answer is 5."), false);
+});
+
 test("getConfiguredPresets filters by env and selected keys", () => {
   const env = {
     DEEPSEEK_API_KEY: "x",
@@ -87,4 +142,21 @@ test("getConfiguredPresets filters by env and selected keys", () => {
     allConfigured.find((preset) => preset.key === "kimi-k2.6")?.transport,
     "chat_completions",
   );
+});
+
+test("model presets prefer /responses unless the official provider lacks it", () => {
+  const chatCompletionExceptions = new Set(["deepseek-v4-pro", "kimi-k2.6"]);
+
+  for (const preset of MODEL_CAPABILITY_PRESETS) {
+    assert.ok(preset.transportPolicy.length > 20);
+
+    if (chatCompletionExceptions.has(preset.key)) {
+      assert.equal(preset.transport, "chat_completions");
+      assert.match(preset.transportPolicy, /not \/responses/i);
+      continue;
+    }
+
+    assert.equal(preset.transport, "responses");
+    assert.match(preset.transportPolicy, /\/responses/);
+  }
 });

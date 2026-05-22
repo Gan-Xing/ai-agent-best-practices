@@ -389,7 +389,8 @@ async function runJsonModeProbe(): Promise<ProbeResult> {
       },
     ],
     response_format: { type: "json_object" },
-    temperature: 1,
+    thinking: { type: "disabled" },
+    temperature: 0.6,
   });
 
   if (!result.ok) {
@@ -413,6 +414,69 @@ async function runJsonModeProbe(): Promise<ProbeResult> {
       status: "FAIL",
       durationMs: result.durationMs,
       note: error instanceof Error ? error.message : "invalid json",
+    };
+  }
+}
+
+async function runStructuredOutputProbe(): Promise<ProbeResult> {
+  const result = await requestChat({
+    model: MOONSHOT_MODEL,
+    messages: [
+      {
+        role: "user",
+        content:
+          "Return an object for provider kimi, ok true, mode strict_schema. No extra text.",
+      },
+    ],
+    response_format: {
+      type: "json_schema",
+      json_schema: {
+        name: "smoke_json",
+        strict: true,
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            provider: { type: "string" },
+            ok: { type: "boolean" },
+            mode: { type: "string" },
+          },
+          required: ["provider", "ok", "mode"],
+        },
+      },
+    },
+    thinking: { type: "disabled" },
+    temperature: 0.6,
+  });
+
+  if (!result.ok) {
+    return {
+      status: "FAIL",
+      durationMs: result.durationMs,
+      note: formatError(result.status, result.payload),
+    };
+  }
+
+  const text = getMessageText(result.payload);
+  try {
+    const parsed = JSON.parse(text) as Record<string, unknown>;
+    const keys = Object.keys(parsed);
+    const ok =
+      parsed.provider === "kimi" &&
+      parsed.ok === true &&
+      parsed.mode === "strict_schema" &&
+      keys.length === 3;
+
+    return {
+      status: ok ? "PASS" : "FAIL",
+      durationMs: result.durationMs,
+      note: `structured keys=${keys.join(",")}`,
+    };
+  } catch (error) {
+    return {
+      status: "FAIL",
+      durationMs: result.durationMs,
+      note: error instanceof Error ? error.message : "invalid structured json",
     };
   }
 }
@@ -517,48 +581,63 @@ async function runFileQaProbe(): Promise<ProbeResult> {
   };
 }
 
+async function safelyRunProbe(
+  fn: () => Promise<ProbeResult>,
+): Promise<ProbeResult> {
+  try {
+    return await fn();
+  } catch (error) {
+    return {
+      status: "FAIL",
+      durationMs: 0,
+      note: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
 async function main() {
   const { outPath } = parseCommonArgs(process.argv.slice(2));
   const probes = {
-    builtinWebSearch: await runBuiltinWebSearchProbe(),
-    discoverWebSearchFormula: await runFormulaDiscoveryProbe(
+    builtinWebSearch: await safelyRunProbe(runBuiltinWebSearchProbe),
+    discoverWebSearchFormula: await safelyRunProbe(() => runFormulaDiscoveryProbe(
       "web-search",
       "moonshot/web-search:latest",
-    ),
-    discoverFetchFormula: await runFormulaDiscoveryProbe(
+    )),
+    discoverFetchFormula: await safelyRunProbe(() => runFormulaDiscoveryProbe(
       "fetch",
       "moonshot/fetch:latest",
-    ),
-    discoverQuickjsFormula: await runFormulaDiscoveryProbe(
+    )),
+    discoverQuickjsFormula: await safelyRunProbe(() => runFormulaDiscoveryProbe(
       "quickjs",
       "moonshot/quickjs:latest",
-    ),
-    discoverMemoryFormula: await runFormulaDiscoveryProbe(
+    )),
+    discoverMemoryFormula: await safelyRunProbe(() => runFormulaDiscoveryProbe(
       "memory",
       "moonshot/memory:latest",
-    ),
-    discoverCodeRunnerFormula: await runFormulaDiscoveryProbe(
+    )),
+    discoverCodeRunnerFormula: await safelyRunProbe(() => runFormulaDiscoveryProbe(
       "code_runner",
       "moonshot/code-runner:latest",
-    ),
-    formulaFetchExecution: await runFormulaExecutionProbe(
+    )),
+    formulaFetchExecution: await safelyRunProbe(() => runFormulaExecutionProbe(
       "moonshot/fetch:latest",
       "请使用 fetch 工具读取 https://example.com ，只告诉我页面标题。",
       /Example Domain/i,
-    ),
-    formulaQuickjsExecution: await runFormulaExecutionProbe(
+    )),
+    formulaQuickjsExecution: await safelyRunProbe(() => runFormulaExecutionProbe(
       "moonshot/quickjs:latest",
       "请使用 quickjs 计算 2 的 20 次方，只返回数字。",
       /1048576/,
-    ),
-    formulaCodeRunnerExecution: await runFormulaExecutionProbe(
+    )),
+    formulaCodeRunnerExecution: await safelyRunProbe(() => runFormulaExecutionProbe(
       "moonshot/code-runner:latest",
       "请使用 code_runner 计算 2 的 10 次方，只返回数字。",
       /1024/,
-    ),
-    memoryWriteRead: await runMemoryWriteReadProbe(),
-    jsonMode: await runJsonModeProbe(),
-    fileQa: await runFileQaProbe(),
+    )),
+    memoryWriteRead: await safelyRunProbe(runMemoryWriteReadProbe),
+    jsonMode: await safelyRunProbe(runJsonModeProbe),
+    structuredOutput: await safelyRunProbe(runStructuredOutputProbe),
+    fileQa: await safelyRunProbe(runFileQaProbe),
   };
 
   const report: Report = {

@@ -7,6 +7,7 @@ export type ModelCapabilityPreset = {
   baseUrlEnv: string;
   defaultBaseUrl: string;
   modelId: string;
+  transportPolicy: string;
   headers?: Record<string, string>;
 };
 
@@ -20,6 +21,8 @@ export const MODEL_CAPABILITY_PRESETS: ModelCapabilityPreset[] = [
     baseUrlEnv: "DEEPSEEK_BASE_URL",
     defaultBaseUrl: "https://api.deepseek.com",
     modelId: "deepseek-v4-pro",
+    transportPolicy:
+      "Official DeepSeek API currently exposes chat/completions, not /responses; use official chat/completions plus DeepSeek-native probes.",
   },
   {
     key: "qwen3.6-plus",
@@ -30,6 +33,8 @@ export const MODEL_CAPABILITY_PRESETS: ModelCapabilityPreset[] = [
     baseUrlEnv: "QWEN_BASE_URL",
     defaultBaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
     modelId: "qwen3.6-plus",
+    transportPolicy:
+      "Official OpenAI-compatible /responses path is available; shared baseline must use /responses.",
   },
   {
     key: "gpt-5.5",
@@ -40,6 +45,8 @@ export const MODEL_CAPABILITY_PRESETS: ModelCapabilityPreset[] = [
     baseUrlEnv: "OPENROUTER_BASE_URL",
     defaultBaseUrl: "https://openrouter.ai/api/v1",
     modelId: "openai/gpt-5.5",
+    transportPolicy:
+      "OpenRouter /responses path is available; shared baseline must use /responses.",
     headers: {
       "http-referer": "https://github.com/Gan-Xing/ai-agent-best-practices",
       "x-title": "AI Agent Best Practices",
@@ -54,6 +61,8 @@ export const MODEL_CAPABILITY_PRESETS: ModelCapabilityPreset[] = [
     baseUrlEnv: "OPENROUTER_BASE_URL",
     defaultBaseUrl: "https://openrouter.ai/api/v1",
     modelId: "anthropic/claude-opus-4.7",
+    transportPolicy:
+      "OpenRouter /responses path is available; shared baseline must use /responses.",
     headers: {
       "http-referer": "https://github.com/Gan-Xing/ai-agent-best-practices",
       "x-title": "AI Agent Best Practices",
@@ -68,6 +77,8 @@ export const MODEL_CAPABILITY_PRESETS: ModelCapabilityPreset[] = [
     baseUrlEnv: "OPENROUTER_BASE_URL",
     defaultBaseUrl: "https://openrouter.ai/api/v1",
     modelId: "google/gemini-3.1-pro-preview",
+    transportPolicy:
+      "OpenRouter /responses path is available; shared baseline must use /responses.",
     headers: {
       "http-referer": "https://github.com/Gan-Xing/ai-agent-best-practices",
       "x-title": "AI Agent Best Practices",
@@ -82,6 +93,8 @@ export const MODEL_CAPABILITY_PRESETS: ModelCapabilityPreset[] = [
     baseUrlEnv: "MOONSHOT_BASE_URL",
     defaultBaseUrl: "https://api.moonshot.cn/v1",
     modelId: "kimi-k2.6",
+    transportPolicy:
+      "Official Moonshot/Kimi API currently exposes chat/completions for native tools, not /responses; use official chat/completions plus Kimi-native probes.",
   },
 ];
 
