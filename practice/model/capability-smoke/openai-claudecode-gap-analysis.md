@@ -100,7 +100,7 @@
 | strict structured outputs | 强 | 当前未测 | 强 | Qwen/Kimi 好 |
 | streaming | 强 | 强 | 强 | 三家都能用 |
 | tools | 强 | 强 | 强 | 三家都能用 |
-| forced tool choice | 弱 | 不支持 | 强 | Qwen/DeepSeek 明显落后 |
+| forced tool choice | 强，需关闭 thinking | 强，需关闭 thinking | 强 | Qwen/DeepSeek 都要按非思考模式测 |
 | parallel tools | 强 | 强 | 强 | 这一项都不差 |
 | multi-turn tool loop | 强 | 弱 | 强 | DeepSeek 最明显落后 |
 | long context extraction | 弱 | 波动 | 强 | Kimi 当前最好 |
@@ -114,7 +114,7 @@
 
 | 能力 | Qwen 3.6 Plus | DeepSeek V4 Pro | Kimi K2.6 |
 |---|---|---|---|
-| hosted web search | 已验证 PASS | 当前无 | 通过 OpenRouter web search PASS |
+| hosted web search | 已验证 PASS | OpenRouter web 插件 PASS，原厂 native 无 | 通过 OpenRouter web search PASS |
 | hosted code execution | 已验证 PASS | 当前无 | 当前无 |
 | hosted file search | 当前未确认 | 当前无 | 当前未确认 |
 | provider-native MCP | 当前未验证 | 当前无 | 当前未验证 |
@@ -122,7 +122,7 @@
 这一层里：
 
 - `Qwen` 最接近“国内企业 Agent 平台”
-- `DeepSeek` 明显不是托管工具平台路线
+- `DeepSeek` 官方原生不是托管工具平台路线，但经 OpenRouter 可以使用 OpenRouter web 插件
 - `Kimi` 更像实用型智能助手，而不是完整工具平台
 
 ### Layer 3: ClaudeCode-style Coding Runtime Readiness
@@ -155,14 +155,14 @@
 |---|---|---|---|---|
 | no-tool compliance | PASS | PASS | PASS | 三家都能忍住不乱调 |
 | tool argument accuracy | PASS | PASS | PASS | 三家在这个中等复杂 schema 下都能打准 |
-| forced tool choice stability | FAIL | SKIP | FAIL(2/3) | 这里才是真正的差距点 |
+| forced tool choice stability | PASS | PASS | PASS | 需要按各家约束关闭 thinking 或使用正确温度 |
 
 这个结果很重要：
 
 - `Qwen / DeepSeek / Kimi` 并不是“连工具纪律都没有”
 - 它们在“**该不该调**”和“**参数能不能打准**”上，其实都已经不差
 - 真正拉开差距的是：
-  - `forced tool choice`
+  - hosted tools 和 provider-native runtime，而不是 forced tool choice 本身
   - `multi-turn tool loop`
   - `long-context stability`
   - `hosted platform completeness`
@@ -208,7 +208,7 @@
 
 缺点：
 
-- forced tool choice 不支持
+- forced tool choice 必须关闭 thinking 后测
 - tool loop 需要 reasoning_content 回传
 - 托管工具层明显弱
 

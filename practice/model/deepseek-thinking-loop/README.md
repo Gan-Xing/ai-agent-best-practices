@@ -2,6 +2,25 @@
 
 这个 practice 专门验证 DeepSeek 的 thinking / tool loop / context caching 行为。
 
+## Latest Snapshot
+
+`2026-05-22.r3` 原厂能力复核 8 项全部通过：
+
+- `reasoningContentPresent`
+- `thinkingDisabledNoReasoning`
+- `thinkingCostComparison`
+- `jsonMode`
+- `strictFunctionCalling`
+- `missingReasoningFailure`
+- `preservedReasoningSuccess`
+- `contextCaching`
+
+结果文件：
+
+```text
+runtime/practice/model/deepseek-thinking-loop/run-2026-05-22.r3.json
+```
+
 当前覆盖：
 
 - `reasoning_content` 是否出现
