@@ -131,13 +131,13 @@ Record 本身负责讲清楚：
 当前工作副本：
 
 ```text
-runtime/practice/model/summary/model-capability-matrix-2026-05-17.html
+runtime/practice/model/summary/model-capability-matrix-2026-05-22.html
 ```
 
 当前最终引用页：
 
 ```text
-public/artifacts/model/summary/model-capability-matrix-2026-05-17.html
+public/artifacts/model/summary/model-capability-matrix-2026-05-22.html
 ```
 
 这意味着：

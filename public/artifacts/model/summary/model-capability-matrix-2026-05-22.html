@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="zh-CN" data-ui-lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>模型能力矩阵 / Model Capability Matrix - 2026-05-22</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f6f8fb;
+        --surface: #ffffff;
+        --surface-2: #f1f5f9;
+        --surface-3: #e9eff7;
+        --text: #16202f;
+        --muted: #66758a;
+        --border: #d7e0ea;
+        --border-strong: #b7c5d6;
+        --pass-bg: #e7f7ee;
+        --pass-text: #0f6b3f;
+        --fail-bg: #fdecec;
+        --fail-text: #b42318;
+        --pending-bg: #fff7e6;
+        --pending-text: #b45309;
+        --deferred-bg: #ecf8ff;
+        --deferred-text: #0369a1;
+        --skip-bg: #f3f4f6;
+        --skip-text: #475467;
+        --na-bg: #f8fafc;
+        --na-text: #66758a;
+        --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(80, 120, 255, 0.07), transparent 24%),
+          radial-gradient(circle at top right, rgba(0, 180, 150, 0.06), transparent 28%),
+          var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        max-width: 1720px;
+        margin: 0 auto;
+        padding: 28px 24px 48px;
+      }
+
+      [data-ui-lang="zh"] .en {
+        display: none !important;
+      }
+
+      [data-ui-lang="en"] .zh {
+        display: none !important;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: 30px;
+        font-weight: 760;
+      }
+
+      h2 {
+        font-size: 22px;
+        font-weight: 720;
+        margin-bottom: 8px;
+      }
+
+      p {
+        line-height: 1.6;
+      }
+
+      .hero {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.92));
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 22px 22px 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .hero-title {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 10px 14px;
+      }
+
+      .hero-title .en {
+        font-size: 16px;
+        font-weight: 650;
+        color: var(--muted);
+      }
+
+      .hero-copy {
+        margin-top: 10px;
+        color: var(--muted);
+        max-width: 1120px;
+      }
+
+      .toolbar {
+        margin-top: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .toggle-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+      }
+
+      .toggle-btn {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .toggle-btn.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      }
+
+      .toolbar-note {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .meta-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 14px 12px;
+      }
+
+      .meta-card .value {
+        font-size: 24px;
+        font-weight: 760;
+      }
+
+      .meta-card .label {
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 13px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 650;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        white-space: nowrap;
+      }
+
+      .chip.pass {
+        background: var(--pass-bg);
+        color: var(--pass-text);
+        border-color: #b7e4c7;
+      }
+
+      .chip.fail {
+        background: var(--fail-bg);
+        color: var(--fail-text);
+        border-color: #f4c7c3;
+      }
+
+      .chip.pending {
+        background: var(--pending-bg);
+        color: var(--pending-text);
+        border-color: #f3d08b;
+      }
+
+      .chip.deferred {
+        background: var(--deferred-bg);
+        color: var(--deferred-text);
+        border-color: #bae6fd;
+      }
+
+      .chip.skip {
+        background: var(--skip-bg);
+        color: var(--skip-text);
+        border-color: #d0d5dd;
+      }
+
+      .chip.na {
+        background: var(--na-bg);
+        color: var(--na-text);
+        border-color: var(--border);
+      }
+
+      .section {
+        margin-top: 28px;
+      }
+
+      .section-copy {
+        color: var(--muted);
+        margin-bottom: 14px;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        min-width: 1280px;
+      }
+
+      thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 720;
+        text-align: center;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+
+      thead th:first-child,
+      tbody td:first-child {
+        position: sticky;
+        left: 0;
+        min-width: 250px;
+      }
+
+      thead th:first-child {
+        z-index: 4;
+        background: var(--surface-2);
+      }
+
+      tbody td:first-child {
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.98);
+      }
+
+      tbody td {
+        padding: 11px 10px;
+        border-bottom: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+        text-align: center;
+        vertical-align: middle;
+        font-size: 14px;
+      }
+
+      tbody tr:nth-child(even) td {
+        background: rgba(241, 245, 249, 0.32);
+      }
+
+      tbody tr:nth-child(even) td:first-child {
+        background: rgba(248, 250, 252, 0.98);
+      }
+
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .model-head,
+      .cap-label {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .model-head .zh,
+      .cap-label .zh {
+        font-weight: 700;
+        color: var(--text);
+      }
+
+      .model-head .en,
+      .cap-label .en {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 560;
+      }
+
+      .model-head {
+        align-items: center;
+      }
+
+      .cap-label {
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      .status {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 74px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-weight: 760;
+        letter-spacing: 0;
+      }
+
+      .status.pass {
+        background: var(--pass-bg);
+        color: var(--pass-text);
+      }
+
+      .status.fail {
+        background: var(--fail-bg);
+        color: var(--fail-text);
+      }
+
+      .status.pending {
+        background: var(--pending-bg);
+        color: var(--pending-text);
+      }
+
+      .status.deferred {
+        background: var(--deferred-bg);
+        color: var(--deferred-text);
+      }
+
+      .status.skip {
+        background: var(--skip-bg);
+        color: var(--skip-text);
+      }
+
+      .status.na {
+        background: var(--na-bg);
+        color: var(--na-text);
+      }
+
+      .status.with-note {
+        position: relative;
+        padding-right: 28px;
+        cursor: help;
+        outline: none;
+      }
+
+      .status.with-note .note-mark {
+        position: absolute;
+        top: 50%;
+        right: 8px;
+        display: inline-flex;
+        width: 15px;
+        height: 15px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.86);
+        color: currentColor;
+        font-size: 10px;
+        font-weight: 800;
+        transform: translateY(-50%);
+      }
+
+      .status.with-note::after {
+        content: attr(data-note-zh);
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 10px);
+        z-index: 20;
+        width: max-content;
+        max-width: 340px;
+        padding: 10px 12px;
+        border: 1px solid rgba(15, 23, 42, 0.18);
+        border-radius: 12px;
+        background: #111827;
+        color: #ffffff;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.24);
+        font-size: 12px;
+        font-weight: 560;
+        line-height: 1.55;
+        text-align: left;
+        white-space: normal;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -4px);
+        transition:
+          opacity 150ms ease,
+          transform 150ms ease;
+      }
+
+      [data-ui-lang="en"] .status.with-note::after {
+        content: attr(data-note-en);
+      }
+
+      .status.with-note::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 4px);
+        z-index: 21;
+        width: 10px;
+        height: 10px;
+        background: #111827;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -4px) rotate(45deg);
+        transition:
+          opacity 150ms ease,
+          transform 150ms ease;
+      }
+
+      .status.with-note:hover::after,
+      .status.with-note:focus::after,
+      .status.with-note:hover::before,
+      .status.with-note:focus::before {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .status.with-note:hover::before,
+      .status.with-note:focus::before {
+        transform: translate(-50%, 0) rotate(45deg);
+      }
+
+      .notes {
+        margin-top: 28px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .note {
+        padding: 15px 16px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .note strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 14px;
+      }
+
+      .note .en {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .sources {
+        margin-top: 28px;
+        padding: 16px 18px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+      }
+
+      .sources h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
+      }
+
+      .sources-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .sources code {
+        font-size: 12px;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      li + li {
+        margin-top: 6px;
+      }
+
+      @media (max-width: 1024px) {
+        .meta-grid,
+        .notes,
+        .sources-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="hero">
+        <div class="hero-title">
+          <h1>
+            <span class="zh">模型能力矩阵</span>
+            <span class="en">Model Capability Matrix</span>
+          </h1>
+        </div>
+        <p class="hero-copy">
+          <span class="zh">生成时间：2026-05-22。这一页把 6 个模型的通用能力基线，以及 Qwen / Kimi / DeepSeek 的平台原生专项拆开汇总，并标清当前范围和暂不接入项。</span>
+          <span class="en">Snapshot time: 2026-05-22. This page separates shared baseline probes from provider-native capability probes and marks current scope plus deferred integrations.</span>
+        </p>
+
+        <div class="toolbar">
+          <div class="toggle-group" aria-label="Language toggle">
+            <button class="toggle-btn active" type="button" data-lang-target="zh">中文</button>
+            <button class="toggle-btn" type="button" data-lang-target="en">English</button>
+          </div>
+          <div class="toolbar-note">
+            <span class="zh">切换后整页只显示一种语言。</span>
+            <span class="en">Switching shows only one language at a time.</span>
+          </div>
+        </div>
+
+        <div class="meta-grid">
+          <div class="meta-card">
+            <div class="value">6</div>
+            <div class="label"><span class="zh">模型数量</span><span class="en">Models covered</span></div>
+          </div>
+          <div class="meta-card">
+            <div class="value">2</div>
+            <div class="label"><span class="zh">测试层级</span><span class="en">Test layers</span></div>
+          </div>
+          <div class="meta-card">
+            <div class="value">3</div>
+            <div class="label"><span class="zh">专项厂商</span><span class="en">Native-focus providers</span></div>
+          </div>
+          <div class="meta-card">
+            <div class="value">2026-05-22</div>
+            <div class="label"><span class="zh">当前快照</span><span class="en">Current snapshot</span></div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span class="chip pass">🟩✅ <span class="zh">已实测且通过</span><span class="en">Tested and passed</span></span>
+          <span class="chip fail">🟥❌ <span class="zh">已实测但失败</span><span class="en">Tested and failed</span></span>
+          <span class="chip deferred"><span class="zh">暂不测</span><span class="en">Deferred</span> <span class="zh">当前不接入所需官方 API</span><span class="en">Out of current integration scope</span></span>
+          <span class="chip skip">⬜⏭️ <span class="zh">已进入流程但当前跳过</span><span class="en">In flow but skipped for now</span></span>
+          <span class="chip na">/ <span class="zh">不适用，不是该厂商路径能力</span><span class="en">Not applicable to this provider path</span></span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><span class="zh">通用能力基线</span><span class="en">Shared Capability Baseline</span></h2>
+        <p class="section-copy">
+          <span class="zh">这一层更接近“通用 Agent 模型层”对比，重点看协议、工具控制、长上下文和多轮 loop。</span>
+          <span class="en">This layer is the closest to a shared agent-runtime baseline: protocol behavior, tool control, long context, and multi-turn loop stability.</span>
+        </p>
+
+        <div class="card table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>
+                  <div class="model-head">
+                    <span class="zh">能力</span>
+                    <span class="en">Capability</span>
+                  </div>
+                </th>
+                <th><div class="model-head"><span class="zh">GPT-5.5</span><span class="en">OpenAI via OpenRouter</span></div></th>
+                <th><div class="model-head"><span class="zh">Claude Opus 4.7</span><span class="en">Anthropic via OpenRouter</span></div></th>
+                <th><div class="model-head"><span class="zh">Gemini 3.1 Pro Preview</span><span class="en">Google via OpenRouter</span></div></th>
+                <th><div class="model-head"><span class="zh">Qwen 3.6 Plus</span><span class="en">Qwen native</span></div></th>
+                <th><div class="model-head"><span class="zh">DeepSeek V4 Pro</span><span class="en">DeepSeek native</span></div></th>
+                <th><div class="model-head"><span class="zh">Kimi K2.6</span><span class="en">Kimi native</span></div></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><div class="cap-label"><span class="zh">文本生成</span><span class="en">text</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">通用 JSON 输出</span><span class="en">generic json</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">严格结构化输出</span><span class="en">strict structured outputs</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">流式输出</span><span class="en">streaming</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">工具调用</span><span class="en">tools</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">禁止调用工具时是否克制</span><span class="en">no-tool compliance</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">工具参数准确率</span><span class="en">tool argument accuracy</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">大工具集路由</span><span class="en">large toolset routing</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">工具失败后的恢复</span><span class="en">partial tool failure recovery</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">需要审批时是否停下</span><span class="en">approval required compliance</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">危险工具拒绝</span><span class="en">dangerous tool refusal</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">读写工具区分</span><span class="en">read/write discrimination</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">破坏性重试纪律</span><span class="en">destructive retry discipline</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">强制工具选择稳定性</span><span class="en">tool_choice stability</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">并行工具调用</span><span class="en">parallel tools</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">多轮工具循环</span><span class="en">multi-turn tool loop</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">长上下文稳定性</span><span class="en">long context</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">错误格式可预期性</span><span class="en">error shape</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">托管式网页搜索</span><span class="en">hosted web search</span></div></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status pass">🟩✅</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><span class="zh">平台原生专项</span><span class="en">Provider-Native Capability Probes</span></h2>
+        <p class="section-copy">
+          <span class="zh">这一层只看厂商自己平台上的特殊能力，不把所有项目都强行抽象成一套通用协议。</span>
+          <span class="en">This layer focuses on provider-native features and keeps them separate from the shared protocol baseline.</span>
+        </p>
+
+        <div class="card table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>
+                  <div class="model-head">
+                    <span class="zh">能力</span>
+                    <span class="en">Capability</span>
+                  </div>
+                </th>
+                <th><div class="model-head"><span class="zh">GPT-5.5</span><span class="en">OpenAI via OpenRouter</span></div></th>
+                <th><div class="model-head"><span class="zh">Claude Opus 4.7</span><span class="en">Anthropic via OpenRouter</span></div></th>
+                <th><div class="model-head"><span class="zh">Gemini 3.1 Pro Preview</span><span class="en">Google via OpenRouter</span></div></th>
+                <th><div class="model-head"><span class="zh">Qwen 3.6 Plus</span><span class="en">Qwen native</span></div></th>
+                <th><div class="model-head"><span class="zh">DeepSeek V4 Pro</span><span class="en">DeepSeek native</span></div></th>
+                <th><div class="model-head"><span class="zh">Kimi K2.6</span><span class="en">Kimi native</span></div></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><div class="cap-label"><span class="zh">previous_response_id 状态承接</span><span class="en">previous_response_id state carry</span></div></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">原生网页搜索</span><span class="en">native web_search</span></div></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">原生网页抽取</span><span class="en">native web_extractor</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">原生代码解释器 / 代码运行器</span><span class="en">native code_interpreter / code runner</span></div></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">原生 MCP</span><span class="en">native MCP</span></div></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status na">/</span></td><td><span class="status fail">🟥❌</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">原生文件检索</span><span class="en">native file_search</span></div></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status na">/</span></td><td><span class="status deferred"><span class="zh">暂不测</span><span class="en">deferred</span></span></td><td><span class="status skip">⬜⏭️</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式发现：web-search</span><span class="en">formula discovery: web-search</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式发现：fetch</span><span class="en">formula discovery: fetch</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式发现：quickjs</span><span class="en">formula discovery: quickjs</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式发现：memory</span><span class="en">formula discovery: memory</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式发现：code_runner</span><span class="en">formula discovery: code_runner</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式执行：fetch</span><span class="en">formula execution: fetch</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式执行：quickjs</span><span class="en">formula execution: quickjs</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">公式执行：code_runner</span><span class="en">formula execution: code_runner</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">记忆写入与读回</span><span class="en">memory write/read lifecycle</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">文件上传与文件问答</span><span class="en">file upload + file QA</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">出现 reasoning_content</span><span class="en">reasoning_content present</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">关闭 thinking 后无 reasoning</span><span class="en">thinking disabled -> no reasoning</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">thinking 成本对比</span><span class="en">thinking cost comparison</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">严格函数调用</span><span class="en">strict function calling</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">缺少 reasoning_content 时应失败</span><span class="en">missing reasoning_content should fail</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">回传 reasoning_content 后恢复</span><span class="en">preserved reasoning_content should recover</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+              <tr><td><div class="cap-label"><span class="zh">上下文缓存命中</span><span class="en">context caching hit</span></div></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status na">/</span></td><td><span class="status pass">🟩✅</span></td><td><span class="status na">/</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><span class="zh">关键备注</span><span class="en">Key Notes</span></h2>
+        <div class="notes">
+          <div class="note">
+            <strong><span class="zh">0. 通用基线必须优先走 /responses。</span><span class="en">0. Shared baselines must prefer /responses.</span></strong>
+            <div class="zh">凡是当前可走 <code>/responses</code> 的模型，shared baseline 一律用 <code>/responses</code>。只有厂商官方没有 <code>/responses</code>，或某项能力只能通过厂商原生接口验证时，才退到官方原生接口，并把 <code>transportPolicy</code> 写进测试报告。</div>
+            <div class="en">Whenever a model can use <code>/responses</code>, shared baselines must use <code>/responses</code>. Only providers without an official <code>/responses</code> path, or capabilities that require provider-native APIs, may fall back to the native API, with <code>transportPolicy</code> recorded in the report.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">0b. shared hosted web search 只代表 OpenRouter web 插件。</span><span class="en">0b. Shared hosted web search means the OpenRouter web plugin only.</span></strong>
+            <div class="zh">第一张表里的 <code>hosted web search</code> 不再混合厂商原生网页搜索，只表示 OpenRouter 提供的 <code>plugins: [{ id: "web" }]</code>。DeepSeek V4 Pro 经 OpenRouter 已能返回带 <code>url_citation</code> 的联网结果；DeepSeek 原厂 native web_search 仍在平台原生专项里按 <code>/</code> 处理。</div>
+            <div class="en">The shared <code>hosted web search</code> row no longer mixes provider-native web search; it only means OpenRouter's <code>plugins: [{ id: "web" }]</code>. DeepSeek V4 Pro through OpenRouter returned web results with <code>url_citation</code>; DeepSeek's official native web_search remains <code>/</code> in the provider-native table.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">1. Kimi 的 JSON / Structured Output 已按官方 native 结果覆盖。</span><span class="en">1. Kimi JSON / Structured Output now follows official native results.</span></strong>
+            <div class="zh">旧表里的 <code>Kimi</code> 通用 JSON 失败和严格结构化输出跳过是旧快跑口径，不应继续保留。`2026-05-22.r3` 官方 native 复跑已经确认 <code>jsonMode</code> 和 <code>response_format: json_schema</code> 的 <code>structuredOutput</code> 都通过。Kimi 当前官方主路径是 Chat Completions，不是 <code>/responses</code>。</div>
+            <div class="en">The older <code>Kimi</code> generic JSON failure and strict-output skip were stale fast-run signals. The `2026-05-22.r3` official native rerun confirmed both <code>jsonMode</code> and <code>response_format: json_schema</code> <code>structuredOutput</code> passed. Kimi's current official main path is Chat Completions, not <code>/responses</code>.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">2. Qwen 的强制 tool_choice 必须在关闭 thinking 后再测。</span><span class="en">2. Qwen forced tool_choice should be measured with thinking disabled.</span></strong>
+            <div class="zh">官方文档明确说明思考模式不支持强制工具选择；`2026-05-22.r3` 的共享 smoke 在 forced probe 中显式使用 <code>reasoning.effort=none</code> 后，`toolChoiceStability` 才稳定转成了 <code>🟩✅</code>。</div>
+            <div class="en">The official Qwen docs explicitly say forced tool choice is unsupported in thinking mode. The `2026-05-22.r3` shared rerun only turned `toolChoiceStability` into a stable <code>🟩✅</code> after forcing <code>reasoning.effort=none</code>.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">3. Qwen 的原生 code_interpreter 目前应按“不稳定”处理。</span><span class="en">3. Qwen native code interpreter should currently be treated as unstable.</span></strong>
+            <div class="zh">`2026-05-21` 曾经拿到过 <code>codeInterpreterCalls=1</code> 与 <code>usageCount=1</code>；`2026-05-22` 早些时候多次复跑没有真实工具痕迹，但最新 `run-2026-05-22.selfhosted-mcp.json` 又拿到了 <code>codeInterpreterCalls=1</code> 与 <code>usageCount=1</code>。因此矩阵改为带波动备注的 PASS：有真实能力，但调用是否触发不稳定。</div>
+            <div class="en">We got a real <code>codeInterpreterCalls=1</code> / <code>usageCount=1</code> trace on `2026-05-21`. Earlier `2026-05-22` reruns had no real tool trace, but the latest `run-2026-05-22.selfhosted-mcp.json` again produced <code>codeInterpreterCalls=1</code> / <code>usageCount=1</code>. The matrix therefore marks it as a noted PASS: the capability exists, but triggering it is unstable.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">4. Qwen 的 web_extractor 必须绑定 web_search 一起测。</span><span class="en">4. Qwen web extractor must be paired with web search.</span></strong>
+            <div class="zh">单独调用会被官方接口拒绝；所以当前的通过结果，表示的是“组合链路可用”，不是“独立 extractor 工具可单跑”。</div>
+            <div class="en">Qwen's web extractor only passed when paired with web search. Standalone extractor invocation was rejected by the native API.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">5. Qwen 的 native MCP 依然没有形成真实调用痕迹。</span><span class="en">5. Qwen native MCP still lacks a verified call trace.</span></strong>
+            <div class="zh">`2026-05-22` 的三次原生复跑都只返回“当前环境未直接接入 MCP”的解释文本，`mcpCalls=0`；额外手工探测发现中国区百炼 MCP endpoint 对当前 US key 返回 `InvalidApiKey`，US / intl 同类 endpoint 返回 `404`。最新 `run-2026-05-22.selfhosted-mcp.json` 使用本站自建 SSE MCP server 后，模型只输出了 <code>{"name":"roll_dice"}</code> 这类普通文本，仍没有真实 <code>mcp_call</code>。当前链路固化为不可验证。</div>
+            <div class="en">All three native reruns on `2026-05-22` only returned explanatory prose with <code>mcpCalls=0</code>. Manual probes showed the China-region Bailian MCP endpoint returns `InvalidApiKey` for the current US key, while the US / intl equivalents return `404`. The latest `run-2026-05-22.selfhosted-mcp.json` used this site's self-hosted SSE MCP server, but the model only emitted plain text like <code>{"name":"roll_dice"}</code> and still produced no real <code>mcp_call</code>. The current path is frozen as unverifiable.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">6. DeepSeek 的旧红格已经被清干净，空白项也不再是“未知”。</span><span class="en">6. DeepSeek's old red cells are cleared, and its empty cell is no longer “unknown.”</span></strong>
+            <div class="zh">通用 smoke 的递归回归已经修掉；`2026-05-22.r3` 的 thinking-loop 专项 8 项全部通过，包括 <code>jsonMode</code>、<code>strictFunctionCalling</code>、<code>reasoning_content</code> 回传恢复、thinking 关闭和 context cache。DeepSeek 默认 thinking mode 下强制 <code>tool_choice</code> 会返回 “Thinking mode does not support this tool_choice”，但 `2026-05-22.r3` 共享 smoke 在 forced probe 中显式关闭 thinking 后，<code>toolChoiceStability</code> 3/3 通过。</div>
+            <div class="en">The smoke-regression recursion bug is fixed, and the `2026-05-22.r3` thinking-loop suite passed all 8 probes, including <code>reasoning_content</code> recovery, disabled thinking, strict function calling, and context caching. DeepSeek returns “Thinking mode does not support this tool_choice” for forced <code>tool_choice</code> in default thinking mode, but the `2026-05-22.r3` shared smoke disables thinking for forced probes and passed <code>toolChoiceStability</code> 3/3.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">7. Gemini 的早期红格目前更像瞬时波动。</span><span class="en">7. Gemini's early red cells now look more like transient drift.</span></strong>
+            <div class="zh">后续两轮完整 smoke 都通过了 `toolArgumentAccuracy / parallelTools / multi-turn tool loop / longContext`，而单独抽测的 `hosted web search` 也 3/3 成功，所以当前更合理的结论是“整体可用，但仍需观察”，而不是继续按系统性失败处理。</div>
+            <div class="en">The next two full smoke reruns both passed `toolArgumentAccuracy / parallelTools / multi-turn tool loop / longContext`, and a dedicated `hosted web search` spot check passed 3/3. The better current read is “generally usable, still worth watching,” not a systemic failure.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">8. Kimi 官方 native 工具专项已经补齐。</span><span class="en">8. Kimi's official native tools suite has been closed.</span></strong>
+            <div class="zh">`MOONSHOT_API_KEY` 已恢复，`2026-05-22.r3` 官方 native 复跑 13 个 probe 全部通过：builtin <code>$web_search</code>、Formula discovery、<code>fetch</code>、<code>quickjs</code>、<code>code_runner</code>、<code>memory</code>、<code>jsonMode</code>、<code>structuredOutput</code>、文件上传与文件问答。`OpenRouter` fallback 仍只作为共享基线补充，不覆盖官方 native 结论。</div>
+            <div class="en">`MOONSHOT_API_KEY` is now available. The `2026-05-22.r3` official native rerun passed all 13 probes: builtin <code>$web_search</code>, formula discovery, <code>fetch</code>, <code>quickjs</code>, <code>code_runner</code>, <code>memory</code>, <code>jsonMode</code>, <code>structuredOutput</code>, and file upload + file QA. The OpenRouter fallback remains supplemental and does not overwrite official-native conclusions.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">9. OpenRouter 三列不是原厂能力缺失。</span><span class="en">9. OpenRouter columns do not mean native provider capabilities are missing.</span></strong>
+            <div class="zh">`GPT / Claude / Gemini` 当前共享基线走 `OpenRouter`。由于当前不准备接官方原生 API，原厂专项里官方已有但本项目不接入的能力标成 <code>暂不测</code>。这表示当前范围不覆盖，不表示厂商没有能力。</div>
+            <div class="en">The current `GPT / Claude / Gemini` shared baseline goes through OpenRouter. Because official native APIs are out of scope for now, documented native capabilities that this project does not integrate are marked <code>deferred</code>. This is a scope decision, not a claim that the providers lack those features.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">10. DeepSeek 原厂 hosted tools 当前按不适用处理。</span><span class="en">10. DeepSeek native hosted tools are currently treated as not applicable.</span></strong>
+            <div class="zh">DeepSeek V4 Pro 官方 API 当前重点是 ChatCompletions / Anthropic 兼容、thinking、<code>reasoning_content</code>、function calling 和 context cache。官方 API 文档没有暴露可直接等价于 <code>web_search / web_extractor / code interpreter / MCP / file_search</code> 的原厂 hosted tool，所以平台原生专项里这些格子用 <code>/</code>。这不影响 shared 表里通过 OpenRouter web 插件测得的 hosted web search。</div>
+            <div class="en">DeepSeek V4 Pro's official API currently focuses on ChatCompletions / Anthropic compatibility, thinking, <code>reasoning_content</code>, function calling, and context caching. The official API docs do not expose native hosted tools directly equivalent to <code>web_search / web_extractor / code interpreter / MCP / file_search</code>, so those provider-native cells use <code>/</code>. This does not conflict with the shared hosted web search result through OpenRouter's web plugin.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">11. 这张表是“当前已验证快照”，不是永久结论。</span><span class="en">11. This matrix is a verified snapshot, not a timeless verdict.</span></strong>
+            <div class="zh">部分单元格代表当前脚本、当前账号、当前平台状态下的真实表现，后续继续补测时这些格子会更新。</div>
+            <div class="en">This is a verified snapshot, not a timeless verdict. Some cells depend on the current scripts, account entitlements, and platform state.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2><span class="zh">当前范围与可自处理项</span><span class="en">Current Scope and Self-Service Items</span></h2>
+        <p class="section-copy">
+          <span class="zh">这部分只列在现有 key 和现有服务器条件下还能推进的工作；需要新增官方 API、vector store 或外部账号配置的项目不再列为当前推进项。</span>
+          <span class="en">This section lists only work that can move forward with the current keys and server setup. Items requiring new official APIs, vector stores, or external account setup are no longer in the next-test queue.</span>
+        </p>
+        <div class="notes">
+          <div class="note">
+            <strong><span class="zh">1. 暂不接入官方原生 API</span><span class="en">1. Official native APIs are out of scope for now</span></strong>
+            <div class="zh">OpenAI / Anthropic / Gemini 官方原生 API 当前不接入，所以对应原生专项统一标为“暂不测”。这不是能力否定，只是当前项目范围调整；共享基线仍保留 OpenRouter 路径。</div>
+            <div class="en">OpenAI / Anthropic / Gemini official native APIs are not being integrated for now, so their native-provider cells move from “pending” to “deferred.” This is a scope decision, not a claim that the providers lack those capabilities. The shared baseline keeps the OpenRouter path.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">2. 需要外部资源的项目不再作为下一步</span><span class="en">2. Externally gated work is no longer next</span></strong>
+            <div class="zh">Qwen native file_search 和 shared hosted file search 都需要 vector store / 百炼知识库 ID。只有 API Key 不足以测试这些链路，所以当前保持 SKIP 或暂不测。</div>
+            <div class="en">Qwen native file_search and shared hosted file search both need vector stores / Bailian knowledge-base IDs. API keys alone are not enough, so these paths remain SKIP or deferred.</div>
+          </div>
+          <div class="note">
+            <strong><span class="zh">3. 我还能独立处理的事项</span><span class="en">3. Work that can still be done here</span></strong>
+            <div class="zh">已完成矩阵语义、hover 注释、证据来源和已有 key 的 Qwen 回归。Qwen MCP 已用本站自建最小 SSE MCP server 做过可追踪验证；仍没有 <code>mcp_call</code>，因此当前链路固化为不可验证。后续还能独立推进的是报告脚本清理和 Kimi / DeepSeek / OpenRouter 的常规回归。</div>
+            <div class="en">Matrix semantics, hover notes, source evidence, and the Qwen rerun with existing keys are done. Qwen MCP has now been tested with this site's self-hosted minimal SSE MCP server; it still produced no <code>mcp_call</code>, so the current path is frozen as unverifiable. Remaining self-service work is report-script cleanup plus regular Kimi / DeepSeek / OpenRouter regressions.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sources">
+        <h3><span class="zh">结果来源</span><span class="en">Result Sources</span></h3>
+        <div class="sources-grid">
+          <div>
+            <strong><span class="zh">通用基线</span><span class="en">Shared baseline</span></strong>
+            <ul>
+              <li><code>runtime/practice/model/capability-smoke/gpt-5.5.v3.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/claude-gemini.2026-05-21.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/gemini-3.1-pro-preview.2026-05-21.r2.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/gemini-3.1-pro-preview.2026-05-21.r3.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/gemini-3.1-pro-preview.2026-05-21.r4.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/qwen3.6-plus.2026-05-21.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/qwen3.6-plus.2026-05-22.r3.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/deepseek-v4-pro.2026-05-22.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/deepseek-v4-pro.2026-05-22.r3.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/kimi-k2.6.openrouter-fallback.2026-05-22.json</code></li>
+              <li><code>runtime/practice/model/capability-smoke/kimi-k2.6.native.fast.json</code></li>
+            </ul>
+          </div>
+          <div>
+            <strong><span class="zh">平台专项</span><span class="en">Provider-native suites</span></strong>
+            <ul>
+              <li><code>runtime/practice/model/qwen-native-tools/run-2026-05-21.json</code></li>
+              <li><code>runtime/practice/model/qwen-native-tools/run-2026-05-22.json</code></li>
+              <li><code>runtime/practice/model/qwen-native-tools/run-2026-05-22.r2.json</code></li>
+              <li><code>runtime/practice/model/qwen-native-tools/run-2026-05-22.r3.json</code></li>
+              <li><code>runtime/practice/model/qwen-native-tools/run-2026-05-22.mcp-diagnostic.json</code></li>
+              <li><code>runtime/practice/model/qwen-native-tools/run-2026-05-22.selfhosted-mcp.json</code></li>
+              <li><code>runtime/practice/model/kimi-official-tools/run-2026-05-22.r2.json</code></li>
+              <li><code>runtime/practice/model/kimi-official-tools/run-2026-05-22.r3.json</code></li>
+              <li><code>runtime/practice/model/kimi-official-tools/run-2026-05-17.json</code></li>
+              <li><code>runtime/practice/model/deepseek-thinking-loop/run-2026-05-21.json</code></li>
+              <li><code>runtime/practice/model/deepseek-thinking-loop/run-2026-05-22.json</code></li>
+              <li><code>runtime/practice/model/deepseek-thinking-loop/run-2026-05-22.r2.json</code></li>
+              <li><code>runtime/practice/model/deepseek-thinking-loop/run-2026-05-22.r3.json</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var buttons = Array.prototype.slice.call(document.querySelectorAll(".toggle-btn"));
+        var STORAGE_KEY = "model-capability-matrix-lang";
+        var statusNotes = [
+          { table: 0, row: "通用 JSON 输出", cols: [6], zh: "Kimi 这里按官方 native Chat Completions 复跑结果记 PASS，不是 /responses 路径；2026-05-22.r3 的 jsonMode 已通过。", en: "Kimi is marked PASS from the official native Chat Completions rerun, not from /responses. The 2026-05-22.r3 jsonMode probe passed." },
+          { table: 0, row: "严格结构化输出", cols: [5], zh: "DeepSeek 这里的 PASS 表示 JSON mode + strict function calling 可承载业务 schema，不是 OpenAI-style response_format.json_schema。", en: "DeepSeek PASS means JSON mode plus strict function calling can carry business schemas; it is not OpenAI-style response_format.json_schema." },
+          { table: 0, row: "严格结构化输出", cols: [6], zh: "Kimi 这里按官方 native response_format: json_schema 记 PASS；实测需要遵守 Moonshot 当前温度约束。", en: "Kimi PASS comes from official native response_format: json_schema; the probe must follow Moonshot's current temperature constraint." },
+          { table: 0, row: "强制工具选择稳定性", cols: [4], zh: "Qwen forced tool_choice 在 thinking 模式下不应直接测；当前 PASS 来自 forced probe 显式关闭 thinking 后的结果。", en: "Qwen forced tool_choice should not be measured directly in thinking mode. This PASS comes from a forced probe with thinking disabled." },
+          { table: 0, row: "强制工具选择稳定性", cols: [5], zh: "DeepSeek 默认 thinking mode 不支持 forced tool_choice；当前 PASS 来自 forced probe 禁用 thinking 后 3/3 通过。", en: "DeepSeek default thinking mode does not support forced tool_choice. This PASS comes from a forced probe with thinking disabled, passing 3/3." },
+          { table: 0, row: "托管式网页搜索", cols: [1, 2, 3, 4, 5, 6], zh: "这一行表示 shared hosted-search 适配器口径通过，不等同厂商原生网页搜索；平台原生 web_search 请看第二张表。", en: "This row means the shared hosted-search adapter path passed. It is not the same as provider-native web_search; see the native table for that." },
+          { table: 1, row: "previous_response_id 状态承接", cols: [4], zh: "Qwen PASS 来自 Responses API 的 previous_response_id 状态承接，这是厂商原生 Responses 能力。", en: "Qwen PASS comes from Responses API previous_response_id state carry, a provider-native Responses capability." },
+          { table: 1, row: "原生网页抽取", cols: [4], zh: "Qwen web_extractor 当前通过的是 web_search + web_extractor 组合链路，不表示 extractor 可独立单跑。", en: "Qwen web_extractor passed as a web_search + web_extractor combined path; this does not prove standalone extractor execution." },
+          { table: 1, row: "原生代码解释器 / 代码运行器", cols: [4], zh: "Qwen 最新自托管 MCP 复测批次里拿到 codeInterpreterCalls=1 / usageCount=1，因此能力格改为 PASS；但 2026-05-22 早些时候多次复跑没有工具痕迹，仍按有波动能力处理。", en: "The latest Qwen self-hosted-MCP rerun produced codeInterpreterCalls=1 / usageCount=1, so this cell is now PASS. Earlier 2026-05-22 reruns had no tool trace, so treat it as a volatile capability." },
+          { table: 1, row: "原生代码解释器 / 代码运行器", cols: [6], zh: "Kimi PASS 来自官方 native code_runner / quickjs 工具链，不是 Qwen/OpenAI 风格的 Responses code_interpreter。", en: "Kimi PASS comes from the official native code_runner / quickjs toolchain, not a Qwen/OpenAI-style Responses code_interpreter." },
+          { table: 1, row: "原生 MCP", cols: [4], zh: "官方文档有 MCP 能力，但当前 US key / endpoint / MCP server 组合没有产生 mcp_call；本站自建 SSE MCP server 也只得到普通文本工具调用样式，仍没有结构化 mcp_call。", en: "MCP is documented, but the current US key / endpoint / MCP server combination produced no mcp_call. This site's self-hosted SSE MCP server also only yielded plain-text tool-call-looking output, still without structured mcp_call." },
+          { table: 1, row: "原生文件检索", cols: [4], zh: "Qwen native file_search 必须先创建百炼知识库/向量库并传 vector_store_ids；只有 QWEN_API_KEY 不够，所以当前 SKIP。", en: "Qwen native file_search requires a Bailian knowledge base/vector store and vector_store_ids. QWEN_API_KEY alone is insufficient, so this is SKIP." },
+          { table: 1, row: "原生网页搜索", cols: [6], zh: "Kimi PASS 来自官方 native builtin $web_search 专项复跑，不是 OpenRouter fallback。", en: "Kimi PASS comes from the official native builtin $web_search suite rerun, not the OpenRouter fallback." },
+          { table: 1, row: "文件上传与文件问答", cols: [6], zh: "Kimi PASS 来自官方文件上传 + 文件问答 probe，不是通用 RAG 或本项目数据库检索。", en: "Kimi PASS comes from official file upload + file QA probes, not generic RAG or this project's database retrieval." },
+          { table: 1, row: "严格函数调用", cols: [5], zh: "DeepSeek PASS 表示 strict function calling 可承载 schema；不是 OpenAI-style response_format.json_schema。", en: "DeepSeek PASS means strict function calling can carry schemas; it is not OpenAI-style response_format.json_schema." },
+          { table: 1, row: "缺少 reasoning_content 时应失败", cols: [5], zh: "这个 PASS 表示测试确认缺少 reasoning_content 时应失败；这是 Agent loop 的正确失败保护。", en: "This PASS means the probe confirmed that missing reasoning_content should fail; it is the correct failure guard for the Agent loop." },
+          { table: 1, row: "回传 reasoning_content 后恢复", cols: [5], zh: "这个 PASS 表示按规范回传 reasoning_content 后 DeepSeek loop 可恢复，不是无状态普通对话能力。", en: "This PASS means the DeepSeek loop recovers when reasoning_content is preserved, not a stateless chat capability." },
+          { table: 1, row: "上下文缓存命中", cols: [5], zh: "DeepSeek PASS 来自 context cache 命中专项，实际收益依赖请求结构和缓存窗口。", en: "DeepSeek PASS comes from a context-cache hit probe; real benefit depends on request structure and cache windows." }
+        ];
+        var deferredCells = [
+          { table: 1, row: "previous_response_id 状态承接", cols: [1] },
+          { table: 1, row: "原生网页搜索", cols: [1, 2, 3] },
+          { table: 1, row: "原生代码解释器 / 代码运行器", cols: [1, 2, 3] },
+          { table: 1, row: "原生 MCP", cols: [1, 2] },
+          { table: 1, row: "原生文件检索", cols: [1, 3] }
+        ];
+        var deferredNoteZh = "当前不准备接入对应厂商官方原生 API，这项已从当前推进项移出；不代表厂商没有该能力。";
+        var deferredNoteEn = "The corresponding official provider-native API is not in the current integration scope, so this item was removed from the next-test queue. This does not mean the provider lacks the capability.";
+
+        function applyLanguage(lang) {
+          root.setAttribute("data-ui-lang", lang);
+          root.setAttribute("lang", lang === "en" ? "en" : "zh-CN");
+          buttons.forEach(function (button) {
+            var active = button.getAttribute("data-lang-target") === lang;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+          try {
+            localStorage.setItem(STORAGE_KEY, lang);
+          } catch (error) {}
+        }
+
+        function applyStatusNotes() {
+          var tables = Array.prototype.slice.call(document.querySelectorAll(".table-wrap table"));
+
+          statusNotes.forEach(function (note) {
+            var table = tables[note.table];
+            if (!table) {
+              return;
+            }
+
+            var rows = Array.prototype.slice.call(table.querySelectorAll("tbody tr"));
+            var row = rows.find(function (candidate) {
+              var label = candidate.querySelector(".cap-label .zh");
+              return label && label.textContent && label.textContent.trim() === note.row;
+            });
+
+            if (!row) {
+              return;
+            }
+
+            note.cols.forEach(function (columnIndex) {
+              var cell = row.children[columnIndex];
+              var status = cell ? cell.querySelector(".status") : null;
+
+              if (!status) {
+                return;
+              }
+
+              status.classList.add("with-note");
+              status.setAttribute("tabindex", "0");
+              status.setAttribute("data-note-zh", note.zh);
+              status.setAttribute("data-note-en", note.en);
+              status.setAttribute("aria-label", note.zh);
+
+              if (!status.querySelector(".note-mark")) {
+                var mark = document.createElement("span");
+                mark.className = "note-mark";
+                mark.textContent = "i";
+                status.appendChild(mark);
+              }
+            });
+          });
+        }
+
+        function applyDeferredCells() {
+          var tables = Array.prototype.slice.call(document.querySelectorAll(".table-wrap table"));
+
+          deferredCells.forEach(function (note) {
+            var table = tables[note.table];
+            if (!table) {
+              return;
+            }
+
+            var rows = Array.prototype.slice.call(table.querySelectorAll("tbody tr"));
+            var row = rows.find(function (candidate) {
+              var label = candidate.querySelector(".cap-label .zh");
+              return label && label.textContent && label.textContent.trim() === note.row;
+            });
+
+            if (!row) {
+              return;
+            }
+
+            note.cols.forEach(function (columnIndex) {
+              var cell = row.children[columnIndex];
+              var status = cell ? cell.querySelector(".status") : null;
+
+              if (!status) {
+                return;
+              }
+
+              status.className = "status deferred with-note";
+              status.setAttribute("tabindex", "0");
+              status.setAttribute("data-note-zh", deferredNoteZh);
+              status.setAttribute("data-note-en", deferredNoteEn);
+              status.setAttribute("aria-label", deferredNoteZh);
+              status.innerHTML = '<span class="zh">暂不测</span><span class="en">deferred</span><span class="note-mark">i</span>';
+            });
+          });
+        }
+
+        applyDeferredCells();
+        applyStatusNotes();
+
+        buttons.forEach(function (button) {
+          button.addEventListener("click", function () {
+            applyLanguage(button.getAttribute("data-lang-target"));
+          });
+        });
+
+        var initialLang = "zh";
+        try {
+          var stored = localStorage.getItem(STORAGE_KEY);
+          if (stored === "zh" || stored === "en") {
+            initialLang = stored;
+          }
+        } catch (error) {}
+        applyLanguage(initialLang);
+      })();
+    </script>
+  </body>
+</html>

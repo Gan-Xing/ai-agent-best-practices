@@ -142,13 +142,13 @@ practice/model/capability-smoke/README.md
 当前模型能力矩阵的工作副本位于：
 
 ```text
-runtime/practice/model/summary/model-capability-matrix-2026-05-17.html
+runtime/practice/model/summary/model-capability-matrix-2026-05-22.html
 ```
 
 当前已晋升的最终页面位于：
 
 ```text
-public/artifacts/model/summary/model-capability-matrix-2026-05-17.html
+public/artifacts/model/summary/model-capability-matrix-2026-05-22.html
 ```
 
 也就是说：

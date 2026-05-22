@@ -53,8 +53,8 @@ records              -> 总结后的知识记录，正文引用最终 artifact
 
 ```text
 工作副本：
-runtime/practice/model/summary/model-capability-matrix-2026-05-17.html
+runtime/practice/model/summary/model-capability-matrix-2026-05-22.html
 
 最终引用页：
-public/artifacts/model/summary/model-capability-matrix-2026-05-17.html
+public/artifacts/model/summary/model-capability-matrix-2026-05-22.html
 ```

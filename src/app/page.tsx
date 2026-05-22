@@ -342,12 +342,18 @@ export default async function Home({ searchParams }: HomeProps) {
               <Badge>版本可追踪</Badge>
             </div>
 
-            <div className="mt-6 flex justify-center">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/resources/github"
                 className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
               >
                 浏览开源项目参考库
+              </Link>
+              <Link
+                href="/models/capability"
+                className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
+              >
+                查看模型能力矩阵
               </Link>
             </div>
           </section>
@@ -400,12 +406,18 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
             <Link
               href="/resources/github"
               className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
             >
               打开开源项目参考库
+            </Link>
+            <Link
+              href="/models/capability"
+              className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
+            >
+              打开模型能力矩阵
             </Link>
           </div>
 
