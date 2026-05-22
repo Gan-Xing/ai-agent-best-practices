@@ -23,6 +23,22 @@ const FILE_SEARCH_VECTOR_STORE_ID =
   process.env.QWEN_FILE_SEARCH_VECTOR_STORE_ID ??
   process.env.MODEL_CAPABILITY_FILE_SEARCH_VECTOR_STORE_ID ??
   "";
+const QWEN_MCP_SERVER_URL =
+  process.env.QWEN_MCP_SERVER_URL ??
+  process.env.MODEL_CAPABILITY_MCP_SERVER_URL ??
+  "https://aiagent.byganxing.com/api/mcp/dice/sse";
+const QWEN_MCP_SERVER_LABEL =
+  process.env.QWEN_MCP_SERVER_LABEL ??
+  process.env.MODEL_CAPABILITY_MCP_SERVER_LABEL ??
+  "demo";
+const QWEN_MCP_SERVER_DESCRIPTION =
+  process.env.QWEN_MCP_SERVER_DESCRIPTION ??
+  process.env.MODEL_CAPABILITY_MCP_SERVER_DESCRIPTION ??
+  "AI Agent Best Practices deterministic dice MCP server. Use roll_dice for dice expressions.";
+const QWEN_MCP_PROMPT =
+  process.env.QWEN_MCP_PROMPT ??
+  "必须调用 MCP server 的 roll_dice 工具计算 2d4+1，并只返回工具结果里的 total。不能自己心算。";
+const QWEN_MCP_AUTH_TOKEN = process.env.QWEN_MCP_AUTH_TOKEN ?? "";
 
 type Report = {
   generatedAt: string;
@@ -82,6 +98,12 @@ function countOutputType(payload: unknown, type: string) {
   return getOutputItems(payload)
     .map((item) => asRecord(item))
     .filter((item) => item?.type === type).length;
+}
+
+function getOutputTypes(payload: unknown) {
+  return getOutputItems(payload)
+    .map((item) => asRecord(item)?.type)
+    .filter((type): type is string => typeof type === "string");
 }
 
 async function createResponse(body: Record<string, unknown>) {
@@ -229,21 +251,24 @@ async function runWebExtractorProbe(): Promise<ProbeResult> {
 }
 
 async function runMcpProbe(): Promise<ProbeResult> {
+  const mcpTool: Record<string, unknown> = {
+    type: "mcp",
+    server_protocol: "sse",
+    server_label: QWEN_MCP_SERVER_LABEL,
+    server_description: QWEN_MCP_SERVER_DESCRIPTION,
+    server_url: QWEN_MCP_SERVER_URL,
+  };
+
+  if (QWEN_MCP_AUTH_TOKEN) {
+    mcpTool.headers = {
+      Authorization: `Bearer ${QWEN_MCP_AUTH_TOKEN}`,
+    };
+  }
+
   const result = await createResponse({
     model: QWEN_MODEL,
-    input: "请通过 MCP 读取 https://example.com ，告诉我页面标题。",
-    tools: [
-      {
-        type: "mcp",
-        server_protocol: "sse",
-        server_label: "WebParser",
-        server_description: "网页解析（WebParser）MCP 服务",
-        server_url: "https://dashscope.aliyuncs.com/api/v1/mcps/WebParser/sse",
-        headers: {
-          Authorization: `Bearer ${QWEN_API_KEY}`,
-        },
-      },
-    ],
+    input: QWEN_MCP_PROMPT,
+    tools: [mcpTool],
   });
 
   if (!result.ok) {
@@ -256,13 +281,21 @@ async function runMcpProbe(): Promise<ProbeResult> {
 
   const text = getOutputText(result.payload);
   const mcpCalls = countOutputType(result.payload, "mcp_call");
-  const ok = mcpCalls > 0 && /Example Domain/i.test(text);
+  const mcpListTools = countOutputType(result.payload, "mcp_list_tools");
+  const outputTypes = getOutputTypes(result.payload);
+  const ok = mcpCalls > 0 && Boolean(text);
 
   return {
     status: ok ? "PASS" : "FAIL",
     durationMs: result.durationMs,
-    note: `text=${text.slice(0, 160)} mcpCalls=${mcpCalls}`,
-    metadata: { mcpCalls },
+    note: `text=${text.slice(0, 160)} mcpCalls=${mcpCalls} mcpListTools=${mcpListTools} outputTypes=${outputTypes.join(",")}`,
+    metadata: {
+      mcpCalls,
+      mcpListTools,
+      outputTypes,
+      serverUrl: QWEN_MCP_SERVER_URL,
+      serverLabel: QWEN_MCP_SERVER_LABEL,
+    },
   };
 }
 

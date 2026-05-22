@@ -15,7 +15,11 @@ const REQUEST_TIMEOUT_MS = Number.parseInt(
 );
 const MCP_SERVER_URL =
   process.env.MODEL_CAPABILITY_MCP_SERVER_URL ??
-  "https://dmcp-server.deno.dev/sse";
+  "https://aiagent.byganxing.com/api/mcp/dice/sse";
+const MCP_SERVER_LABEL = process.env.MODEL_CAPABILITY_MCP_SERVER_LABEL ?? "demo";
+const MCP_SERVER_DESCRIPTION =
+  process.env.MODEL_CAPABILITY_MCP_SERVER_DESCRIPTION ??
+  "AI Agent Best Practices deterministic dice MCP server. Use roll_dice for dice expressions.";
 
 function parseArgs(argv: string[]) {
   let models: string[] | null = null;
@@ -89,6 +93,27 @@ function getResponseText(payload: unknown) {
   return parts.join("").trim();
 }
 
+function buildMcpTool(preset: ModelCapabilityPreset) {
+  const baseTool = {
+    type: "mcp",
+    server_label: MCP_SERVER_LABEL,
+    server_url: MCP_SERVER_URL,
+  };
+
+  if (preset.providerLabel === "Qwen") {
+    return {
+      ...baseTool,
+      server_protocol: "sse",
+      server_description: MCP_SERVER_DESCRIPTION,
+    };
+  }
+
+  return {
+    ...baseTool,
+    require_approval: "never",
+  };
+}
+
 async function runProbe(preset: ModelCapabilityPreset) {
   const baseUrl = process.env[preset.baseUrlEnv] || preset.defaultBaseUrl;
 
@@ -101,23 +126,28 @@ async function runProbe(preset: ModelCapabilityPreset) {
   }
 
   const startedAt = Date.now();
-  const response = await fetch(buildResponsesUrl(baseUrl), {
-    method: "POST",
-    headers: createHeaders(preset),
-    body: JSON.stringify({
+  let response: Response;
+
+  try {
+    response = await fetch(buildResponsesUrl(baseUrl), {
+      method: "POST",
+      headers: createHeaders(preset),
+      body: JSON.stringify({
+        model: preset.modelId,
+        input: "Use the MCP server to roll 2d4+1, then reply with the total only.",
+        tools: [buildMcpTool(preset)],
+      }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch (error) {
+    return {
       model: preset.modelId,
-      input: "Use the MCP server to roll 2d4+1, then reply with the total only.",
-      tools: [
-        {
-          type: "mcp",
-          server_label: "demo",
-          server_url: MCP_SERVER_URL,
-          require_approval: "never",
-        },
-      ],
-    }),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
+      status: "FAIL",
+      durationMs: Date.now() - startedAt,
+      note: error instanceof Error ? error.message : String(error),
+    };
+  }
+
   const durationMs = Date.now() - startedAt;
   const text = await response.text();
   let payload: unknown;
@@ -140,6 +170,9 @@ async function runProbe(preset: ModelCapabilityPreset) {
   const output = Array.isArray(asRecord(payload)?.output)
     ? (asRecord(payload)?.output as unknown[])
     : [];
+  const outputTypes = output
+    .map((item) => asRecord(item)?.type)
+    .filter((type): type is string => typeof type === "string");
   const mcpCalls = output
     .map((item) => asRecord(item))
     .filter((item) => item?.type === "mcp_call").length;
@@ -150,7 +183,7 @@ async function runProbe(preset: ModelCapabilityPreset) {
     model: preset.modelId,
     status: numeric && mcpCalls > 0 ? "PASS" : "FAIL",
     durationMs,
-    note: `text=${finalText.slice(0, 120)} mcpCalls=${mcpCalls}`,
+    note: `text=${finalText.slice(0, 120)} mcpCalls=${mcpCalls} outputTypes=${outputTypes.join(",")}`,
   };
 }
 
