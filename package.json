@@ -30,6 +30,7 @@
     "github:repo:fetch": "tsx skills/github-reference-entry/scripts/fetch-repo-context.ts",
     "content:import": "tsx scripts/content-import.ts",
     "content:verify": "tsx scripts/content-contract-check.ts && tsx scripts/content-validate.ts && tsx scripts/content-import.ts --dry-run",
+    "records:freshness:refresh": "tsx scripts/record-freshness-refresh.ts",
     "search:index:backfill": "tsx scripts/search-index-backfill.ts",
     "skill:github-reference:apply": "tsx skills/github-reference-entry/scripts/apply-draft.ts",
     "skill:github-reference:validate": "tsx skills/github-reference-entry/scripts/quick_validate.ts",

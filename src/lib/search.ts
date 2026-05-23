@@ -157,7 +157,14 @@ function buildSearchQuery(input: SearchInput) {
       c."name" AS "categoryName",
       c."nameZh" AS "categoryNameZh",
       kr."status"::text AS "status",
-      kr."freshness"::text AS "freshness",
+      CASE
+        WHEN kr."status" = 'PUBLISHED'
+          AND kr."freshness" = 'FRESH'
+          AND kr."reviewAfter" IS NOT NULL
+          AND kr."reviewAfter" <= CURRENT_TIMESTAMP
+        THEN 'NEEDS_REVIEW'
+        ELSE kr."freshness"::text
+      END AS "freshness",
       kr."confidence",
       kr."visibility"::text AS "visibility",
       kr."updatedAt",

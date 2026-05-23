@@ -1,0 +1,12 @@
+[Unit]
+Description=Daily Record Freshness Refresh Timer for AI Agent Best Practices
+
+[Timer]
+OnCalendar=*-*-* 03:11:00
+RandomizedDelaySec=15m
+AccuracySec=5m
+Persistent=true
+Unit=ai-agent-best-practices-record-freshness.service
+
+[Install]
+WantedBy=timers.target

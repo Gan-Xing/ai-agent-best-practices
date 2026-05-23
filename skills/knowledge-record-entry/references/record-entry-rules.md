@@ -12,12 +12,14 @@ differs from this guidance.
   convention only if one already exists in content JSON.
 - `visibility`: `PUBLIC` for general best practices; `INTERNAL` for
   project-specific or operational notes.
-- `status`: `DRAFT` for new unreviewed records. Use `PUBLISHED` only when the
-  user explicitly wants it published.
-- `maturity`: `SEED` for first drafts, `REVIEWED` only when evidence and wording
-  are already checked.
-- `freshness`: `FRESH` for current guidance, `NEEDS_REVIEW` when the source
-  depends on unstable product behavior.
+- `status`: for this repo, once the user explicitly confirms write/import,
+  default to `PUBLISHED` unless they explicitly want a staged draft.
+- `maturity`: for confirmed writes in this repo, default to `REVIEWED`; use
+  `SEED` only for an intentionally unfinished local draft that should not be
+  treated as published knowledge yet.
+- `freshness`: default to `FRESH` when the content has just been verified and
+  pushed in the current turn. Use `NEEDS_REVIEW` only when the user explicitly
+  wants a cautionary stale/volatile marker kept on the record.
 - `confidence`: choose `0.55` to `0.75` for inferred guidance, `0.8` or above
   only when the source is strong and specific.
 - `publishedAt` and `lastVerifiedAt`: current date in ISO format.
@@ -91,5 +93,5 @@ Ask only for blockers. Good questions are:
 
 - "这个内容应该归到哪个分类：04-skills 还是 05-tools?"
 - "这条 relation 要指向哪条已有记录的 externalKey?"
-- "这条记录是 DRAFT 还是可以直接 PUBLISHED?"
+- "这条记录需要保留为未发布草稿，还是按默认直接记为 PUBLISHED?"
 - "这个建议有没有外部来源 URL 需要作为 source 保存?"

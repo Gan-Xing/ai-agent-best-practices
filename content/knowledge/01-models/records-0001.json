@@ -995,8 +995,8 @@
       "type": "PRACTICE",
       "categoryCode": "01",
       "visibility": "PUBLIC",
-      "status": "DRAFT",
-      "maturity": "SEED",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
       "freshness": "FRESH",
       "confidence": 0.74,
       "language": "zh",
@@ -1101,7 +1101,7 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "draft",
+        "reviewStatus": "reviewed",
         "sourceReviewedAt": "2026-05-14",
         "note": "This record intentionally preserves engineering heuristics from a practitioner article rather than collapsing them into only source-verified hard facts."
       },
@@ -1318,8 +1318,8 @@
       "type": "PRACTICE",
       "categoryCode": "01",
       "visibility": "PUBLIC",
-      "status": "DRAFT",
-      "maturity": "SEED",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
       "freshness": "FRESH",
       "confidence": 0.76,
       "language": "zh",
@@ -1456,7 +1456,7 @@
       },
       "curation": {
         "owner": "Gan-Xing",
-        "reviewStatus": "draft",
+        "reviewStatus": "reviewed",
         "sourceReviewedAt": "2026-05-14",
         "note": "Quick-reference derivative record created from the public-account article and the more general sizing note in kb-000007."
       },
@@ -1547,6 +1547,595 @@
           "title": "大模型推理硬件选型要把显存容量、带宽、并发和 KV Cache 分开估算",
           "role": "REFERENCE",
           "note": "作为这张速查表的上位经验记录，用于复用显存、带宽和容量规划口径。"
+        }
+      ]
+    },
+    {
+      "slug": "use-layered-model-intelligence-sites-instead-of-one-live-model-source",
+      "externalKey": "kb-000009",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
+      "confidence": 0.84,
+      "language": "zh",
+      "title": "查询模型参数与能力对比时应分层使用 OpenRouter、Artificial Analysis、Arena、LiveBench 和 Hugging Face Leaderboards",
+      "summary": "不要试图依赖单一网站实时掌握全市场模型能力；更稳的做法是把模型目录、综合选型、人类偏好榜、标准 benchmark 和开源榜单分层查询，让 Agent 先判断查询意图，再跳到对应站点。",
+      "body": "在模型信息检索里，OpenRouter 很适合查模型目录、上下文窗口、支持参数和价格，但不适合作为“全市场能力强弱”的唯一依据。更稳的做法是分层查询：第一层用 OpenRouter 查模型是否存在、支持哪些参数、上下文长度和价格；第二层用 Artificial Analysis 查综合质量、价格、输出速度、延迟、上下文等选型维度；第三层用 Arena 看人类盲测偏好和真实使用体感；第四层用 LiveBench 看污染控制更强的标准 benchmark，尤其适合看推理、代码、数学、数据分析等能力；第五层用 Hugging Face Leaderboards 看开源模型和社区榜单生态。Agent 命中这条记录后，不应该先回答“哪个模型最好”，而应该先识别用户是在问目录参数、综合选型、聊天体感、标准评测，还是开源模型，再跳去对应页面查询。这个策略能避免自己维护全量实时模型评测，同时又能快速利用市场上已有的相对共识。",
+      "problem": "如果把模型信息查询全部压在 OpenRouter 或自建少量样本测试上，Agent 很容易在“最新模型有哪些”“哪个模型综合最强”“大家更喜欢哪个模型”“开源模型谁更强”这些问题上给出混杂甚至失真的答案，因为这些问题依赖的来源并不相同，而且市场变化很快。",
+      "recommendation": "把模型外部信息源拆成五类固定入口：OpenRouter 负责目录、参数、价格与 provider；Artificial Analysis 负责综合选型和多维性能比较；Arena 负责人类偏好榜和使用体感；LiveBench 负责污染控制更强的标准 benchmark；Hugging Face Leaderboards 负责开源模型和更广泛的社区 leaderboard 发现。Agent 查询模型时先判定问题类型，再选择网页，而不是默认只查一个站。",
+      "metadata": {
+        "contentSource": "conversation-plus-official-site-check",
+        "draftedFrom": "user-request",
+        "asOfDate": "2026-05-23",
+        "lookupIntentMap": {
+          "catalog_and_parameters": [
+            "https://openrouter.ai/models",
+            "https://openrouter.ai/api/v1/models",
+            "https://openrouter.ai/docs/guides/overview/models"
+          ],
+          "multi_factor_model_selection": [
+            "https://artificialanalysis.ai/guide",
+            "https://artificialanalysis.ai/evaluations"
+          ],
+          "human_preference_and_usage_feel": [
+            "https://arena.ai/leaderboard"
+          ],
+          "standard_benchmark_and_contamination_resistance": [
+            "https://livebench.ai/"
+          ],
+          "open_model_and_community_leaderboards": [
+            "https://huggingface.co/docs/leaderboards/index"
+          ]
+        }
+      },
+      "applicability": {
+        "audience": [
+          "agent-builders",
+          "model-selectors",
+          "knowledge-base-maintainers"
+        ],
+        "projectStage": [
+          "research",
+          "model-selection",
+          "evaluation",
+          "production"
+        ],
+        "scenario": [
+          "model-capability-lookup",
+          "vendor-comparison",
+          "benchmark-reference",
+          "agent-routing"
+        ]
+      },
+      "compatibility": {
+        "sites": [
+          "OpenRouter",
+          "Artificial Analysis",
+          "Arena",
+          "LiveBench",
+          "Hugging Face Leaderboards"
+        ],
+        "queryDimensions": [
+          "model catalog",
+          "pricing",
+          "supported parameters",
+          "context window",
+          "quality",
+          "latency",
+          "output speed",
+          "human preference",
+          "benchmark scores",
+          "open-model ecosystem"
+        ],
+        "agentBehavior": "route-by-intent-before-answering"
+      },
+      "tradeoffs": {
+        "pros": [
+          "减少自己维护全市场实时模型评测的成本",
+          "把不同类型的问题路由到更合适的信息源",
+          "让 Agent 更容易解释为什么去某个网站查",
+          "兼顾闭源前沿模型、开源模型和社区榜单"
+        ],
+        "cons": [
+          "没有单一网站能覆盖全部问题",
+          "各站榜单方法不同，结果不能直接混成一个总分",
+          "这些页面更新很快，需要定期复核",
+          "部分站点更偏闭源前沿模型，部分更偏开源生态"
+        ]
+      },
+      "evidence": {
+        "basis": "2026-05-23 对相关官方网站与页面说明的核对：OpenRouter 文档和模型页强调模型目录、API 字段和 supported parameters；Artificial Analysis guide 强调按 use case 在质量、价格、输出速度、延迟、上下文等维度选型；Arena leaderboard 提供跨文本、代码、图像等 Arena 排名；LiveBench 强调 contamination-free benchmark；Hugging Face Leaderboards 文档说明其聚合官方评测、社区榜单与 Open LLM Leaderboard。",
+        "confidenceReason": "这些结论主要来自官方站点的自我定位与页面结构，足以支撑“查询路由策略”这类实践记录。",
+        "caveat": "站点收录范围、榜单排名和模型列表都会变化，这条记录应定期复核，不能把当前榜单结果写死为长期事实。"
+      },
+      "metrics": {
+        "expectedSelectionSpeedLift": "high",
+        "maintenanceCostReduction": "high",
+        "queryRoutingClarity": "high",
+        "refreshCadence": "90 days or sooner when major model releases happen"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-23"
+      },
+      "extensions": {
+        "nextSteps": [
+          "给模型查询 Agent 增加意图判断：参数、综合选型、体感偏好、标准 benchmark、开源榜单",
+          "在 models 分类下补一条配套记录，定义哪些问题优先查官方 provider 页面而不是第三方榜单",
+          "后续如果需要，可再补充 Scale 或 Vellum 作为次级来源",
+          "可以为这五个站点做一个统一的资源卡或导航页"
+        ],
+        "agentUsageHint": [
+          "用户问最新模型和 supported parameters 时，优先 OpenRouter 或官方 provider 页面",
+          "用户问综合最强或性价比时，优先 Artificial Analysis",
+          "用户问大众更喜欢哪个聊天模型时，优先 Arena",
+          "用户问标准 benchmark 或抗污染评测时，优先 LiveBench",
+          "用户问开源模型生态时，优先 Hugging Face Leaderboards"
+        ]
+      },
+      "publishedAt": "2026-05-23T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-23T00:00:00.000Z",
+      "reviewAfter": "2026-08-21T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "模型能力查询网站",
+        "模型对比网站",
+        "模型评测榜单",
+        "OpenRouter alternatives",
+        "LLM leaderboard sites"
+      ],
+      "keywords": [
+        "OpenRouter",
+        "Artificial Analysis",
+        "Arena",
+        "LiveBench",
+        "Hugging Face Leaderboards",
+        "model comparison",
+        "model leaderboard",
+        "LLM benchmark",
+        "model pricing",
+        "supported parameters",
+        "context window",
+        "human preference"
+      ],
+      "tags": [
+        "model-selection",
+        "model-eval",
+        "leaderboard",
+        "benchmark",
+        "openrouter",
+        "artificial-analysis",
+        "arena",
+        "livebench",
+        "huggingface"
+      ],
+      "relations": [],
+      "sources": [
+        {
+          "sourceKey": "web:openrouter-models-page",
+          "sourceType": "WEBPAGE",
+          "uri": "https://openrouter.ai/models",
+          "title": "OpenRouter Models",
+          "publisher": "OpenRouter",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于查询模型目录与站点级模型入口。"
+        },
+        {
+          "sourceKey": "web:openrouter-models-docs",
+          "sourceType": "WEBPAGE",
+          "uri": "https://openrouter.ai/docs/guides/overview/models",
+          "title": "OpenRouter Models Documentation",
+          "publisher": "OpenRouter",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "说明 Models API、context length、pricing、supported parameters 等字段，适合支持 Agent 查参数能力。"
+        },
+        {
+          "sourceKey": "web:openrouter-get-models-api-reference",
+          "sourceType": "WEBPAGE",
+          "uri": "https://openrouter.ai/docs/api/api-reference/models/get-models",
+          "title": "List all models and their properties | OpenRouter",
+          "publisher": "OpenRouter",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "API 级字段定义，适合确认模型对象返回字段。"
+        },
+        {
+          "sourceKey": "web:artificial-analysis-guide",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/guide",
+          "title": "Guide | Artificial Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "说明其核心用途是按 use case 在质量、价格、速度、延迟、上下文等维度帮助选型。"
+        },
+        {
+          "sourceKey": "web:artificial-analysis-evaluations",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/evaluations",
+          "title": "AI Model Evaluations | Artificial Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "集中列出其综合评测与多个 benchmark leaderboard。"
+        },
+        {
+          "sourceKey": "web:arena-leaderboard",
+          "sourceType": "WEBPAGE",
+          "uri": "https://arena.ai/leaderboard",
+          "title": "Arena Leaderboard",
+          "publisher": "Arena",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "适合查看文本、代码、视觉等 Arena 排名与人类偏好结果。"
+        },
+        {
+          "sourceKey": "web:livebench-home",
+          "sourceType": "WEBPAGE",
+          "uri": "https://livebench.ai/",
+          "title": "LiveBench",
+          "publisher": "LiveBench",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "适合查看 contamination-free benchmark 与分项能力排名。"
+        },
+        {
+          "sourceKey": "web:huggingface-leaderboards-docs",
+          "sourceType": "WEBPAGE",
+          "uri": "https://huggingface.co/docs/leaderboards/index",
+          "title": "Leaderboards and Evaluations | Hugging Face",
+          "publisher": "Hugging Face",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "适合查询 Hugging Face 的官方评测入口、社区榜单与 Open LLM Leaderboard 体系。"
+        }
+      ]
+    },
+    {
+      "slug": "deepseek-v4-pro-has-the-highest-capability-per-dollar-among-current-frontier-api-models",
+      "externalKey": "kb-000010",
+      "schemaVersion": 1,
+      "type": "COMPARISON",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
+      "confidence": 0.79,
+      "language": "zh",
+      "title": "在当前公开 API 定价下，DeepSeek V4 Pro 是头部主力模型中能力/价格比最高的单模型选择",
+      "summary": "截至 2026-05-23，在 DeepSeek V4 Pro、Qwen3.7-max、GPT-5.5、Claude Opus 4.7、Grok 4.3、Kimi K2.6 这组头部主力模型中，如果统一使用 Artificial Analysis Intelligence Index 作为能力指标，统一使用各厂商当前公开标准 API 价格作为价格指标，并按 3:1 输入输出 blended cost 计算能力/价格比，那么 DeepSeek V4 Pro 是当前性价比最高的单模型选择。",
+      "body": "这条记录只比较当前值得进入主力 shortlist 的 6 个模型：DeepSeek V4 Pro、Qwen3.7-max、GPT-5.5、Claude Opus 4.7、Grok 4.3、Kimi K2.6。为了避免把不同来源的榜单和不同计费口径混在一起，这里统一采用同一套比较方法：能力分使用 Artificial Analysis Intelligence Index v4.0；价格使用各厂商在 2026-05-23 可见的第一方公开标准 API 输入价和输出价；能力/价格比使用 value = intelligence_index / ((3 × input_price + output_price) / 4)。之所以用 3:1，是因为 Artificial Analysis 在 proprietary model 的价格分层说明中明确使用 blended 3:1 input/output price ratio，这个口径也更接近常见 agent、知识库和 coding 工作流的 token 结构。按该方法计算，DeepSeek V4 Pro 的能力分为 52，当前官方输入价/输出价为 0.435 / 0.87 美元每百万 tokens，blended cost 为 0.54375，value score 为 95.63；Grok 4.3 为 53 分、1.25 / 2.50、1.5625、33.92；Kimi K2.6 为 54 分、0.95 / 4.00、1.7125、31.53；Qwen3.7-max 为 57 分、1.25 / 3.75、1.875、30.40；Claude Opus 4.7 为 57 分、5.00 / 25.00、10.00、5.70；GPT-5.5 为 60 分、5.00 / 30.00、11.25、5.33。由此可见，绝对能力最强的是 GPT-5.5，但主力模型的能力/价格比第一名是 DeepSeek V4 Pro。如果只允许保留一个“当前主力模型性价比第一名”的结论，应优先写 DeepSeek V4 Pro；如果额外把交互速度与响应体验视为和 token 成本同等重要的硬约束，则 Grok 4.3 是更均衡的替代选择。",
+      "problem": "在头部模型选型里，很容易把“能力最强”误当成“最适合做主力模型”，也容易把不同榜单、不同推理强度、不同定价页面混合在一起，导致结论既无法复核，也不适合长期复用。",
+      "recommendation": "如果记录的目标是回答“当前这组头部主力模型里，单模型性价比最高的是谁”，优先保留 DeepSeek V4 Pro 作为默认答案，并明确写出它依赖的比较口径：能力分来自 Artificial Analysis Intelligence Index，价格来自各厂商当前公开标准 API 价格，能力/价格比采用 3:1 输入输出 blended cost。若用户额外强调交互速度、延迟和更均衡的整体体验，再把 Grok 4.3 作为第二推荐补充说明。",
+      "metadata": {
+        "contentSource": "official-pricing-plus-artificial-analysis",
+        "draftedFrom": "user-request",
+        "asOfDate": "2026-05-23",
+        "comparisonSet": [
+          "DeepSeek V4 Pro",
+          "Qwen3.7-max",
+          "GPT-5.5",
+          "Claude Opus 4.7",
+          "Grok 4.3",
+          "Kimi K2.6"
+        ],
+        "excludedModels": [
+          "Qwen3-max"
+        ],
+        "abilityBenchmark": "Artificial Analysis Intelligence Index v4.0",
+        "pricingMode": "current first-party public standard API pricing",
+        "valueFormula": "intelligence_index / ((3 * input_price + output_price) / 4)",
+        "selectionIntent": "single-primary-model-best-value"
+      },
+      "applicability": {
+        "audience": [
+          "agent-builders",
+          "model-selectors",
+          "engineering-managers",
+          "cost-owners"
+        ],
+        "projectStage": [
+          "research",
+          "vendor-selection",
+          "procurement",
+          "production"
+        ],
+        "scenario": [
+          "single-model-shortlist",
+          "frontier-model-comparison",
+          "cost-sensitive-primary-model-selection"
+        ]
+      },
+      "compatibility": {
+        "comparisonScope": "frontier public API text/reasoning models as of 2026-05-23",
+        "abilitySource": "Artificial Analysis Intelligence Index v4.0",
+        "priceSource": "vendor first-party public API pricing pages",
+        "priceMode": "standard input/output pricing without batch discount",
+        "reasoningVariants": {
+          "DeepSeek V4 Pro": "Artificial Analysis reasoning, max effort page",
+          "Qwen3.7-max": "Artificial Analysis reasoning page",
+          "GPT-5.5": "Artificial Analysis xhigh page",
+          "Claude Opus 4.7": "Artificial Analysis adaptive reasoning, max effort page",
+          "Grok 4.3": "Artificial Analysis high page",
+          "Kimi K2.6": "Artificial Analysis reasoning page"
+        }
+      },
+      "tradeoffs": {
+        "pros": [
+          "比较口径统一，能力分和价格都可复核",
+          "直接回答“如果只能选一个主力模型，谁的能力/价格比最高”这个高频问题",
+          "把绝对能力和性价比区分开，避免默认追最贵最强模型",
+          "结论对 Agent、知识库和 coding 工作流都比较有参考价值"
+        ],
+        "cons": [
+          "这个结论不包含隐藏推理 token、工具调用次数、verbosity 和长上下文附加费",
+          "速度没有纳入主公式，因此不会直接反映交互体验",
+          "不同模型页对应的 reasoning effort 并不完全一致，仍然不是完全理想的 apples-to-apples 对比",
+          "价格页面变化很快，特别是促销价和区域价会影响排名"
+        ]
+      },
+      "evidence": {
+        "basis": "能力分统一来自 Artificial Analysis 的 Intelligence Index v4.0；该指数当前由 10 个评测组成，包括 GDPval-AA、²-Bench Telecom、Terminal-Bench Hard、SciCode、AA-LCR、AA-Omniscience、IFBench、Humanity's Last Exam、GPQA Diamond、CritPt。价格统一来自 2026-05-23 当天可访问的第一方公开 API 定价页。Artificial Analysis 在模型比较说明中明确使用 blended 3:1 input/output price ratio 对 proprietary models 做价格带比较，这为本条记录采用 3:1 blended cost 提供了方法依据。",
+        "confidenceReason": "能力分来自同一个第三方持续更新基准，价格来自各厂商官方当前公开页面，因此结论具备较强可复核性；不确定性主要来自模型推理档位差异和价格页面后续变动。",
+        "caveat": "该结论仅代表“能力/标准 token 单价”这一维度，不代表真实总拥有成本，也不代表所有业务场景下的最优主力模型。若任务高度依赖超低延迟、工具稳定性、cache 命中或区域定价，最终结论可能变化。"
+      },
+      "metrics": {
+        "formula": "value = intelligence_index / ((3 * input_price + output_price) / 4)",
+        "rankByValue": [
+          "DeepSeek V4 Pro",
+          "Grok 4.3",
+          "Kimi K2.6",
+          "Qwen3.7-max",
+          "Claude Opus 4.7",
+          "GPT-5.5"
+        ],
+        "comparisonTable": {
+          "DeepSeek V4 Pro": {
+            "intelligenceIndex": 52,
+            "inputPriceUsdPer1M": 0.435,
+            "outputPriceUsdPer1M": 0.87,
+            "blendedCostUsdPer1M": 0.54375,
+            "valueScore": 95.63
+          },
+          "Grok 4.3": {
+            "intelligenceIndex": 53,
+            "inputPriceUsdPer1M": 1.25,
+            "outputPriceUsdPer1M": 2.5,
+            "blendedCostUsdPer1M": 1.5625,
+            "valueScore": 33.92
+          },
+          "Kimi K2.6": {
+            "intelligenceIndex": 54,
+            "inputPriceUsdPer1M": 0.95,
+            "outputPriceUsdPer1M": 4,
+            "blendedCostUsdPer1M": 1.7125,
+            "valueScore": 31.53
+          },
+          "Qwen3.7-max": {
+            "intelligenceIndex": 57,
+            "inputPriceUsdPer1M": 1.25,
+            "outputPriceUsdPer1M": 3.75,
+            "blendedCostUsdPer1M": 1.875,
+            "valueScore": 30.4
+          },
+          "Claude Opus 4.7": {
+            "intelligenceIndex": 57,
+            "inputPriceUsdPer1M": 5,
+            "outputPriceUsdPer1M": 25,
+            "blendedCostUsdPer1M": 10,
+            "valueScore": 5.7
+          },
+          "GPT-5.5": {
+            "intelligenceIndex": 60,
+            "inputPriceUsdPer1M": 5,
+            "outputPriceUsdPer1M": 30,
+            "blendedCostUsdPer1M": 11.25,
+            "valueScore": 5.33
+          }
+        }
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-23"
+      },
+      "extensions": {
+        "nextSteps": [
+          "补一条配套记录，专门解释为什么能力最强不等于主力模型最优",
+          "单独做一条 speed-sensitive 版本比较，回答‘如果延迟和速度与价格同等重要，该选谁’",
+          "在 2026-06 上旬复核 Qwen 和 DeepSeek 的促销或正式调价是否改变排名"
+        ],
+        "agentUsageHint": [
+          "当用户问‘如果只能选一个当前主力模型，哪个最值’时，先引用这条记录，再实时复核价格页",
+          "当用户问‘绝对能力最强是谁’时，不要误用这条记录的结论，应单独回答 GPT-5.5",
+          "当用户问‘更均衡的主力模型’时，把 Grok 4.3 作为成本、速度、能力的替代选项一并说明"
+        ]
+      },
+      "publishedAt": "2026-05-23T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-23T00:00:00.000Z",
+      "reviewAfter": "2026-06-15T00:00:00.000Z",
+      "translations": [],
+      "aliases": [
+        "主力模型性价比第一",
+        "单模型最优选型",
+        "头部模型能力价格比",
+        "frontier model value ranking"
+      ],
+      "keywords": [
+        "DeepSeek V4 Pro",
+        "Qwen3.7-max",
+        "GPT-5.5",
+        "Claude Opus 4.7",
+        "Grok 4.3",
+        "Kimi K2.6",
+        "Artificial Analysis Intelligence Index",
+        "API pricing",
+        "blended cost",
+        "capability per dollar",
+        "single primary model"
+      ],
+      "tags": [
+        "model-selection",
+        "comparison",
+        "frontier-models",
+        "pricing",
+        "capability-per-dollar",
+        "deepseek",
+        "qwen",
+        "openai",
+        "anthropic",
+        "xai",
+        "kimi"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000009",
+          "relationType": "EXTENDS",
+          "strength": 0.83,
+          "description": "这条记录把模型查询网站导航进一步收敛为一个当前主力模型选型结论。",
+          "metadata": {
+            "reason": "selection conclusion derived from the model-information-source navigation record"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "web:aa-intelligence-methodology-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/methodology/intelligence-benchmarking",
+          "title": "Intelligence Benchmarking | Artificial Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "能力分方法来源，用于确认 Intelligence Index v4.0 的组成与用途。"
+        },
+        {
+          "sourceKey": "web:aa-deepseek-v4-pro-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/models/deepseek-v4-pro",
+          "title": "DeepSeek V4 Pro (Max) - Intelligence, Performance & Price Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 DeepSeek V4 Pro 的 Intelligence Index 分数，并参考其价格分层说明。"
+        },
+        {
+          "sourceKey": "web:aa-qwen3-7-max-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/models/qwen3-7-max",
+          "title": "Qwen3.7 Max - Intelligence, Performance & Price Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Qwen3.7-max 的 Intelligence Index 分数。"
+        },
+        {
+          "sourceKey": "web:aa-gpt-5-5-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/models/gpt-5-5",
+          "title": "GPT-5.5 (xhigh) - Intelligence, Performance & Price Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 GPT-5.5 的 Intelligence Index 分数。"
+        },
+        {
+          "sourceKey": "web:aa-claude-opus-4-7-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/models/claude-opus-4-7",
+          "title": "Claude Opus 4.7 - Intelligence, Performance & Price Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Claude Opus 4.7 的 Intelligence Index 分数。"
+        },
+        {
+          "sourceKey": "web:aa-grok-4-3-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/models/grok-4-3",
+          "title": "Grok 4.3 (high) - Intelligence, Performance & Price Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Grok 4.3 的 Intelligence Index 分数。"
+        },
+        {
+          "sourceKey": "web:aa-kimi-k2-6-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://artificialanalysis.ai/models/kimi-k2-6",
+          "title": "Kimi K2.6 - Intelligence, Performance & Price Analysis",
+          "publisher": "Artificial Analysis",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Kimi K2.6 的 Intelligence Index 分数。"
+        },
+        {
+          "sourceKey": "web:deepseek-pricing-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://api-docs.deepseek.com/quick_start/pricing/",
+          "title": "Models & Pricing | DeepSeek API Docs",
+          "publisher": "DeepSeek",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 DeepSeek V4 Pro 当前官方公开 API 价格。"
+        },
+        {
+          "sourceKey": "web:qwen3-7-max-pricing-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://www.qwencloud.com/models/qwen3.7-max",
+          "title": "Qwen3.7-Max - Qwen Cloud",
+          "publisher": "Qwen Cloud",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Qwen3.7-max 当前官方公开 API 价格与当前 50% off 页面价格。"
+        },
+        {
+          "sourceKey": "web:openai-api-pricing-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://openai.com/api/pricing/",
+          "title": "OpenAI API Pricing | OpenAI",
+          "publisher": "OpenAI",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 GPT-5.5 当前官方公开 API 价格。"
+        },
+        {
+          "sourceKey": "web:anthropic-pricing-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://platform.claude.com/docs/en/about-claude/pricing",
+          "title": "Pricing - Claude API Docs",
+          "publisher": "Anthropic",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Claude Opus 4.7 的 base input 与 output 官方价格。"
+        },
+        {
+          "sourceKey": "web:xai-grok-4-3-pricing-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://docs.x.ai/developers/models/grok-4.3",
+          "title": "Grok 4.3 | xAI Docs",
+          "publisher": "xAI",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Grok 4.3 当前官方公开 API 价格。"
+        },
+        {
+          "sourceKey": "web:kimi-platform-pricing-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://platform.moonshot.ai/",
+          "title": "Kimi API Platform",
+          "publisher": "Moonshot AI",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Kimi K2.6 当前官方公开 API 价格。"
         }
       ]
     }

@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import { AppError } from "@/lib/errors";
+import { applyEffectiveFreshness } from "@/lib/freshness";
 import { prisma } from "@/lib/prisma";
 import {
   createRecordInputSchema,
@@ -1164,8 +1165,7 @@ function getListWhere(input: ListRecordsQuery): Prisma.KnowledgeRecordWhereInput
 
 export async function listRecords(input: unknown) {
   const query = listRecordsQuerySchema.parse(input);
-
-  return prisma.knowledgeRecord.findMany({
+  const records = await prisma.knowledgeRecord.findMany({
     where: getListWhere(query),
     include: recordListInclude,
     orderBy: {
@@ -1173,6 +1173,8 @@ export async function listRecords(input: unknown) {
     },
     take: query.limit,
   });
+
+  return records.map((record) => applyEffectiveFreshness(record));
 }
 
 export async function getRecordBySlug(slug: string) {
@@ -1193,7 +1195,7 @@ export async function getRecordBySlug(slug: string) {
     throw new AppError(404, `Record not found for slug "${trimmedSlug}"`);
   }
 
-  return record;
+  return applyEffectiveFreshness(record);
 }
 
 export async function upsertRecordFromImportTx(
