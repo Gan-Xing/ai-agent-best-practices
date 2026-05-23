@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useSyncExternalStore } from "react";
-import NextLink from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 
@@ -63,7 +62,7 @@ export function LanguageSwitcher() {
           const active = targetLocale === locale;
 
           return (
-            <NextLink
+            <a
               key={targetLocale}
               href={`/api/locale?locale=${targetLocale}&returnTo=${encodeURIComponent(
                 localizedHrefs[targetLocale],
@@ -76,7 +75,7 @@ export function LanguageSwitcher() {
               }`}
             >
               {t(targetLocale)}
-            </NextLink>
+            </a>
           );
         })}
       </nav>

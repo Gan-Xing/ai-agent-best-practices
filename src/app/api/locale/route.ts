@@ -42,6 +42,15 @@ function normalizeReturnTo(value: string | null, locale: Locale | null) {
   }
 }
 
+function redirectWithRelativeLocation(pathname: string) {
+  return new NextResponse(null, {
+    status: 307,
+    headers: {
+      Location: pathname,
+    },
+  });
+}
+
 export function GET(request: NextRequest) {
   const locale = request.nextUrl.searchParams.get("locale");
   const targetLocale = locale && isLocale(locale) ? locale : null;
@@ -51,10 +60,10 @@ export function GET(request: NextRequest) {
   );
 
   if (!targetLocale) {
-    return NextResponse.redirect(new URL(returnTo, request.url));
+    return redirectWithRelativeLocation(returnTo);
   }
 
-  const response = NextResponse.redirect(new URL(returnTo, request.url));
+  const response = redirectWithRelativeLocation(returnTo);
 
   response.cookies.set(localeCookie.name, targetLocale, {
     maxAge: localeCookie.maxAge,
