@@ -2138,6 +2138,204 @@
           "note": "用于确认 Kimi K2.6 当前官方公开 API 价格。"
         }
       ]
+    },
+    {
+      "slug": "qwopus36-27b-v2-gguf-brings-27b-agent-coding-to-single-32gb-gpus",
+      "externalKey": "kb-000011",
+      "externalId": "github-json-kb-000011",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "01",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
+      "confidence": 0.82,
+      "language": "zh",
+      "title": "Qwopus3.6-27B-v2-GGUF 说明 27B agent coding 模型已进入单卡 32GB 本地部署区间",
+      "summary": "Qwopus3.6-27B-v2-GGUF 的关键价值不在于单一 benchmark 数字，而在于它把面向 agentic coding 的 27B 模型带到了单卡 32GB 级消费显卡可本地部署、可直接下载验证的区间。",
+      "body": "Kyle Hessling 发布 Qwopus3.6-27B-v2-GGUF 时，强调的核心并不是它有一个多高的排行榜数字，而是这个量化版本已经具备现实的本地部署意义。公开记录显示，它有可直接下载的 Hugging Face 模型地址，也有对应的评测页面；评测说明里给出了 controlled-202 slice 上 152/202、75.25% 的结果，同时发布环境指向单卡 32GB 级显卡。对知识库的保存价值在于：这不是只能在云端或超大显存环境里讨论的 27B coding 模型，而是已经进入单卡本地验证与个人生产力使用范围的候选方案。这里要保留的判断是“单卡 32GB 级本地部署入口已经成立”，而不是把 152/202 误写成完整官方 SWE-bench Verified 500 题成绩。",
+      "problem": "很多本地模型讨论只谈分数，不区分“云端或高配环境跑出的能力”与“消费级单卡真正可部署的量化版本”。这样会让用户误判本地部署门槛，也会错过那些真正有现实落地意义的模型分发形式。",
+      "recommendation": "评估本地 coding 或 agent 模型时，应先记录量化格式、显存档位、上下文、可下载地址和推理框架，再把 benchmark 结果当作辅助证据。对于 Qwopus3.6-27B-v2-GGUF，更适合把它归类为“单卡 32GB 级本地部署候选模型”：先验证具体 GGUF 档位、上下文长度、KV cache 设置和运行框架，再决定是否能进入长期使用或工作流接入。",
+      "metadata": {
+        "contentSource": "source-check-plus-curation",
+        "draftedFrom": "conversation",
+        "modelFamily": "Qwopus3.6-27B-v2",
+        "upstreamModelFamily": "Qwen3.6-27B",
+        "distributionFormat": "GGUF",
+        "deploymentTier": "single-gpu-32gb-local",
+        "primaryValue": "local-agentic-coding-deployability"
+      },
+      "applicability": {
+        "audience": [
+          "local-agent-builders",
+          "self-hosters",
+          "local-coding-users"
+        ],
+        "projectStage": [
+          "model-selection",
+          "prototype",
+          "local-deployment"
+        ],
+        "scenario": [
+          "single-gpu-local-inference",
+          "agentic-coding",
+          "local-model-evaluation"
+        ]
+      },
+      "compatibility": {
+        "hardwareTier": "single 32GB consumer GPU",
+        "format": "GGUF",
+        "runtimeCandidates": [
+          "llama.cpp",
+          "LM Studio",
+          "other GGUF-compatible runtimes"
+        ],
+        "reportedEvalSetup": "single-slot local harness on RTX 5090 32GB",
+        "sizingNote": "usable headroom still depends on quantization level, context length, and KV cache configuration"
+      },
+      "tradeoffs": {
+        "pros": [
+          "提供了可直接下载的本地量化模型地址",
+          "把 27B agent coding 模型拉到单卡 32GB 本地部署语境",
+          "保留了部署意义而不只是一串 benchmark 数字"
+        ],
+        "cons": [
+          "公开 benchmark 结果是 controlled-202 slice，不是完整官方 500 题分数",
+          "当前结论更适合写成部署候选，不应直接承诺所有 32GB 卡都能稳定满配运行",
+          "不同 GGUF 档位、上下文长度和运行框架可能导致体验差异很大"
+        ]
+      },
+      "evidence": {
+        "basis": "X 发布帖、Hugging Face 模型页和对应评测页都能对齐到 GGUF 分发、本地部署定位和 controlled-202 的公开结果。",
+        "confidenceReason": "可下载模型地址和 32GB 级公开评测环境共同支撑“本地部署入口成立”这一判断。",
+        "caveat": "152/202 仅代表 controlled-202 slice 的公开自跑结果，不能直接等同于完整官方 SWE-bench Verified 成绩；24GB 级显卡可用性也不应从这里外推。"
+      },
+      "metrics": {
+        "reportedBenchmarkSlice": "controlled-202",
+        "reportedSolved": "152/202",
+        "reportedScore": "75.25%",
+        "reportedVramNote": "published setup indicates roughly 31 GB VRAM for the referenced Q5_K_M run",
+        "deploymentSignal": "single 32GB class local candidate"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-05-23",
+        "reviewPolicy": "auto-needs-review-after-90-days"
+      },
+      "extensions": {
+        "nextSteps": [
+          "在真实 32GB 级显卡上补充首 token 延迟、稳定上下文和工具调用复测",
+          "补充不同 GGUF quant 档位的显存与速度表",
+          "记录 llama.cpp 或常见本地前端的最小可复现启动参数"
+        ]
+      },
+      "publishedAt": "2026-05-23T00:00:00.000Z",
+      "lastVerifiedAt": "2026-05-23T00:00:00.000Z",
+      "reviewAfter": "2026-08-21T00:00:00.000Z",
+      "translations": [
+        {
+          "language": "en",
+          "title": "Qwopus3.6-27B-v2-GGUF shows 27B agent coding is now practical on a single 32GB GPU",
+          "summary": "The main value of Qwopus3.6-27B-v2-GGUF is not a single benchmark number. It shows that a 27B agentic coding model has entered the range of direct local deployment and validation on a single 32GB-class consumer GPU.",
+          "body": "The meaningful takeaway from the Qwopus3.6-27B-v2-GGUF release is local deployability. Public records show a directly downloadable Hugging Face model, a matching evaluation page, and a reported single-GPU 32GB-class setup. The 152/202 result on a controlled-202 slice is useful context, but the stronger knowledge value is that this is no longer just a cloud-only or oversized-hardware discussion. It is a practical local candidate for single-GPU coding and agent workflows.",
+          "problem": "Local model discussions often over-focus on benchmark scores and under-specify whether a quantized artifact is actually deployable on consumer single-GPU hardware.",
+          "recommendation": "When evaluating local coding or agent models, capture the quantized format, memory tier, context assumptions, download link, and runtime first, then treat benchmarks as supporting evidence. For Qwopus3.6-27B-v2-GGUF, classify it as a single-32GB local deployment candidate rather than a universal guarantee.",
+          "metadata": {
+            "translationSource": "manual"
+          }
+        }
+      ],
+      "aliases": [
+        "Qwopus3.6-27B-v2-GGUF",
+        "Qwopus 3.6 27B",
+        "32GB 本地 agent coding 模型"
+      ],
+      "keywords": [
+        "Qwopus3.6-27B-v2-GGUF",
+        "Qwen3.6-27B",
+        "GGUF",
+        "single GPU",
+        "32GB GPU",
+        "local LLM",
+        "agentic coding",
+        "SWE-bench",
+        "Hugging Face"
+      ],
+      "tags": [
+        "qwen",
+        "gguf",
+        "local-llm",
+        "agent-coding",
+        "single-gpu",
+        "model-selection"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000006",
+          "relationType": "COMPLEMENTS",
+          "strength": 0.78,
+          "description": "这条记录补充了 Qwen 27B 本地优化路径之外的“量化成品可直接部署”价值。",
+          "metadata": {
+            "reason": "deployment-entry"
+          }
+        },
+        {
+          "toExternalKey": "kb-000008",
+          "relationType": "RELATED_TO",
+          "strength": 0.81,
+          "description": "这条记录提供了 27B/32GB 显存分档在真实模型案例上的落点。",
+          "metadata": {
+            "reason": "gpu-sizing-example"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "web:x-kylehessling-qwopus-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://x.com/kylehessling1/status/2057853098585108979",
+          "title": "Kyle Hessling X post announcing Qwopus 3.6 27B",
+          "author": "Kyle Hessling",
+          "publisher": "X",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认模型发布口径、受众定位和 controlled-202 结果的公开表述。"
+        },
+        {
+          "sourceKey": "web:hf-jackrong-qwopus3-6-27b-v2-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://huggingface.co/Jackrong/Qwopus3.6-27B-v2",
+          "title": "Jackrong/Qwopus3.6-27B-v2 model repository",
+          "author": "Jackrong",
+          "publisher": "Hugging Face",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 GGUF 模型分发地址和公开模型说明。"
+        },
+        {
+          "sourceKey": "web:hf-space-qwopus36-27b-v2-eval-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://huggingface.co/spaces/KyleHessling1/qwopus36-27b-v2-eval",
+          "title": "Qwopus3.6-27B-v2 evaluation space",
+          "author": "KyleHessling1",
+          "publisher": "Hugging Face",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 controlled-202 结果和公开评测环境口径。"
+        },
+        {
+          "sourceKey": "web:hf-qwen-qwen3-6-27b-2026-05-23",
+          "sourceType": "WEBPAGE",
+          "uri": "https://huggingface.co/Qwen/Qwen3.6-27B",
+          "title": "Qwen/Qwen3.6-27B model card",
+          "publisher": "Hugging Face",
+          "accessedAt": "2026-05-23T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于标注上游模型家族背景，避免把量化衍生版本和基础模型混写。"
+        }
+      ]
     }
   ]
 }
