@@ -1,9 +1,14 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import categoriesData from "../../../../../prisma/seed-data/categories.json";
-import vocabularyData from "../../../../../prisma/seed-data/vocabulary.json";
+import { Link } from "@/i18n/navigation";
+import { dateLocale } from "@/i18n/locale";
+import type { Locale } from "@/i18n/routing";
+import { resolveLocale } from "@/i18n/server";
+
+import categoriesData from "../../../../../../prisma/seed-data/categories.json";
+import vocabularyData from "../../../../../../prisma/seed-data/vocabulary.json";
 
 import { getGithubRepoCardByKey } from "@/lib/github-cards";
 import {
@@ -13,12 +18,13 @@ import {
   formatDate,
   statusLabel,
   statusTone,
-} from "@/app/resources/github/ui";
+} from "../ui";
 
 export const dynamic = "force-dynamic";
 
 type PageProps = {
   params: Promise<{
+    locale: string;
     cardKey: string;
   }>;
   searchParams: Promise<{
@@ -59,24 +65,35 @@ function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
 }
 
-function typeLabel(value: string) {
-  return recordTypes.find((item) => item.code === value)?.labelZh ?? value;
+function categoryLabel(item: CategoryOption, locale: Locale) {
+  return locale === "zh" ? item.nameZh ?? item.name : item.name;
+}
+
+function typeLabel(value: string, locale: Locale) {
+  const item = recordTypes.find((recordType) => recordType.code === value);
+  if (!item) return value;
+  return locale === "zh" ? item.labelZh ?? item.label : item.label;
 }
 
 export async function generateMetadata({
   params,
 }: Readonly<PageProps>): Promise<Metadata> {
   const { cardKey } = await params;
+  const locale = await resolveLocale(params);
+  const t = await getTranslations({
+    locale,
+    namespace: "GithubResources.detail",
+  });
   const card = await getGithubRepoCardByKey(cardKey);
 
   if (!card) {
     return {
-      title: "参考项目未找到",
+      title: t("notFoundTitle"),
     };
   }
 
   return {
-    title: `${card.repo.fullName} · 开源项目参考`,
+    title: t("metadataTitle", { name: card.repo.fullName }),
     description: card.summary,
   };
 }
@@ -85,6 +102,14 @@ export default async function GitHubResourceDetailPage({
   params,
   searchParams,
 }: Readonly<PageProps>) {
+  const locale = await resolveLocale(params);
+  const localeForDate = dateLocale(locale);
+  const t = await getTranslations({
+    locale,
+    namespace: "GithubResources.detail",
+  });
+  const common = await getTranslations({ locale, namespace: "Common" });
+  const vocabulary = await getTranslations({ locale, namespace: "Vocabulary" });
   const { cardKey } = await params;
   const from = firstParam((await searchParams).from).trim();
   const card = await getGithubRepoCardByKey(cardKey);
@@ -98,25 +123,28 @@ export default async function GitHubResourceDetailPage({
     .map((code) => categoriesByCode.get(code))
     .filter(isCategoryOption);
   const listHref = from ? `/resources/github?${from}` : "/resources/github";
+  const statusLabels = {
+    [card.status]: vocabulary(`githubStatus.${card.status}`),
+  };
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,118,110,0.08),transparent_28%),linear-gradient(180deg,#f8fafb_0%,#f2f5f8_100%)] text-foreground">
       <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone="teal">开源项目</Badge>
-            <Badge tone={statusTone(card.status)}>{statusLabel(card.status)}</Badge>
-            <Badge>{typeLabel(card.classification.recordType)}</Badge>
-            {!card.upstream.synced ? <Badge tone="amber">资料更新中</Badge> : null}
+            <Badge tone="teal">{t("badge")}</Badge>
+            <Badge tone={statusTone(card.status)}>{statusLabel(card.status, statusLabels)}</Badge>
+            <Badge>{typeLabel(card.classification.recordType, locale)}</Badge>
+            {!card.upstream.synced ? <Badge tone="amber">{t("updating")}</Badge> : null}
           </div>
           <div className="flex flex-wrap gap-2">
             <LinkButton href={listHref} tone="secondary">
-              返回项目库
+              {t("back")}
             </LinkButton>
             <LinkButton href={card.repo.url} tone="secondary">
-              打开 GitHub
+              {common("openGithub")}
             </LinkButton>
-            {card.links?.docs ? <LinkButton href={card.links.docs}>项目文档</LinkButton> : null}
+            {card.links?.docs ? <LinkButton href={card.links.docs}>{common("projectDocs")}</LinkButton> : null}
           </div>
         </div>
 
@@ -139,14 +167,14 @@ export default async function GitHubResourceDetailPage({
             <div className="mt-6 flex flex-wrap gap-2">
               {primaryCategory ? (
                 <Badge tone="teal">
-                  {primaryCategory.code} · {primaryCategory.nameZh ?? primaryCategory.name}
+                  {primaryCategory.code} · {categoryLabel(primaryCategory, locale)}
                 </Badge>
               ) : (
                 <Badge tone="teal">{card.classification.categoryCode}</Badge>
               )}
               {secondaryCategories.map((item) => (
                 <Badge key={item.code}>
-                  {item.code} · {item.nameZh ?? item.name}
+                  {item.code} · {categoryLabel(item, locale)}
                 </Badge>
               ))}
             </div>
@@ -154,7 +182,7 @@ export default async function GitHubResourceDetailPage({
             {card.notes ? (
               <div className="mt-8 rounded-[1.6rem] border border-line bg-surface px-5 py-5 shadow-[var(--shadow)]">
                 <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted">
-                  重点看什么
+                  {t("focus")}
                 </p>
                 <p className="mt-3 text-sm leading-8 text-foreground">{card.notes}</p>
               </div>
@@ -162,7 +190,7 @@ export default async function GitHubResourceDetailPage({
           </div>
 
           <aside className="motion-rise-delayed space-y-4">
-            <Section title="项目概览" eyebrow="快速判断">
+            <Section title={t("overview")} eyebrow={t("overviewEyebrow")}>
               <dl className="space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <dt className="text-muted">Stars</dt>
@@ -171,33 +199,33 @@ export default async function GitHubResourceDetailPage({
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">主要语言</dt>
+                  <dt className="text-muted">{t("primaryLanguage")}</dt>
                   <dd className="text-right font-medium text-foreground">
                     {card.upstream.language ?? "—"}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">许可证</dt>
+                  <dt className="text-muted">{t("license")}</dt>
                   <dd className="text-right font-medium text-foreground">
                     {card.upstream.license ?? "—"}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">默认分支</dt>
+                  <dt className="text-muted">{t("defaultBranch")}</dt>
                   <dd className="text-right font-medium text-foreground">
                     {card.upstream.defaultBranch ?? "—"}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">最近更新</dt>
+                  <dt className="text-muted">{t("updatedAt")}</dt>
                   <dd className="text-right font-medium text-foreground">
-                    {formatDate(card.upstream.pushedAt)}
+                    {formatDate(card.upstream.pushedAt, localeForDate)}
                   </dd>
                 </div>
                 <div className="flex items-start justify-between gap-4">
-                  <dt className="text-muted">下次复看</dt>
+                  <dt className="text-muted">{t("reviewAfter")}</dt>
                   <dd className="text-right font-medium text-foreground">
-                    {formatDate(card.review.reviewAfter)}
+                    {formatDate(card.review.reviewAfter, localeForDate)}
                   </dd>
                 </div>
               </dl>
@@ -206,24 +234,24 @@ export default async function GitHubResourceDetailPage({
         </section>
 
         <section className="mt-10 grid gap-5 xl:grid-cols-[1fr_1fr]">
-          <Section title="为什么收录" eyebrow="整理判断">
+          <Section title={t("whyIncluded")} eyebrow={t("curationEyebrow")}>
             <dl className="space-y-4">
               <div className="flex items-start justify-between gap-4">
-                <dt className="text-muted">主要方向</dt>
+                <dt className="text-muted">{t("primaryDirection")}</dt>
                 <dd className="text-right text-foreground">
                   {primaryCategory
-                    ? `${primaryCategory.code} · ${primaryCategory.nameZh ?? primaryCategory.name}`
+                    ? `${primaryCategory.code} · ${categoryLabel(primaryCategory, locale)}`
                     : card.classification.categoryCode}
                 </dd>
               </div>
               <div className="flex items-start justify-between gap-4">
-                <dt className="text-muted">项目类型</dt>
+                <dt className="text-muted">{t("projectType")}</dt>
                 <dd className="text-right text-foreground">
-                  {typeLabel(card.classification.recordType)}
+                  {typeLabel(card.classification.recordType, locale)}
                 </dd>
               </div>
               <div>
-                <dt className="text-muted">标签</dt>
+                <dt className="text-muted">{t("tags")}</dt>
                 <dd className="mt-3 flex flex-wrap gap-2">
                   {card.classification.tags.map((tag) => (
                     <span
@@ -236,7 +264,7 @@ export default async function GitHubResourceDetailPage({
                 </dd>
               </div>
               <div>
-                <dt className="text-muted">关键词</dt>
+                <dt className="text-muted">{t("keywords")}</dt>
                 <dd className="mt-3 flex flex-wrap gap-2">
                   {card.classification.keywords.map((keyword) => (
                     <span
@@ -251,14 +279,14 @@ export default async function GitHubResourceDetailPage({
             </dl>
           </Section>
 
-          <Section title="项目动态" eyebrow="公开信息">
+          <Section title={t("activity")} eyebrow={t("publicInfo")}>
             {!card.upstream.synced ? (
               <p className="text-sm leading-8 text-muted">
-                这个项目的公开信息还在更新中，稍后再看会更完整。
+                {t("upstreamPending")}
               </p>
             ) : null}
             <p className="text-sm leading-8 text-foreground">
-              {card.upstream.description ?? "暂时没有项目简介。"}
+              {card.upstream.description ?? t("noDescription")}
             </p>
             {card.upstream.topics.length ? (
               <div className="mt-5 flex flex-wrap gap-2">
@@ -275,7 +303,7 @@ export default async function GitHubResourceDetailPage({
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  官网
+                  {t("homepage")}
                 </dt>
                 <dd className="mt-2 break-words text-foreground">
                   {card.upstream.homepage ?? "—"}
@@ -283,23 +311,23 @@ export default async function GitHubResourceDetailPage({
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  最近同步
+                  {t("lastSynced")}
                 </dt>
                 <dd className="mt-2 text-foreground">
-                  {formatDate(card.upstream.lastFetchedAt)}
+                  {formatDate(card.upstream.lastFetchedAt, localeForDate)}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  是否归档
+                  {t("archived")}
                 </dt>
                 <dd className="mt-2 text-foreground">
-                  {card.upstream.archived ? "是" : "否"}
+                  {card.upstream.archived ? common("yes") : common("no")}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  文档链接
+                  {t("docsLink")}
                 </dt>
                 <dd className="mt-2 break-words text-foreground">
                   {card.links?.docs ?? "—"}
@@ -310,38 +338,38 @@ export default async function GitHubResourceDetailPage({
         </section>
 
         <section className="mt-10 grid gap-5 xl:grid-cols-[1fr_1fr]">
-          <Section title="整理节奏" eyebrow="复看计划">
+          <Section title={t("reviewPlan")} eyebrow={t("reviewPlanEyebrow")}>
             <dl className="grid gap-4 sm:grid-cols-3">
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  收录时间
+                  {t("addedAt")}
                 </dt>
-                <dd className="mt-2 text-foreground">{formatDate(card.review.addedAt)}</dd>
+                <dd className="mt-2 text-foreground">{formatDate(card.review.addedAt, localeForDate)}</dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  最近整理
+                  {t("lastReviewedAt")}
                 </dt>
                 <dd className="mt-2 text-foreground">
-                  {formatDate(card.review.lastReviewedAt)}
+                  {formatDate(card.review.lastReviewedAt, localeForDate)}
                 </dd>
               </div>
               <div>
                 <dt className="text-xs uppercase tracking-[0.16em] text-muted">
-                  建议复看
+                  {t("suggestedReview")}
                 </dt>
                 <dd className="mt-2 text-foreground">
-                  {formatDate(card.review.reviewAfter)}
+                  {formatDate(card.review.reviewAfter, localeForDate)}
                 </dd>
               </div>
             </dl>
           </Section>
 
-          <Section title="相关知识" eyebrow="知识关联">
+          <Section title={t("relatedKnowledge")} eyebrow={t("knowledgeEyebrow")}>
             {card.connections?.relatedRecordSlugs?.length ? (
               <div className="space-y-4">
                 <p className="text-sm leading-8 text-muted">
-                  这个项目已经关联到知识库里的相关记录。
+                  {t("relatedIntro")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {card.connections.relatedRecordSlugs.map((slug) => (
@@ -360,8 +388,7 @@ export default async function GitHubResourceDetailPage({
               </div>
             ) : (
               <p className="text-sm leading-8 text-muted">
-                当前还没有关联到具体知识记录。你仍然可以把它作为实现参考，
-                后续形成明确结论后再补充关联。
+                {t("noRelated")}
               </p>
             )}
           </Section>

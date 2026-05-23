@@ -1,13 +1,34 @@
-import Link from "next/link";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-import categoriesData from "../../prisma/seed-data/categories.json";
-import vocabularyData from "../../prisma/seed-data/vocabulary.json";
+import { Link } from "@/i18n/navigation";
+import { dateLocale } from "@/i18n/locale";
+import type { Locale } from "@/i18n/routing";
+import { resolveLocale, type LocaleParams } from "@/i18n/server";
+
+import categoriesData from "../../../prisma/seed-data/categories.json";
+import vocabularyData from "../../../prisma/seed-data/vocabulary.json";
 
 import { searchRecords, type SearchRecordResult } from "@/lib/search";
 
 export const dynamic = "force-dynamic";
 
+export async function generateMetadata({
+  params,
+}: {
+  params: LocaleParams;
+}): Promise<Metadata> {
+  const locale = await resolveLocale(params);
+  const t = await getTranslations({ locale, namespace: "Home.metadata" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
+
 type HomeProps = {
+  params: LocaleParams;
   searchParams: Promise<{
     q?: string | string[];
     categoryCode?: string | string[];
@@ -41,25 +62,7 @@ const recordTypes = [...(vocabularyData as VocabularyOption[])]
   .filter((item) => item.namespace === "record_type")
   .sort((a, b) => a.sortOrder - b.sortOrder);
 
-const STATUS_OPTIONS = [
-  { value: "DRAFT", label: "草稿" },
-  { value: "REVIEW", label: "审核中" },
-  { value: "PUBLISHED", label: "已发布" },
-  { value: "ARCHIVED", label: "已归档" },
-] as const;
-
-const MATCH_SOURCE_LABELS: Record<string, string> = {
-  BROWSE: "浏览",
-  FTS: "全文检索",
-  ILIKE: "字段匹配",
-};
-
-const FRESHNESS_LABELS: Record<string, string> = {
-  UNKNOWN: "未知",
-  FRESH: "新鲜",
-  STALE: "过期",
-  NEEDS_REVIEW: "待复审",
-};
+const STATUS_VALUES = ["DRAFT", "REVIEW", "PUBLISHED", "ARCHIVED"] as const;
 
 function firstParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? "" : value ?? "";
@@ -89,6 +92,14 @@ function buildFreshnessTone(freshness: string) {
     default:
       return "border-line bg-background text-muted";
   }
+}
+
+function localizedCategoryName(item: CategoryOption, locale: Locale) {
+  return locale === "zh" ? item.nameZh ?? item.name : item.name;
+}
+
+function localizedTypeLabel(item: VocabularyOption, locale: Locale) {
+  return locale === "zh" ? item.labelZh ?? item.label : item.label;
 }
 
 function Badge({
@@ -203,9 +214,20 @@ function ConfidenceMeter({ value }: Readonly<{ value: number | null }>) {
 function ResultRow({
   item,
   from,
+  locale,
+  labels,
 }: Readonly<{
   item: SearchRecordResult;
   from: string;
+  locale: Locale;
+  labels: {
+    confidence: string;
+    matchSource: string;
+    updatedAt: string;
+    noSummary: string;
+    freshness: (value: string) => string;
+    match: (value: string) => string;
+  };
 }>) {
   const href = from
     ? { pathname: `/records/${item.slug}`, query: { from } }
@@ -224,7 +246,7 @@ function ResultRow({
               <Badge>{item.type}</Badge>
               <Badge className={buildStatusTone(item.status)}>{item.status}</Badge>
               <Badge className={buildFreshnessTone(item.freshness)}>
-                {FRESHNESS_LABELS[item.freshness] ?? item.freshness}
+                {labels.freshness(item.freshness)}
               </Badge>
             </div>
 
@@ -233,27 +255,27 @@ function ResultRow({
             </h2>
 
             <p className="mt-2 line-clamp-3 text-sm leading-7 text-muted">
-              {item.summary ?? "暂无摘要。打开记录查看正文、证据、来源和版本历史。"}
+              {item.summary ?? labels.noSummary}
             </p>
           </div>
 
           <div className="grid shrink-0 gap-3 text-sm text-muted sm:grid-cols-3 lg:w-[22rem] lg:grid-cols-1">
             <div>
-              <p className="text-xs font-medium text-muted">置信度</p>
+              <p className="text-xs font-medium text-muted">{labels.confidence}</p>
               <div className="mt-2">
                 <ConfidenceMeter value={item.confidence} />
               </div>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted">匹配方式</p>
+              <p className="text-xs font-medium text-muted">{labels.matchSource}</p>
               <p className="mt-2 font-mono text-xs text-foreground">
-                {MATCH_SOURCE_LABELS[item.matchSource] ?? item.matchSource}
+                {labels.match(item.matchSource)}
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-muted">更新时间</p>
+              <p className="text-xs font-medium text-muted">{labels.updatedAt}</p>
               <p className="mt-2 font-mono text-xs text-foreground">
-                {new Intl.DateTimeFormat("zh-CN", {
+                {new Intl.DateTimeFormat(dateLocale(locale), {
                   dateStyle: "medium",
                 }).format(item.updatedAt)}
               </p>
@@ -265,12 +287,16 @@ function ResultRow({
   );
 }
 
-export default async function Home({ searchParams }: HomeProps) {
-  const params = await searchParams;
-  const query = firstParam(params.q).trim();
-  const categoryCode = firstParam(params.categoryCode).trim();
-  const status = firstParam(params.status).trim();
-  const type = firstParam(params.type).trim();
+export default async function Home({ params, searchParams }: HomeProps) {
+  const locale = await resolveLocale(params);
+  const t = await getTranslations({ locale, namespace: "Home" });
+  const common = await getTranslations({ locale, namespace: "Common" });
+  const vocabulary = await getTranslations({ locale, namespace: "Vocabulary" });
+  const resolvedSearchParams = await searchParams;
+  const query = firstParam(resolvedSearchParams.q).trim();
+  const categoryCode = firstParam(resolvedSearchParams.categoryCode).trim();
+  const status = firstParam(resolvedSearchParams.status).trim();
+  const type = firstParam(resolvedSearchParams.type).trim();
 
   const hasQuery = query.length > 0;
   const hasFilters = Boolean(categoryCode || status || type);
@@ -294,11 +320,33 @@ export default async function Home({ searchParams }: HomeProps) {
 
   const activeCount = [query, categoryCode, status, type].filter(Boolean).length;
   const selectedCategory =
-    categories.find((item) => item.code === categoryCode)?.nameZh ?? categoryCode;
+    categories.find((item) => item.code === categoryCode)
+      ? localizedCategoryName(
+          categories.find((item) => item.code === categoryCode) as CategoryOption,
+          locale,
+        )
+      : categoryCode;
   const selectedType =
-    recordTypes.find((item) => item.code === type)?.labelZh ?? type;
+    recordTypes.find((item) => item.code === type)
+      ? localizedTypeLabel(
+          recordTypes.find((item) => item.code === type) as VocabularyOption,
+          locale,
+        )
+      : type;
   const selectedStatus =
-    STATUS_OPTIONS.find((item) => item.value === status)?.label ?? status;
+    STATUS_VALUES.includes(status as (typeof STATUS_VALUES)[number])
+      ? vocabulary(`recordStatus.${status}`)
+      : status;
+  const recordCardLabels = {
+    confidence: t("recordCard.confidence"),
+    matchSource: t("recordCard.matchSource"),
+    updatedAt: t("recordCard.updatedAt"),
+    noSummary: t("recordCard.noSummary"),
+    freshness: (value: string) =>
+      vocabulary.has(`freshness.${value}`) ? vocabulary(`freshness.${value}`) : value,
+    match: (value: string) =>
+      vocabulary.has(`matchSource.${value}`) ? vocabulary(`matchSource.${value}`) : value,
+  };
 
   if (!hasActiveState) {
     return (
@@ -306,40 +354,39 @@ export default async function Home({ searchParams }: HomeProps) {
         <div className="mx-auto flex min-h-[78vh] w-full max-w-5xl items-center justify-center">
           <section className="w-full max-w-3xl rounded-2xl border border-line bg-surface px-6 py-10 text-center shadow-[var(--shadow)] sm:px-10 sm:py-14">
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted">
-              AI Agent Best Practices
+              {t("landing.eyebrow")}
             </p>
             <h1 className="mt-4 text-3xl font-semibold text-foreground sm:text-5xl">
-              搜索 AI Agent 最佳实践
+              {t("landing.title")}
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted sm:text-base">
-              输入关键词，直接查找模型、工具、技能、评测、工作流等高价值最佳实践。
+              {t("landing.description")}
             </p>
 
-            <form action="/" method="GET" role="search" className="mx-auto mt-8 max-w-2xl">
+            <form method="GET" role="search" className="mx-auto mt-8 max-w-2xl">
               <label htmlFor="q" className="sr-only">
-                搜索知识记录
+                {t("landing.searchLabel")}
               </label>
               <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface-strong p-3 shadow-[var(--shadow)] sm:flex-row sm:items-center">
                 <FieldInput
                   id="q"
                   name="q"
                   defaultValue={query}
-                  placeholder="搜索模型、工具、实践、评测..."
+                  placeholder={t("landing.placeholder")}
                 />
                 <button
                   type="submit"
                   className="inline-flex h-11 shrink-0 items-center justify-center rounded-lg bg-accent px-5 text-sm font-semibold text-white transition hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
-                  搜索
+                  {common("search")}
                 </button>
               </div>
             </form>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted">
-              <Badge>全文检索</Badge>
-              <Badge>来源可追溯</Badge>
-              <Badge>关系可跳转</Badge>
-              <Badge>版本可追踪</Badge>
+              {(t.raw("landing.features") as string[]).map((feature) => (
+                <Badge key={feature}>{feature}</Badge>
+              ))}
             </div>
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
@@ -347,13 +394,13 @@ export default async function Home({ searchParams }: HomeProps) {
                 href="/resources/github"
                 className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
               >
-                浏览开源项目参考库
+                {t("landing.githubLibrary")}
               </Link>
               <Link
                 href="/models/capability"
                 className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
               >
-                查看模型能力矩阵
+                {t("landing.modelMatrix")}
               </Link>
             </div>
           </section>
@@ -373,35 +420,37 @@ export default async function Home({ searchParams }: HomeProps) {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted">
-                Search Results
+                {t("results.eyebrow")}
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
-                {hasQuery ? `“${query}” 的 AI 最佳实践结果` : "AI 最佳实践筛选结果"}
+                {hasQuery
+                  ? t("results.titleWithQuery", { query })
+                  : t("results.titleFiltered")}
               </h1>
               <p className="mt-2 text-sm leading-7 text-muted">
-                继续收敛条件，快速判断这条记录是否值得打开。
+                {t("results.description")}
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
               <MetricCard
-                label="当前模式"
-                value={searchResult.mode === "SEARCH" ? "搜索" : "浏览"}
+                label={t("results.currentMode")}
+                value={searchResult.mode === "SEARCH" ? t("results.searchMode") : t("results.browseMode")}
                 hint={
                   searchResult.mode === "SEARCH"
-                    ? "按相关性优先，再按更新时间"
-                    : "按更新时间排序"
+                    ? t("results.searchHint")
+                    : t("results.browseHint")
                 }
               />
               <MetricCard
-                label="结果数量"
+                label={t("results.resultCount")}
                 value={String(searchResult.total)}
-                hint="当前查询条件下返回的记录数"
+                hint={t("results.resultCountHint")}
               />
               <MetricCard
-                label="活动条件"
+                label={t("results.activeConditions")}
                 value={String(activeCount)}
-                hint={searchResult.queryLogId ? `log ${searchResult.queryLogId.slice(0, 8)}` : "当前没有写入搜索日志"}
+                hint={searchResult.queryLogId ? `log ${searchResult.queryLogId.slice(0, 8)}` : t("results.noQueryLog")}
               />
             </div>
           </div>
@@ -411,58 +460,58 @@ export default async function Home({ searchParams }: HomeProps) {
               href="/resources/github"
               className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
             >
-              打开开源项目参考库
+              {t("results.openGithubLibrary")}
             </Link>
             <Link
               href="/models/capability"
               className="inline-flex cursor-pointer items-center rounded-full border border-line bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors duration-200 hover:border-line-strong hover:bg-background"
             >
-              打开模型能力矩阵
+              {t("results.openModelMatrix")}
             </Link>
           </div>
 
-          <form action="/" method="GET" className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))_auto]">
-            <FilterField label="关键词" htmlFor="q">
+          <form method="GET" className="grid gap-3 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,1fr))_auto]">
+            <FilterField label={t("results.keyword")} htmlFor="q">
               <FieldInput
                 id="q"
                 name="q"
                 defaultValue={query}
-                placeholder="搜索模型、工具、实践、评测..."
+                placeholder={t("landing.placeholder")}
               />
             </FilterField>
 
-            <FilterField label="分类" htmlFor="categoryCode">
+            <FilterField label={t("results.category")} htmlFor="categoryCode">
               <FieldSelect
                 id="categoryCode"
                 name="categoryCode"
                 defaultValue={categoryCode}
               >
-                <option value="">全部分类</option>
+                <option value="">{common("allCategories")}</option>
                 {categories.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {item.code} · {item.nameZh ?? item.name}
+                    {item.code} · {localizedCategoryName(item, locale)}
                   </option>
                 ))}
               </FieldSelect>
             </FilterField>
 
-            <FilterField label="状态" htmlFor="status">
+            <FilterField label={t("results.status")} htmlFor="status">
               <FieldSelect id="status" name="status" defaultValue={status}>
-                <option value="">全部状态</option>
-                {STATUS_OPTIONS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
+                <option value="">{common("allStatuses")}</option>
+                {STATUS_VALUES.map((value) => (
+                  <option key={value} value={value}>
+                    {vocabulary(`recordStatus.${value}`)}
                   </option>
                 ))}
               </FieldSelect>
             </FilterField>
 
-            <FilterField label="记录类型" htmlFor="type">
+            <FilterField label={t("results.recordType")} htmlFor="type">
               <FieldSelect id="type" name="type" defaultValue={type}>
-                <option value="">全部类型</option>
+                <option value="">{common("allTypes")}</option>
                 {recordTypes.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {item.labelZh ?? item.label}
+                    {localizedTypeLabel(item, locale)}
                   </option>
                 ))}
               </FieldSelect>
@@ -473,22 +522,22 @@ export default async function Home({ searchParams }: HomeProps) {
                 type="submit"
                 className="inline-flex h-11 items-center justify-center rounded-lg bg-accent px-4 text-sm font-semibold text-white transition hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                搜索
+                {common("search")}
               </button>
               <Link
                 href="/"
                 className="inline-flex h-11 items-center justify-center rounded-lg border border-line bg-surface-strong px-4 text-sm font-medium text-foreground transition hover:border-line-strong"
               >
-                返回首页
+                {t("results.backHome")}
               </Link>
             </div>
           </form>
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-            {query ? <Badge>关键词: {query}</Badge> : null}
-            {selectedCategory ? <Badge>分类: {selectedCategory}</Badge> : null}
-            {selectedStatus ? <Badge>状态: {selectedStatus}</Badge> : null}
-            {selectedType ? <Badge>类型: {selectedType}</Badge> : null}
+            {query ? <Badge>{t("results.filterKeyword", { value: query })}</Badge> : null}
+            {selectedCategory ? <Badge>{t("results.filterCategory", { value: selectedCategory })}</Badge> : null}
+            {selectedStatus ? <Badge>{t("results.filterStatus", { value: selectedStatus })}</Badge> : null}
+            {selectedType ? <Badge>{t("results.filterType", { value: selectedType })}</Badge> : null}
           </div>
         </header>
 
@@ -496,19 +545,26 @@ export default async function Home({ searchParams }: HomeProps) {
           <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface px-4 py-4 shadow-[var(--shadow)] sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-base font-semibold text-foreground">
-                {hasQuery ? `“${query}” 的结果` : "筛选结果"}
+                {hasQuery
+                  ? t("results.resultTitleWithQuery", { query })
+                  : t("results.resultTitleFiltered")}
               </h2>
               <p className="mt-1 text-sm text-muted">
-                结果已按当前搜索与筛选条件收敛。
+                {t("results.resultDescription")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-              <Badge>共 {searchResult.total} 条</Badge>
+              <Badge>{t("results.total", { total: searchResult.total })}</Badge>
               <Badge>
-                排序: {searchResult.mode === "SEARCH" ? "相关性" : "更新时间"}
+                {t("results.sort", {
+                  sort:
+                    searchResult.mode === "SEARCH"
+                      ? t("results.sortRelevance")
+                      : t("results.sortUpdatedAt"),
+                })}
               </Badge>
               {searchResult.queryLogId ? (
-                <Badge>日志 {searchResult.queryLogId.slice(0, 8)}</Badge>
+                <Badge>{t("results.log", { id: searchResult.queryLogId.slice(0, 8) })}</Badge>
               ) : null}
             </div>
           </div>
@@ -516,21 +572,27 @@ export default async function Home({ searchParams }: HomeProps) {
           {searchResult.items.length > 0 ? (
             <ol className="space-y-3">
               {searchResult.items.map((item) => (
-                <ResultRow key={item.id} item={item} from={from} />
+                <ResultRow
+                  key={item.id}
+                  item={item}
+                  from={from}
+                  locale={locale}
+                  labels={recordCardLabels}
+                />
               ))}
             </ol>
           ) : (
             <div className="rounded-xl border border-dashed border-line-strong bg-surface px-6 py-10 text-center shadow-[var(--shadow)]">
-              <p className="text-sm font-semibold text-foreground">没有匹配结果</p>
+              <p className="text-sm font-semibold text-foreground">{t("results.noResultsTitle")}</p>
               <p className="mt-2 text-sm leading-7 text-muted">
-                可以放宽关键词、切换分类，或者先导入更多记录再检索。
+                {t("results.noResultsDescription")}
               </p>
               <div className="mt-4">
                 <Link
                   href="/"
                   className="inline-flex h-10 items-center justify-center rounded-lg border border-line bg-surface-strong px-4 text-sm font-medium text-foreground transition hover:border-line-strong"
                 >
-                  返回搜索首页
+                  {t("results.backSearchHome")}
                 </Link>
               </div>
             </div>

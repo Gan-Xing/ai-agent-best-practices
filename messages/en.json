@@ -1,0 +1,660 @@
+{
+  "LanguageSwitcher": {
+    "label": "Switch language",
+    "zh": "中",
+    "en": "EN"
+  },
+  "NotFound": {
+    "metadata": {
+      "title": "Page not found",
+      "description": "The requested page could not be found."
+    },
+    "eyebrow": "404",
+    "title": "This page does not exist",
+    "description": "The link may have changed, or the record has not been published yet. Go back home to keep searching AI Agent best practices.",
+    "backHome": "Back home"
+  },
+  "Common": {
+    "backToHome": "Back home",
+    "backToRoadmap": "Back to Roadmap",
+    "viewDetails": "View details",
+    "search": "Search",
+    "clear": "Clear",
+    "reset": "Reset",
+    "applyFilters": "Apply filters",
+    "openGithub": "Open GitHub",
+    "projectDocs": "Docs",
+    "none": "—",
+    "yes": "Yes",
+    "no": "No",
+    "allCategories": "All categories",
+    "allDirections": "All directions",
+    "allStatuses": "All statuses",
+    "allTypes": "All types"
+  },
+  "Vocabulary": {
+    "recordStatus": {
+      "DRAFT": "Draft",
+      "REVIEW": "In review",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    },
+    "freshness": {
+      "UNKNOWN": "Unknown",
+      "FRESH": "Fresh",
+      "STALE": "Stale",
+      "NEEDS_REVIEW": "Needs review"
+    },
+    "matchSource": {
+      "BROWSE": "Browse",
+      "FTS": "Full-text search",
+      "ILIKE": "Field match"
+    },
+    "githubStatus": {
+      "inbox": "Inbox",
+      "watching": "Watching",
+      "curated": "Curated",
+      "archived": "Archived"
+    },
+    "githubSort": {
+      "review": "Recent review",
+      "upstream": "Recent upstream",
+      "stars": "Most stars",
+      "name": "Name"
+    }
+  },
+  "Home": {
+    "metadata": {
+      "title": "AI Agent Best Practices",
+      "description": "A search-first knowledge base for AI Agent engineering practices."
+    },
+    "landing": {
+      "eyebrow": "AI Agent Best Practices",
+      "title": "Search AI Agent best practices",
+      "description": "Search high-value practices across models, tools, skills, evaluation, workflows, and production Agent systems.",
+      "searchLabel": "Search knowledge records",
+      "placeholder": "Search models, tools, practices, evaluations...",
+      "features": ["Full-text search", "Traceable sources", "Navigable relations", "Version history"],
+      "githubLibrary": "Browse open-source references",
+      "modelMatrix": "View model capability matrix"
+    },
+    "results": {
+      "eyebrow": "Search Results",
+      "titleWithQuery": "AI best-practice results for “{query}”",
+      "titleFiltered": "Filtered AI best-practice results",
+      "description": "Refine the conditions and decide quickly whether a record is worth opening.",
+      "currentMode": "Current mode",
+      "searchMode": "Search",
+      "browseMode": "Browse",
+      "searchHint": "Relevance first, then updated time",
+      "browseHint": "Sorted by updated time",
+      "resultCount": "Results",
+      "resultCountHint": "Records returned by the current query",
+      "activeConditions": "Active filters",
+      "noQueryLog": "No search log for this query",
+      "openGithubLibrary": "Open open-source references",
+      "openModelMatrix": "Open model capability matrix",
+      "keyword": "Keyword",
+      "category": "Category",
+      "status": "Status",
+      "recordType": "Record type",
+      "backHome": "Back home",
+      "resultTitleWithQuery": "Results for “{query}”",
+      "resultTitleFiltered": "Filtered results",
+      "resultDescription": "Results have been narrowed by the current search and filters.",
+      "total": "{total} total",
+      "sort": "Sort: {sort}",
+      "sortRelevance": "Relevance",
+      "sortUpdatedAt": "Updated time",
+      "log": "Log {id}",
+      "filterKeyword": "Keyword: {value}",
+      "filterCategory": "Category: {value}",
+      "filterStatus": "Status: {value}",
+      "filterType": "Type: {value}",
+      "noResultsTitle": "No matching results",
+      "noResultsDescription": "Relax the keyword, change filters, or import more records before searching again.",
+      "backSearchHome": "Back to search"
+    },
+    "recordCard": {
+      "noSummary": "No summary yet. Open the record to view body, evidence, sources, and version history.",
+      "confidence": "Confidence",
+      "matchSource": "Match source",
+      "updatedAt": "Updated"
+    }
+  },
+  "Record": {
+    "metadata": {
+      "titleSuffix": "Knowledge record",
+      "notFoundTitle": "Record not found"
+    },
+    "actions": {
+      "backToSearch": "Back to search"
+    },
+    "sections": {
+      "body": "Body",
+      "problem": "Problem",
+      "recommendation": "Recommendation",
+      "tradeoffs": "Tradeoffs",
+      "pros": "Pros",
+      "cons": "Cons",
+      "evidence": "Evidence",
+      "basis": "Basis",
+      "confidenceReason": "Confidence reason",
+      "caveat": "Caveat",
+      "sources": "Sources ({count})",
+      "relations": "Related records ({count})",
+      "incomingRelations": "Referenced by ({count})",
+      "translations": "Translations ({count})",
+      "translationVersion": "Translation version",
+      "versions": "Version history",
+      "recordInfo": "Record info",
+      "curation": "Curation",
+      "applicability": "Applicability",
+      "compatibility": "Compatibility",
+      "metrics": "Metrics",
+      "nextSteps": "Next steps",
+      "aliases": "Aliases",
+      "keywords": "Keywords",
+      "metadata": "Metadata",
+      "environmentVariables": "Environment variables",
+      "speculativeDecoding": "Speculative decoding",
+      "vllmCommand": "vLLM serve command"
+    },
+    "labels": {
+      "category": "Category",
+      "type": "Type",
+      "language": "Language",
+      "visibility": "Visibility",
+      "confidence": "Confidence",
+      "updatedAt": "Updated",
+      "publishedAt": "Published",
+      "lastVerifiedAt": "Last verified",
+      "reviewAfter": "Review after",
+      "owner": "Owner",
+      "reviewStatus": "Review status",
+      "sourceReviewedAt": "Source review",
+      "strength": "Strength {value}%",
+      "citedBy": "← Cited by",
+      "untitled": "Untitled",
+      "shell": "shell"
+    },
+    "fieldLabels": {
+      "audience": "Audience",
+      "projectStage": "Project stage",
+      "scenario": "Scenario",
+      "confirmedMoEExamples": "Confirmed MoE examples",
+      "unknownArchitectureExamples": "Unknown architecture examples",
+      "policyField": "Policy field",
+      "modelFamilies": "Model families",
+      "hardwareSignals": "Hardware signals",
+      "evalSignals": "Evaluation signals",
+      "database": "Database",
+      "vectorStore": "Vector store",
+      "search": "Search",
+      "benchmark": "Benchmark",
+      "modelFamily": "Model family",
+      "tools": "Tools",
+      "scenarios": "Scenarios",
+      "inferenceSetting": "Inference setting",
+      "evidenceLevels": "Evidence levels",
+      "expectedHallucinationReduction": "Expected hallucination reduction",
+      "reviewCadence": "Review cadence",
+      "selectionFields": "Selection fields",
+      "expectedDecisionQualityLift": "Expected decision quality lift",
+      "benchmarkCoverage": "Benchmark coverage",
+      "expectedSelectionRiskReduction": "Expected selection-risk reduction",
+      "observedFailureModes": "Observed failure modes",
+      "expectedSearchQualityLift": "Expected search-quality lift",
+      "implementationComplexity": "Implementation complexity",
+      "contentSource": "Content source",
+      "draftedFrom": "Drafted from",
+      "disclosurePolicy": "Disclosure policy",
+      "architectureFocus": "Architecture focus",
+      "relatedBenchmark": "Related benchmark",
+      "difficulty": "Difficulty",
+      "useCase": "Use case",
+      "sourcePost": "Source post",
+      "translationSource": "Translation source",
+      "owner": "Owner",
+      "reviewStatus": "Review status",
+      "sourceReviewedAt": "Source reviewed at",
+      "nextSteps": "Next steps",
+      "runtimeConfigSource": "Runtime config source",
+      "vllmServeExample": "vLLM serve example",
+      "commandLines": "Command lines",
+      "command": "Command",
+      "env": "Environment variables",
+      "runner": "Runner",
+      "servedModelName": "Served model name",
+      "port": "Port",
+      "speculativeConfig": "Speculative config",
+      "method": "Method",
+      "numSpeculativeTokens": "Speculative tokens",
+      "maxNumSeqs": "Max sequences",
+      "maxModelLen": "Max model length",
+      "enablePrefixCaching": "Prefix caching",
+      "gpuMemoryUtilization": "GPU memory utilization",
+      "reasoningParser": "Reasoning parser",
+      "enableAutoToolChoice": "Auto tool choice",
+      "toolCallParser": "Tool-call parser",
+      "modelDistribution": "Model distribution",
+      "inferenceBackends": "Inference backends",
+      "parsers": "Parsers",
+      "authorVllmServeConfig": "Author vLLM config",
+      "interpretation": "Interpretation",
+      "model": "Model"
+    }
+  },
+  "GithubResources": {
+    "metadata": {
+      "title": "Open-source References | AI Agent Best Practices",
+      "description": "Curated open-source projects for AI Agent engineering practices, tools, and implementation references."
+    },
+    "hero": {
+      "badge": "Open-source references",
+      "subBadge": "AI Agent implementation references",
+      "back": "Back to knowledge base",
+      "eyebrow": "Curated projects",
+      "title": "Projects worth reopening.",
+      "description": "This library collects open-source projects related to AI Agent engineering. Filter by problem area, project type, curation status, and keyword to quickly find references that can inform implementation.",
+      "howToUse": "How to use",
+      "howToUseBody": "Start from the problem you are solving, such as tool calling, RAG, evaluation, tracing, or workflow, then combine tags, stars, recent activity, and curation status to decide what to read deeply.",
+      "collectionCount": "{count} projects are currently collected. Each project keeps a short summary, why it matters, category tags, and review cadence for future revisit."
+    },
+    "metrics": {
+      "currentResults": "Current results",
+      "totalHint": "{count} projects in the library",
+      "watching": "Watching",
+      "watchingHint": "Projects worth following in the current result set",
+      "coverage": "Directions",
+      "coverageHint": "Knowledge categories covered by current results",
+      "active": "Recently active",
+      "activeHint": "Upstream updated in roughly 30 days"
+    },
+    "filters": {
+      "eyebrow": "Search and filters",
+      "title": "Filter references by the problem you need to solve.",
+      "active": "{count} active filters",
+      "inactive": "No filters",
+      "keyword": "Keyword",
+      "keywordPlaceholder": "Project name, tags, evaluation, tracing, workflow...",
+      "direction": "Direction",
+      "status": "Curation status",
+      "type": "Type",
+      "sort": "Sort"
+    },
+    "card": {
+      "waiting": "Waiting for sync",
+      "updatedAt": "Updated",
+      "reviewAfter": "Review after",
+      "openDetails": "View details"
+    },
+    "empty": {
+      "eyebrow": "No results",
+      "title": "No reference project matches the current filters.",
+      "description": "Clear filters, or search by project name, author, evaluation, tracing, workflow, or MCP.",
+      "reset": "Reset filters"
+    },
+    "detail": {
+      "metadataTitle": "{name} · Open-source reference",
+      "notFoundTitle": "Reference project not found",
+      "badge": "Open-source project",
+      "updating": "Updating",
+      "back": "Back to project library",
+      "focus": "What to inspect",
+      "overview": "Project overview",
+      "overviewEyebrow": "Quick read",
+      "primaryLanguage": "Primary language",
+      "license": "License",
+      "defaultBranch": "Default branch",
+      "updatedAt": "Updated",
+      "reviewAfter": "Review after",
+      "whyIncluded": "Why included",
+      "curationEyebrow": "Curation judgment",
+      "primaryDirection": "Primary direction",
+      "projectType": "Project type",
+      "tags": "Tags",
+      "keywords": "Keywords",
+      "activity": "Project activity",
+      "publicInfo": "Public info",
+      "noDescription": "No project description yet.",
+      "homepage": "Homepage",
+      "lastSynced": "Last synced",
+      "archived": "Archived",
+      "docsLink": "Docs link",
+      "reviewPlan": "Review cadence",
+      "reviewPlanEyebrow": "Review plan",
+      "addedAt": "Added",
+      "lastReviewedAt": "Last reviewed",
+      "suggestedReview": "Suggested review",
+      "relatedKnowledge": "Related knowledge",
+      "knowledgeEyebrow": "Knowledge links",
+      "relatedIntro": "This project is linked to related knowledge-base records.",
+      "noRelated": "No concrete knowledge record is linked yet. You can still use it as an implementation reference and add links after a clearer conclusion is formed.",
+      "upstreamPending": "Public project information is still being synced. Check again later for a more complete view."
+    }
+  },
+  "Roadmap": {
+    "metadata": {
+      "title": "Roadmap | AI Agent Best Practices",
+      "description": "Product roadmap for the AI Agent Best Practices knowledge base."
+    },
+    "nav": {
+      "back": "Records",
+      "badges": ["Knowledge Base", "Product Roadmap", "Enterprise Priority Lens"]
+    },
+    "hero": {
+      "eyebrow": "AI Agent Best Practices Roadmap",
+      "title": "A searchable, verifiable, reusable knowledge base for AI Agent best practices",
+      "description": "The product goal is long-term best-practice accumulation. The current content priority leans toward enterprise Agent delivery because enterprise scenarios concentrate demand around tool calling, knowledge bases, workflows, evaluation, and security.",
+      "cards": [
+        { "label": "Product", "value": "Best-practice knowledge base" },
+        { "label": "Current focus", "value": "Enterprise Agent delivery" },
+        { "label": "Proof", "value": "Search, citation, evaluation" }
+      ],
+      "principlesEyebrow": "Product Principles",
+      "principlesTitle": "The roadmap serves the knowledge base itself"
+    },
+    "sections": {
+      "phaseEyebrow": "Phase Roadmap",
+      "phaseTitle": "Product progression",
+      "phaseBody": "The roadmap advances by product capability: make content trustworthy, improve search, then add citation-backed AI answers and Agent-callable interfaces.",
+      "priorityEyebrow": "Content Priority",
+      "priorityTitle": "Early content investment order",
+      "priorityBody": "All 15 categories remain. Early priority is only resource allocation: build first where market demand is concentrated and where the product value is easiest to prove.",
+      "firstBuildEyebrow": "First Build Area",
+      "firstBuildTitle": "The first 6 categories to build deeply",
+      "firstBuildBody": "These categories are not the full project boundary. They are the highest-leverage starting point right now.",
+      "recordShapeEyebrow": "Record Shape",
+      "recordShapeTitle": "What one best-practice record should answer",
+      "recordShapeBody": "A record is not a news summary. It is a structured object that can be searched, rendered, queried, and called by an Agent.",
+      "examplesEyebrow": "Content Examples",
+      "examplesTitle": "Title shapes that fit this knowledge base",
+      "nearTermEyebrow": "Near-term Work",
+      "nearTermTitle": "The next natural product moves",
+      "nearTermBody": "The current goal is not to become a community first or expand every feature first. It is to keep improving language, import, search, detail rendering, and verification loops."
+    },
+    "status": {
+      "done": "Done",
+      "active": "Current phase",
+      "next": "Next phase",
+      "later": "Later",
+      "focus": "Focus",
+      "detail": "View detailed plan"
+    },
+    "table": {
+      "rank": "Rank",
+      "direction": "Direction",
+      "categories": "Categories",
+      "whyNow": "Why now",
+      "expectedRecords": "Expected records",
+      "priority": "Priority"
+    },
+    "data": {
+      "productSignals": [
+        "One practice can keep the same structure across webpage, JSON, database, and Agent calls.",
+        "Chinese and English pages have stable URLs, and language switching does not break shared links, query strings, or cache behavior.",
+        "Search results explain why they matched instead of only returning title lists.",
+        "AI answers cite knowledge records and preserve source, confidence, and freshness context.",
+        "New content is validated by scripts, imported into the database, and checked in CI."
+      ],
+      "priorities": [
+        { "rank": 1, "direction": "Tools / MCP / Function Calling", "categories": "05-tools, 06-mcp", "rationale": "Enterprise Agent value comes from safely calling business systems, not just chatting.", "output": "Tool schemas, permission boundaries, argument validation, error handling, and MCP Server specs." },
+        { "rank": 2, "direction": "RAG / Enterprise Knowledge Base", "categories": "07-rag, 08-memory", "rationale": "Document QA, knowledge retrieval, and industry knowledge accumulation are the most common ToB entry points.", "output": "Document parsing, chunking, hybrid retrieval, citation, permission filtering, knowledge refresh, and RAG evaluation." },
+        { "rank": 3, "direction": "Workflow / Runtime", "categories": "03-runtime, 09-workflow", "rationale": "Once a demo becomes a system, it needs state, retry, failure recovery, and human confirmation.", "output": "Task decomposition, routers, supervisors, approval nodes, multi-Agent boundaries, and failure recovery." },
+        { "rank": 4, "direction": "Evaluation / Trace", "categories": "11-evaluation, 12-trace", "rationale": "Enterprise adoption requires knowing whether the Agent is stable, improving, and where it fails.", "output": "Success rate, tool-call correctness, RAG hit rate, replay, cost, latency, and bad-case attribution." },
+        { "rank": 5, "direction": "Security / Permission / Audit", "categories": "13-security, 14-sandbox", "rationale": "Permissions, redaction, prompt injection, audit, and sandbox boundaries decide whether the system can enter production.", "output": "Permission matrices, PII redaction, injection defense, audit logs, and sandbox policy." },
+        { "rank": 6, "direction": "Adapters / Model Routing", "categories": "15-adapters, 01-models", "rationale": "Real systems usually connect multiple models and route by task, cost, latency, and failure rate.", "output": "OpenAI, Claude, Qwen, DeepSeek, and local-model adapters plus routing strategy." },
+        { "rank": 7, "direction": "Agent UI / Human-in-the-loop", "categories": "10-agent-ui", "rationale": "Users need to understand what the Agent is doing and approve, interrupt, give feedback, and review.", "output": "Runtime timeline, tool-call display, human confirmation, feedback entry, and explainable result pages." },
+        { "rank": 8, "direction": "Models / Self-hosted Models", "categories": "01-models", "rationale": "Model capability matters, but early knowledge-base value is better proven through delivery-system capability.", "output": "Model selection, context, inference cost, deployment specs, quantization, and serving configuration." }
+      ],
+      "phases": [
+        { "step": "00", "status": "done", "title": "Data foundation loop", "goal": "Make content structurally saved, validated, imported into the database, and safely deployed.", "deliverables": ["JSON source of truth", "Zod content validation", "Prisma upsert", "PostgreSQL database", "Content contract checks", "Ubuntu CI"] },
+        { "step": "01", "status": "done", "title": "Knowledge-base productization", "goal": "Make the project a normal browsable, searchable, explainable best-practice knowledge base.", "deliverables": ["Home search entry", "Record list and detail", "Roadmap page", "Open-source reference library", "Model capability matrix", "Source and metadata display", "Content status display"] },
+        { "step": "02", "status": "active", "title": "Bilingual language system", "goal": "Before pages multiply, make language routing, UI messages, content translation, and switching a long-term foundation.", "deliverables": ["next-intl infrastructure", "Chinese default paths + /en English paths", "Global language switcher", "AIAGENT_LOCALE cookie", "UI messages dictionary", "Content fallback"], "detailHref": "/roadmap/i18n" },
+        { "step": "03", "status": "next", "title": "Search quality", "goal": "Help users find thoughts, cases, and technical judgments faster, while explaining why results matched.", "deliverables": ["Keyword weighting", "Tag filters", "Chinese/English matching strategy", "Search-result explanations", "Bad-case records", "Retrieval eval set"] },
+        { "step": "04", "status": "next", "title": "Citation-backed AI answers", "goal": "Let AI answer from knowledge-base records instead of generating conclusions without sources.", "deliverables": ["TopK context assembly", "Record citations", "Uncertainty hints", "Answer logs", "Cost and latency records", "Answer quality evaluation"] },
+        { "step": "05", "status": "later", "title": "Agent-callable interface", "goal": "Turn the knowledge base into a stable practice-retrieval capability for external Agents.", "deliverables": ["searchRecords tool", "getRecord tool", "relatedRecords", "MCP Server", "Permission control", "Call audit"] }
+      ],
+      "categoryPlans": [
+        { "code": "05", "name": "Tools", "role": "Record how enterprise Agents safely call business systems.", "records": ["Tool schemas", "Argument validation", "Permission boundaries", "Tool return format", "Error recovery"] },
+        { "code": "07", "name": "RAG", "role": "Record the full path from documents to citation-backed answers.", "records": ["Document parsing", "Chunking strategy", "Hybrid retrieval", "Citation", "RAG evaluation"] },
+        { "code": "09", "name": "Workflow", "role": "Record engineering patterns for multi-step tasks, state, and human confirmation.", "records": ["Task decomposition", "Router", "Supervisor", "Approval nodes", "Failure recovery"] },
+        { "code": "11", "name": "Evaluation", "role": "Record how to prove that an Agent system is actually improving.", "records": ["Success rate", "Tool-call correctness", "Retrieval hit rate", "Regression tests", "Bad-case attribution"] },
+        { "code": "12", "name": "Trace", "role": "Record how Agent runs are reviewed, replayed, and attributed.", "records": ["Runtime logs", "Replay", "Token cost", "Latency", "Failure causes"] },
+        { "code": "13", "name": "Security", "role": "Record the security boundaries required for enterprise production.", "records": ["Prompt Injection", "Tool permissions", "PII redaction", "Audit", "Sandbox boundary"] }
+      ],
+      "recordTemplate": [
+        "Scenario: what Agent delivery problem this practice solves",
+        "Judgment: why this problem is worth recording",
+        "Architecture: how tools, knowledge base, workflow, and models fit together",
+        "Boundary: where permissions, security, failures, and human confirmation live",
+        "Evaluation: what metrics prove it works",
+        "Source: whether it comes from docs, video, project experience, or code validation"
+      ],
+      "examples": [
+        "Enterprise Agent tool calling must start with permission and error boundaries",
+        "RAG should evaluate answer executability, not only recall",
+        "Minimum viable MCP Server specs for enterprise internal-system integration",
+        "When Agent workflows must keep human approval nodes",
+        "Why enterprise Agents need replay, not just logs",
+        "Multi-model routing should decide by task type, cost, and failure rate"
+      ],
+      "nearTerm": [
+        { "title": "I18n System", "body": "Finish Chinese default paths, /en English paths, global language switching, UI messages, and content fallback." },
+        { "title": "Import UI", "body": "Make import jobs, success/failure reasons, and audit logs visible." },
+        { "title": "Search UX", "body": "Show match reasons, sources, categories, updated time, and confidence in search results." },
+        { "title": "Record Page", "body": "Render one object into a stable detail page with citations, field explanations, and related records." },
+        { "title": "Quality Loop", "body": "Use a search eval set and bad-case records to improve retrieval quality continuously." }
+      ]
+    },
+    "i18nStatus": {
+      "done": "Done",
+      "active": "Active",
+      "todo": "Todo"
+    },
+    "i18n": {
+      "metadata": {
+        "title": "Internationalization Roadmap | AI Agent Best Practices",
+        "description": "Implementation plan for bilingual routing, language switching, localized content rendering, and i18n quality gates."
+      },
+      "navBadges": ["Internationalization", "Next Build", "Product Infrastructure"],
+      "hero": {
+        "eyebrow": "Language System Roadmap",
+        "title": "Build bilingual capability as infrastructure, not page patches",
+        "description": "The language system must be solved before pages keep growing. It affects routing, links, page copy, search, record translation, SEO, and caching, so the boundaries should be fixed once.",
+        "badges": ["Chinese default + /en English routes", "AIAGENT_LOCALE cookie", "Global language switcher", "Database content translation"],
+        "buildOrderEyebrow": "Build Order",
+        "buildOrderTitle": "Route first, then migrate pages",
+        "buildOrderBody": "If copy is translated page by page before routing is settled, links, forms, metadata, and caching strategy will be rewritten again. The first step must be i18n infrastructure."
+      },
+      "sections": {
+        "decisionsEyebrow": "Architecture Decisions",
+        "decisionsTitle": "Fix the language boundaries that should not churn",
+        "decisionsBody": "These decisions affect every future page. Set them now so new pages only need to follow the contract.",
+        "routeEyebrow": "Route Contract",
+        "routeTitle": "Keep Chinese default paths public",
+        "routeBody": "API and artifacts do not enter locale routing. Chinese pages keep existing paths, while English pages are served under /en.",
+        "todoEyebrow": "Execution TODO",
+        "todoTitle": "Phased execution checklist",
+        "todoBody": "Each group can be accepted independently. Do not skip P0 and P1, or future page migration becomes repeated work.",
+        "acceptanceEyebrow": "Acceptance",
+        "acceptanceTitle": "First-version acceptance criteria",
+        "documentationEyebrow": "Documentation",
+        "documentationTitle": "Documentation as the execution contract",
+        "documentationBody": "The detailed TODO is in docs; future implementation should tick it off item by item instead of relying on memory.",
+        "documentBody": "This document contains route decisions, language resolution order, content boundaries, P0 to P5 TODOs, new-page checklist, and acceptance criteria."
+      },
+      "decisions": [
+        { "title": "Explicit language routes", "body": "Use Chinese as the unprefixed default and /en for English long-term. Every English page has a deterministic URL while existing Chinese links stay stable." },
+        { "title": "System language only for first visit", "body": "Accept-Language is used for first entry. After the user switches manually, AIAGENT_LOCALE cookie takes priority." },
+        { "title": "Separate UI and content", "body": "Buttons, forms, statuses, titles, and other UI copy go into messages; knowledge records, translations, categories, and tags stay in the database content model." },
+        { "title": "Do not translate route paths yet", "body": "Keep stable technical paths like /roadmap and /en/roadmap instead of localized paths such as translated slugs, reducing long-term maintenance cost." }
+      ],
+      "todoGroups": [
+        { "code": "P0", "status": "done", "title": "Infrastructure", "goal": "Set routing, request config, language sources, and global layout first so later page migration does not churn the foundation.", "items": ["Install next-intl", "Add messages/zh.json and messages/en.json", "Add src/i18n/routing.ts, request.ts, navigation.ts, and locale.ts", "Add src/proxy.ts excluding api, _next, static files, and artifacts", "Move root pages into src/app/[locale]", "Set AIAGENT_LOCALE cookie"] },
+        { "code": "P1", "status": "done", "title": "Language switcher", "goal": "Let users switch language on every page while preserving the current page context.", "items": ["Add global LanguageSwitcher", "Render it in [locale]/layout.tsx", "Preserve pathname, query string, and hash", "Highlight current language", "Use @/i18n/navigation for all internal links", "Stop hardcoding form actions to root"] },
+        { "code": "P2", "status": "done", "title": "UI message migration", "goal": "Move all visible UI copy into the i18n dictionaries instead of scattering it across page components.", "items": ["Migrate home and search pages", "Migrate record detail page", "Migrate GitHub list and detail pages", "Migrate Roadmap and model capability matrix", "Migrate loading, empty, and error states", "Migrate metadata title and description"] },
+        { "code": "P3", "status": "todo", "title": "Localized content rendering", "goal": "Render knowledge objects in the current language while preserving explicit fallback when translations are missing.", "items": ["Add pickLocalizedRecord", "Add localized pickers for category, vocabulary, and tag", "Show current-language record version by default", "Fallback to original content when translation is missing", "Show missing full translation hint", "Format dates and numbers by locale"] },
+        { "code": "P4", "status": "todo", "title": "Bilingual search", "goal": "Let Chinese UI find English content and English UI find Chinese content while explaining the matched language.", "items": ["searchRecords accepts locale", "Prefer current-locale RecordSearchIndex", "Fallback to original-language index", "Show matched language and fallback state", "Build bilingual bad-case list", "Add mixed Chinese/English query test data"] },
+        { "code": "P5", "status": "active", "title": "Quality gate", "goal": "Make it hard for future pages to bypass the language system.", "items": ["Add pnpm i18n:check", "Verify zh/en message-key completeness", "Run i18n check in CI", "Add locale routing tests", "Add language switcher tests", "Add fallback tests for missing translation"] }
+      ],
+      "acceptance": [
+        "/ remains the Chinese default entry",
+        "/en is the English entry",
+        "Main pages have both Chinese default paths and /en English paths",
+        "Language switcher is visible on every page",
+        "Switching language preserves page and query",
+        "Language choice survives refresh",
+        "Core UI copy is no longer hardcoded in page components",
+        "Missing translation can fallback with an explicit hint",
+        "lint, build, and i18n check pass"
+      ]
+    }
+  },
+  "ModelCapability": {
+    "metadata": {
+      "title": "Model Capability Matrix | AI Agent Best Practices",
+      "description": "AI Agent engineering capability comparison across tool calling, structured outputs, long context, hosted tools, and provider-native features."
+    },
+    "hero": {
+      "eyebrow": "Model Capability Matrix",
+      "title": "AI Agent model capability matrix",
+      "description": "This is not a model leaderboard. It is an engineering validation table for Agent systems, focused on structured outputs, tool calling, long context, error shapes, hosted tools, and provider-native capabilities.",
+      "back": "Back to search",
+      "archive": "View HTML archive"
+    },
+    "metrics": {
+      "snapshot": "Snapshot",
+      "snapshotHint": "This page is based on persisted test snapshots and curated corrections.",
+      "models": "Models",
+      "modelsHint": "GPT, Claude, Gemini, Qwen, DeepSeek, and Kimi.",
+      "passFail": "Pass / Fail",
+      "scopeWithPending": "{pending} items pending, {deferred} deferred, {skipped} skipped.",
+      "scopeWithoutPending": "{deferred} items deferred and {skipped} skipped; no current item depends on new API access."
+    },
+    "status": {
+      "PASS": "PASS",
+      "FAIL": "FAIL",
+      "PENDING": "Pending",
+      "DEFERRED": "Deferred",
+      "SKIP": "SKIP",
+      "NA": "/",
+      "PASSHint": "Passed in the current script or focused probe.",
+      "FAILHint": "Currently failing or missing real tool-call evidence.",
+      "PENDINGHint": "The official path is documented or marketed, but this project has not completed a native test.",
+      "DEFERREDHint": "The required official API or external resource is not being integrated now, so it is not on the next-step list.",
+      "SKIPHint": "Skipped in this round, usually due to interface limits, missing environment, or separate retest needs.",
+      "NAHint": "Not applicable: this provider path does not have this capability and it is not a test gap."
+    },
+    "sections": {
+      "strategyEyebrow": "Strategy",
+      "strategyTitle": "Engineering conclusion",
+      "sharedEyebrow": "Shared Baseline",
+      "sharedTitle": "General Agent capability baseline",
+      "sharedCaption": "This layer is closer to a general Agent runtime acceptance test, focusing on protocol behavior, tool control, long context, and multi-turn loops.",
+      "nativeEyebrow": "Provider Native",
+      "nativeTitle": "Provider-native focus tests",
+      "nativeCaption": "This layer only covers special capabilities on each provider platform and does not force every item into one universal protocol.",
+      "notesEyebrow": "Notes",
+      "notesTitle": "Key notes",
+      "scopeEyebrow": "Scope",
+      "scopeTitle": "Current scope and self-service items",
+      "sourcesEyebrow": "Sources",
+      "sourcesTitle": "Result sources",
+      "capability": "Capability"
+    },
+    "strategy": {
+      "ownToolsTitle": "Build core business tools yourself",
+      "ownToolsBody": "Tools for orders, finance, CRM, approvals, and database writes must be managed by your own Agent runtime with parameter validation, permission checks, audit logs, replay, and idempotency.",
+      "hostedTitle": "Use hosted tools as adapters",
+      "hostedBody": "Web search, code sandboxes, and file search can use provider capabilities, but they must be wrapped as adapters and produce logs, cost, latency, and call evidence.",
+      "layeredTitle": "Keep test layers separate",
+      "layeredBody": "General Agent capability and provider-native capability should not be collapsed into one score. The former decides portability; the latter decides the ceiling inside a provider ecosystem."
+    },
+    "rows": {
+      "textGeneration": { "capability": "Text generation", "detail": "Basic text QA and readability" },
+      "jsonOutput": { "capability": "General JSON output", "detail": "Ordinary JSON constraint, not equivalent to strict schema" },
+      "strictStructuredOutput": { "capability": "Strict structured output", "detail": "Stable parseable object output according to schema" },
+      "streaming": { "capability": "Streaming output", "detail": "Server-side streaming response and basic interruption recovery" },
+      "toolCalling": { "capability": "Tool calling", "detail": "Basic function calling / tool calling" },
+      "noToolDiscipline": { "capability": "No-tool discipline", "detail": "Does not fabricate tool calls when tools are disabled" },
+      "toolArgumentAccuracy": { "capability": "Tool argument accuracy", "detail": "Stability for complex arguments, enums, and field names" },
+      "largeToolsetRouting": { "capability": "Large toolset routing", "detail": "Chooses the correct tool when many tools coexist" },
+      "toolFailureRecovery": { "capability": "Tool failure recovery", "detail": "Explains, retries, or degrades after partial tool failure" },
+      "approvalStop": { "capability": "Stops for approval", "detail": "Waits for human confirmation before high-risk actions" },
+      "dangerousToolRefusal": { "capability": "Dangerous tool refusal", "detail": "Refuses destructive actions such as deletion, transfer, or outbound sending" },
+      "readWriteBoundary": { "capability": "Read/write tool boundary", "detail": "Distinguishes query tools from write tools" },
+      "destructiveRetryDiscipline": { "capability": "Destructive retry discipline", "detail": "Does not repeat destructive operations after failure" },
+      "forcedToolChoice": { "capability": "Forced tool-choice stability", "detail": "Stable support for tool_choice / forced tool" },
+      "parallelToolCalls": { "capability": "Parallel tool calls", "detail": "Plans multiple tool calls in one response" },
+      "multiTurnToolLoop": { "capability": "Multi-turn tool loop", "detail": "Closed loop of tool result -> reasoning -> next call" },
+      "longContext": { "capability": "Long-context stability", "detail": "Locates head and tail information in long inputs" },
+      "errorShape": { "capability": "Predictable error shape", "detail": "Returns errors in a form that is easy to handle in engineering" },
+      "hostedWebSearch": { "capability": "Hosted web search", "detail": "OpenRouter hosted web search, not provider-native web_search" },
+      "previousResponseId": { "capability": "previous_response_id continuity", "detail": "Multi-turn state reuse through provider-native response IDs" },
+      "nativeWebSearch": { "capability": "Native web search", "detail": "Official provider web_search capability" },
+      "nativeWebExtract": { "capability": "Native web extraction", "detail": "Extracts body text or structured snippets after web search" },
+      "nativeCodeInterpreter": { "capability": "Native code interpreter / runner", "detail": "Real tool-call trace, not only returning the right answer" },
+      "nativeMcp": { "capability": "Native MCP", "detail": "Provider-native MCP call trace" },
+      "nativeFileSearch": { "capability": "Native file search", "detail": "Provider vector-store or file-search chain" },
+      "kimiFormulaDiscovery": { "capability": "Kimi formula discovery", "detail": "web-search / fetch / quickjs / memory / code_runner" },
+      "kimiFormulaExecution": { "capability": "Kimi formula execution", "detail": "fetch / quickjs / code_runner execution chain" },
+      "kimiMemory": { "capability": "Kimi memory write/read", "detail": "memory lifecycle" },
+      "kimiFileQa": { "capability": "Kimi file upload and QA", "detail": "file upload + file QA" },
+      "deepseekReasoningContent": { "capability": "DeepSeek reasoning_content", "detail": "thinking switch, cost, strict functions, and context cache" },
+      "deepseekThinkingLoop": { "capability": "DeepSeek thinking-loop recovery", "detail": "Fails without reasoning_content and recovers when it is returned" }
+    },
+    "notes": [
+      { "title": "The shared baseline should prefer /responses", "body": "For any model that can currently use /responses, the shared baseline uses /responses. Only fall back to a provider-native interface when the provider has no /responses path or when a capability can only be verified through a native interface, and record transportPolicy in the report." },
+      { "title": "Hosted tools are fallback adapters", "body": "Core enterprise Agent tools should be implemented by your own runtime with unified permissions, audit, retry, and replay. Hosted web search in the shared baseline only represents the OpenRouter web plugin; provider-native web_search is covered in the native section." },
+      { "title": "OpenRouter columns do not prove missing native capability", "body": "GPT, Claude, and Gemini shared baselines currently go through OpenRouter. Because this project is not integrating official native APIs now, provider-native capabilities that exist but are not integrated are marked Deferred. This means out of current scope, not absent." },
+      { "title": "Qwen shared baseline is closed", "body": "The Qwen 3.6 Plus shared smoke is now closed. The latest self-hosted MCP retest produced codeInterpreterCalls=1 / usageCount=1 for native code_interpreter, so it is recorded as PASS with volatility notes; native MCP still produced no mcp_call." },
+      { "title": "DeepSeek hosted tools are treated as not applicable natively", "body": "The DeepSeek V4 Pro official API currently has no native equivalent for web_search, web_extractor, code interpreter, MCP, or file_search. Through OpenRouter, however, the OpenRouter web plugin can provide hosted web search for DeepSeek V4 Pro." },
+      { "title": "DeepSeek strict schema has two layers", "body": "DeepSeek V4 Pro JSON Mode and strict function calling passed in the 2026-05-22.r3 probe. The capability is PASS; the engineering approach is to carry business object schemas through strict function calling rather than OpenAI-style response_format.json_schema text output." },
+      { "title": "DeepSeek old red cell was cleaned up", "body": "DeepSeek V4 Pro forced tool_choice is unsupported in default thinking mode, but the 2026-05-22.r3 shared smoke explicitly disabled thinking in the forced probe and verified toolChoiceStability 3/3." },
+      { "title": "Kimi native tool track is closed", "body": "MOONSHOT_API_KEY is restored, and the 2026-05-22.r3 native rerun passed all 13 probes, including JSON Mode and response_format: json_schema Structured Output. Kimi's official main path is Chat Completions rather than /responses." }
+    ],
+    "pendingItems": [
+      "OpenAI / Anthropic / Gemini official native APIs are not integrated now; these cells are Deferred and no longer current work items.",
+      "Qwen native code_interpreter now produced real codeInterpreterCalls=1 / usageCount=1 in the latest rerun; the matrix records it as PASS with volatility notes.",
+      "Qwen native MCP was retested with a self-hosted minimal SSE MCP server; it still produced no mcp_call, so this chain is fixed as not verified.",
+      "Qwen native file_search and shared hosted file search both require vector_store_ids; without a knowledge-base ID they remain SKIP/Deferred.",
+      "Matrix semantics, hover notes, evidence sources, and Qwen self-hosted MCP retest are complete; only low-frequency regression on existing keys and report-script cleanup remain."
+    ],
+    "cellNotes": {
+      "previousResponseId:gpt": "This project is not integrating the official OpenAI native API now, so this item is out of the current work scope; it does not mean OpenAI lacks the capability.",
+      "nativeWebSearch:gpt": "This project is not integrating the official OpenAI native API now, so this item is deferred; the shared layer still keeps the OpenRouter path result.",
+      "nativeWebSearch:claude": "This project is not integrating the official Anthropic native API now, so this item is deferred; it does not mean Claude lacks native web capability.",
+      "nativeWebSearch:gemini": "This project is not integrating the official Gemini native API now, so this item is deferred; it does not mean Gemini lacks grounding/search capability.",
+      "nativeCodeInterpreter:gpt": "This project is not integrating the official OpenAI native API now, so the native code_interpreter track is deferred.",
+      "nativeCodeInterpreter:claude": "This project is not integrating the official Anthropic native API now, so the native code execution track is deferred.",
+      "nativeCodeInterpreter:gemini": "This project is not integrating the official Gemini native API now, so the native code execution track is deferred.",
+      "nativeMcp:gpt": "This project is not integrating the official OpenAI native API now, so the remote MCP native track is deferred.",
+      "nativeMcp:claude": "This project is not integrating the official Anthropic native API now, so the MCP connector native track is deferred.",
+      "nativeFileSearch:gpt": "This project is not integrating the official OpenAI native API and has no corresponding vector-store configuration, so native file_search is deferred.",
+      "nativeFileSearch:gemini": "This project is not integrating the official Gemini native API now, so native file search is deferred.",
+      "jsonOutput:kimi": "Kimi is recorded as PASS from the official native Chat Completions rerun, not the /responses path; 2026-05-22.r3 jsonMode passed.",
+      "strictStructuredOutput:deepseek": "DeepSeek PASS means JSON mode + strict function calling can carry business schemas, not OpenAI-style response_format.json_schema.",
+      "strictStructuredOutput:kimi": "Kimi PASS comes from official native response_format: json_schema; the current Moonshot temperature constraints must be followed.",
+      "forcedToolChoice:qwen": "Qwen forced tool_choice should not be tested directly in thinking mode; this PASS comes from the forced probe with thinking explicitly disabled.",
+      "forcedToolChoice:deepseek": "DeepSeek default thinking mode does not support forced tool_choice; this PASS comes from the forced probe with thinking disabled and 3/3 success.",
+      "hostedWebSearch:gpt": "This indicates OpenRouter hosted web plugin success, not OpenAI official native web_search.",
+      "hostedWebSearch:claude": "This indicates OpenRouter hosted web plugin success, not Anthropic official native web_search.",
+      "hostedWebSearch:gemini": "This indicates OpenRouter hosted web plugin success, not Gemini official native grounding/search.",
+      "hostedWebSearch:deepseek": "DeepSeek PASS here came through OpenRouter web plugin with url_citation; DeepSeek official native hosted web_search remains not applicable.",
+      "previousResponseId:qwen": "Qwen PASS comes from Responses API previous_response_id continuity; this is a provider-native Responses capability.",
+      "nativeWebExtract:qwen": "Qwen web_extractor currently passes through a web_search + web_extractor combined chain; it does not prove the extractor can run standalone.",
+      "nativeCodeInterpreter:qwen": "The latest Qwen self-hosted MCP retest produced codeInterpreterCalls=1 / usageCount=1, so the cell is PASS; earlier 2026-05-22 reruns lacked tool traces, so this remains a volatile capability.",
+      "nativeCodeInterpreter:kimi": "Kimi PASS comes from the official native code_runner / quickjs tool chain, not a Qwen/OpenAI-style Responses code_interpreter.",
+      "nativeMcp:qwen": "Official docs mention MCP, but the current US key / endpoint / MCP server combination produced no mcp_call; the self-hosted SSE MCP server also only produced ordinary text tool-call style, not structured mcp_call.",
+      "nativeFileSearch:qwen": "Qwen native file_search requires a Bailian knowledge base/vector store and vector_store_ids; QWEN_API_KEY alone is insufficient, so this is SKIP.",
+      "nativeWebSearch:kimi": "Kimi PASS comes from the official native builtin $web_search probe, not OpenRouter fallback.",
+      "kimiFormulaDiscovery:kimi": "Kimi official native tool probe 2026-05-22.r3 passed formula discovery related probes.",
+      "kimiFormulaExecution:kimi": "Kimi official native tool probe 2026-05-22.r3 passed the fetch / quickjs / code_runner execution chain.",
+      "kimiFileQa:kimi": "Kimi PASS comes from the official file upload + file QA probe, not generic RAG or this project's database search.",
+      "deepseekReasoningContent:deepseek": "DeepSeek PASS means thinking mode returns reasoning_content and later loops must preserve it.",
+      "deepseekThinkingLoop:deepseek": "DeepSeek PASS means it fails when reasoning_content is missing and recovers when reasoning_content is returned according to protocol."
+    }
+  }
+}

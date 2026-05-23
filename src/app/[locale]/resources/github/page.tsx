@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-import categoriesData from "../../../../prisma/seed-data/categories.json";
-import vocabularyData from "../../../../prisma/seed-data/vocabulary.json";
+import categoriesData from "../../../../../prisma/seed-data/categories.json";
+import vocabularyData from "../../../../../prisma/seed-data/vocabulary.json";
 
+import { dateLocale } from "@/i18n/locale";
+import type { Locale } from "@/i18n/routing";
+import { resolveLocale, type LocaleParams } from "@/i18n/server";
 import {
   filterGithubRepoCards,
   type GithubCardSort,
@@ -13,22 +17,33 @@ import {
   FieldInput,
   FieldSelect,
   FilterField,
-  GITHUB_SORT_OPTIONS,
-  GITHUB_STATUS_OPTIONS,
+  GITHUB_SORT_VALUES,
+  GITHUB_STATUS_VALUES,
   LinkButton,
   MetricCard,
   formatDate,
   statusLabel,
   statusTone,
-} from "@/app/resources/github/ui";
+} from "./ui";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "开源项目参考库 | AI Agent Best Practices",
-  description:
-    "精选 AI Agent 工程实践相关开源项目，帮助用户快速找到值得参考的实现、工具和案例。",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: LocaleParams;
+}): Promise<Metadata> {
+  const locale = await resolveLocale(params);
+  const t = await getTranslations({
+    locale,
+    namespace: "GithubResources.metadata",
+  });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 type SearchParams = {
   q?: string | string[];
@@ -39,6 +54,7 @@ type SearchParams = {
 };
 
 type PageProps = {
+  params: LocaleParams;
   searchParams: Promise<SearchParams>;
 };
 
@@ -79,8 +95,14 @@ function sortValue(value: string): GithubCardSort {
   return "review";
 }
 
-function cardTypeLabel(type: string) {
-  return recordTypes.find((item) => item.code === type)?.labelZh ?? type;
+function categoryLabel(item: CategoryOption, locale: Locale) {
+  return locale === "zh" ? item.nameZh ?? item.name : item.name;
+}
+
+function cardTypeLabel(type: string, locale: Locale) {
+  const item = recordTypes.find((recordType) => recordType.code === type);
+  if (!item) return type;
+  return locale === "zh" ? item.labelZh ?? item.label : item.label;
 }
 
 function activeFiltersCount(input: {
@@ -119,13 +141,21 @@ function daysSince(value: string | undefined | null) {
   return Math.floor((Date.now() - parsed) / (1000 * 60 * 60 * 24));
 }
 
-export default async function GitHubResourcesPage({ searchParams }: Readonly<PageProps>) {
-  const params = await searchParams;
-  const q = firstParam(params.q).trim();
-  const categoryCode = firstParam(params.categoryCode).trim();
-  const status = firstParam(params.status).trim();
-  const type = firstParam(params.type).trim();
-  const sort = sortValue(firstParam(params.sort).trim());
+export default async function GitHubResourcesPage({
+  params,
+  searchParams,
+}: Readonly<PageProps>) {
+  const locale = await resolveLocale(params);
+  const localeForDate = dateLocale(locale);
+  const t = await getTranslations({ locale, namespace: "GithubResources" });
+  const common = await getTranslations({ locale, namespace: "Common" });
+  const vocabulary = await getTranslations({ locale, namespace: "Vocabulary" });
+  const resolvedSearchParams = await searchParams;
+  const q = firstParam(resolvedSearchParams.q).trim();
+  const categoryCode = firstParam(resolvedSearchParams.categoryCode).trim();
+  const status = firstParam(resolvedSearchParams.status).trim();
+  const type = firstParam(resolvedSearchParams.type).trim();
+  const sort = sortValue(firstParam(resolvedSearchParams.sort).trim());
 
   const allCards = await getAllGithubRepoCards();
   const cards = filterGithubRepoCards(allCards, {
@@ -136,7 +166,7 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
     sort,
   });
 
-  const from = createFromState(params);
+  const from = createFromState(resolvedSearchParams);
   const filteredWatching = cards.filter((card) => card.status === "watching").length;
   const filteredCategories = new Set(
     cards.flatMap((card) => [
@@ -149,18 +179,21 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
     return days !== null && days <= 30;
   }).length;
   const filterCount = activeFiltersCount({ q, categoryCode, status, type });
+  const statusLabels = Object.fromEntries(
+    GITHUB_STATUS_VALUES.map((value) => [value, vocabulary(`githubStatus.${value}`)]),
+  );
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(15,118,110,0.09),transparent_28%),linear-gradient(180deg,#f8fafb_0%,#f2f5f8_100%)] text-foreground">
       <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-3">
-            <Badge tone="teal">开源项目参考库</Badge>
-            <Badge>AI Agent 实现参考</Badge>
+            <Badge tone="teal">{t("hero.badge")}</Badge>
+            <Badge>{t("hero.subBadge")}</Badge>
           </div>
           <div className="flex flex-wrap gap-2">
             <LinkButton href="/" tone="secondary">
-              返回知识库
+              {t("hero.back")}
             </LinkButton>
           </div>
         </div>
@@ -168,29 +201,24 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
         <section className="mt-8 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
           <div className="motion-rise">
             <p className="font-mono text-[11px] uppercase tracking-[0.32em] text-muted">
-              精选开源项目
+              {t("hero.eyebrow")}
             </p>
             <h1 className="mt-4 max-w-4xl text-[clamp(3.4rem,10vw,7rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-foreground">
-              值得反复打开的项目。
+              {t("hero.title")}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-muted sm:text-lg">
-              这里收录的是和 AI Agent 工程实践相关的开源项目。你可以按问题方向、
-              项目类型、整理状态和关键词筛选，快速找到能启发实现方案的参考。
+              {t("hero.description")}
             </p>
           </div>
 
           <div className="motion-rise-delayed rounded-[2rem] border border-line bg-surface px-5 py-5 shadow-[var(--shadow)]">
             <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted">
-              如何使用
+              {t("hero.howToUse")}
             </p>
             <div className="mt-4 space-y-4 text-sm leading-7 text-foreground">
-              <p>
-                先从你正在解决的问题出发，比如工具调用、RAG、评测、追踪或工作流，
-                再结合标签、Star、最近更新和整理状态判断是否值得深入阅读。
-              </p>
+              <p>{t("hero.howToUseBody")}</p>
               <p className="text-muted">
-                当前收录 {allCards.length} 个开源项目。每个项目都会保留简短说明、
-                关注理由、分类标签和维护节奏，方便你下次继续回看。
+                {t("hero.collectionCount", { count: allCards.length })}
               </p>
             </div>
           </div>
@@ -198,24 +226,24 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
 
         <section className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard
-            label="当前结果"
+            label={t("metrics.currentResults")}
             value={String(cards.length)}
-            hint={`参考库共收录 ${allCards.length} 个项目`}
+            hint={t("metrics.totalHint", { count: allCards.length })}
           />
           <MetricCard
-            label="值得关注"
+            label={t("metrics.watching")}
             value={String(filteredWatching)}
-            hint="当前结果中适合继续跟进的项目"
+            hint={t("metrics.watchingHint")}
           />
           <MetricCard
-            label="覆盖方向"
+            label={t("metrics.coverage")}
             value={String(filteredCategories)}
-            hint="当前结果涉及的知识分类数"
+            hint={t("metrics.coverageHint")}
           />
           <MetricCard
-            label="近期活跃"
+            label={t("metrics.active")}
             value={String(activeUpstream)}
-            hint="约 30 天内有上游更新"
+            hint={t("metrics.activeHint")}
           />
         </section>
 
@@ -223,63 +251,65 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted">
-                搜索与筛选
+                {t("filters.eyebrow")}
               </p>
               <h2 className="mt-2 text-2xl font-semibold text-foreground">
-                按你要解决的问题筛选参考项目。
+                {t("filters.title")}
               </h2>
             </div>
             <Badge tone={filterCount > 0 ? "teal" : "default"}>
-              {filterCount > 0 ? `${filterCount} 个筛选条件` : "未使用筛选"}
+              {filterCount > 0
+                ? t("filters.active", { count: filterCount })
+                : t("filters.inactive")}
             </Badge>
           </div>
 
           <form className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <div className="xl:col-span-2">
-              <FilterField label="关键词" htmlFor="q">
+              <FilterField label={t("filters.keyword")} htmlFor="q">
                 <FieldInput
                   id="q"
                   name="q"
                   defaultValue={q}
-                  placeholder="项目名、标签、评测、追踪、工作流..."
+                  placeholder={t("filters.keywordPlaceholder")}
                 />
               </FilterField>
             </div>
-            <FilterField label="方向" htmlFor="categoryCode">
+            <FilterField label={t("filters.direction")} htmlFor="categoryCode">
               <FieldSelect id="categoryCode" name="categoryCode" defaultValue={categoryCode}>
-                <option value="">全部方向</option>
+                <option value="">{common("allDirections")}</option>
                 {categories.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {item.code} · {item.nameZh ?? item.name}
+                    {item.code} · {categoryLabel(item, locale)}
                   </option>
                 ))}
               </FieldSelect>
             </FilterField>
-            <FilterField label="整理状态" htmlFor="status">
+            <FilterField label={t("filters.status")} htmlFor="status">
               <FieldSelect id="status" name="status" defaultValue={status}>
-                <option value="">全部状态</option>
-                {GITHUB_STATUS_OPTIONS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
+                <option value="">{common("allStatuses")}</option>
+                {GITHUB_STATUS_VALUES.map((value) => (
+                  <option key={value} value={value}>
+                    {vocabulary(`githubStatus.${value}`)}
                   </option>
                 ))}
               </FieldSelect>
             </FilterField>
-            <FilterField label="类型" htmlFor="type">
+            <FilterField label={t("filters.type")} htmlFor="type">
               <FieldSelect id="type" name="type" defaultValue={type}>
-                <option value="">全部类型</option>
+                <option value="">{common("allTypes")}</option>
                 {recordTypes.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {item.labelZh ?? item.label}
+                    {locale === "zh" ? item.labelZh ?? item.label : item.label}
                   </option>
                 ))}
               </FieldSelect>
             </FilterField>
-            <FilterField label="排序" htmlFor="sort">
+            <FilterField label={t("filters.sort")} htmlFor="sort">
               <FieldSelect id="sort" name="sort" defaultValue={sort}>
-                {GITHUB_SORT_OPTIONS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
+                {GITHUB_SORT_VALUES.map((value) => (
+                  <option key={value} value={value}>
+                    {vocabulary(`githubSort.${value}`)}
                   </option>
                 ))}
               </FieldSelect>
@@ -289,10 +319,10 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
                 type="submit"
                 className="inline-flex h-11 cursor-pointer items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-white transition-colors duration-200 hover:bg-accent-strong"
               >
-                应用筛选
+                {common("applyFilters")}
               </button>
               <LinkButton href="/resources/github" tone="secondary">
-                清空
+                {common("clear")}
               </LinkButton>
             </div>
           </form>
@@ -304,7 +334,10 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
               {cards.map((card, index) => {
                 const primaryCategory = categoriesByCode.get(card.classification.categoryCode);
                 const secondaryCategories = (card.classification.secondaryCategoryCodes ?? [])
-                  .map((code) => categoriesByCode.get(code)?.nameZh ?? code)
+                  .map((code) => {
+                    const category = categoriesByCode.get(code);
+                    return category ? categoryLabel(category, locale) : code;
+                  })
                   .filter(Boolean);
                 const detailHref = from
                   ? {
@@ -323,18 +356,18 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
                       <div className="flex flex-wrap gap-2">
                         <Badge tone="teal">
                           {primaryCategory
-                            ? `${primaryCategory.code} · ${primaryCategory.nameZh ?? primaryCategory.name}`
+                            ? `${primaryCategory.code} · ${categoryLabel(primaryCategory, locale)}`
                             : card.classification.categoryCode}
                         </Badge>
                         <Badge tone={statusTone(card.status)}>
-                          {statusLabel(card.status)}
+                          {statusLabel(card.status, statusLabels)}
                         </Badge>
-                        <Badge>{cardTypeLabel(card.classification.recordType)}</Badge>
+                        <Badge>{cardTypeLabel(card.classification.recordType, locale)}</Badge>
                       </div>
                       <p className="font-mono text-xs text-muted">
                         {card.upstream.synced
                           ? `${card.upstream.stars?.toLocaleString("en-US") ?? "—"} stars`
-                          : "等待更新"}
+                          : t("card.waiting")}
                       </p>
                     </div>
 
@@ -373,18 +406,18 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
                     <dl className="mt-6 grid grid-cols-2 gap-3 rounded-[1.4rem] bg-background/70 px-4 py-4 text-sm">
                       <div>
                         <dt className="text-xs uppercase tracking-[0.14em] text-muted">
-                          最近更新
+                          {t("card.updatedAt")}
                         </dt>
                         <dd className="mt-1 text-foreground">
-                          {formatDate(card.upstream.pushedAt)}
+                          {formatDate(card.upstream.pushedAt, localeForDate)}
                         </dd>
                       </div>
                       <div>
                         <dt className="text-xs uppercase tracking-[0.14em] text-muted">
-                          下次复看
+                          {t("card.reviewAfter")}
                         </dt>
                         <dd className="mt-1 text-foreground">
-                          {formatDate(card.review.reviewAfter)}
+                          {formatDate(card.review.reviewAfter, localeForDate)}
                         </dd>
                       </div>
                     </dl>
@@ -397,14 +430,14 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
                             : `${detailHref.pathname}${detailHref.query?.from ? `?from=${encodeURIComponent(detailHref.query.from)}` : ""}`
                         }
                       >
-                        查看详情
+                        {t("card.openDetails")}
                       </LinkButton>
                       <LinkButton href={card.repo.url} tone="secondary">
-                        打开 GitHub
+                        {common("openGithub")}
                       </LinkButton>
                       {card.links?.docs ? (
                         <LinkButton href={card.links.docs} tone="secondary">
-                          项目文档
+                          {common("projectDocs")}
                         </LinkButton>
                       ) : null}
                     </div>
@@ -415,18 +448,17 @@ export default async function GitHubResourcesPage({ searchParams }: Readonly<Pag
           ) : (
             <div className="rounded-[2rem] border border-dashed border-line-strong bg-surface px-6 py-12 text-center shadow-[var(--shadow)]">
               <p className="font-mono text-[11px] uppercase tracking-[0.28em] text-muted">
-                没有结果
+                {t("empty.eyebrow")}
               </p>
               <h2 className="mt-3 text-2xl font-semibold text-foreground">
-                当前筛选没有命中任何参考项目。
+                {t("empty.title")}
               </h2>
               <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-muted">
-                试试清空筛选，或者改用项目名、作者、评测、追踪、workflow、MCP
-                这类关键词重新搜索。
+                {t("empty.description")}
               </p>
               <div className="mt-6 flex justify-center">
                 <LinkButton href="/resources/github" tone="secondary">
-                  重置筛选
+                  {t("empty.reset")}
                 </LinkButton>
               </div>
             </div>

@@ -1,0 +1,660 @@
+{
+  "LanguageSwitcher": {
+    "label": "切换语言",
+    "zh": "中",
+    "en": "EN"
+  },
+  "NotFound": {
+    "metadata": {
+      "title": "页面不存在",
+      "description": "没有找到对应页面。"
+    },
+    "eyebrow": "404",
+    "title": "这个页面不存在",
+    "description": "可能是链接已调整，或者这条记录还没有发布。你可以回到首页继续搜索 AI Agent 最佳实践。",
+    "backHome": "返回首页"
+  },
+  "Common": {
+    "backToHome": "返回首页",
+    "backToRoadmap": "返回 Roadmap",
+    "viewDetails": "查看详情",
+    "search": "搜索",
+    "clear": "清空",
+    "reset": "重置",
+    "applyFilters": "应用筛选",
+    "openGithub": "打开 GitHub",
+    "projectDocs": "项目文档",
+    "none": "—",
+    "yes": "是",
+    "no": "否",
+    "allCategories": "全部分类",
+    "allDirections": "全部方向",
+    "allStatuses": "全部状态",
+    "allTypes": "全部类型"
+  },
+  "Vocabulary": {
+    "recordStatus": {
+      "DRAFT": "草稿",
+      "REVIEW": "审核中",
+      "PUBLISHED": "已发布",
+      "ARCHIVED": "已归档"
+    },
+    "freshness": {
+      "UNKNOWN": "未知",
+      "FRESH": "新鲜",
+      "STALE": "过期",
+      "NEEDS_REVIEW": "待复审"
+    },
+    "matchSource": {
+      "BROWSE": "浏览",
+      "FTS": "全文检索",
+      "ILIKE": "字段匹配"
+    },
+    "githubStatus": {
+      "inbox": "待整理",
+      "watching": "值得关注",
+      "curated": "已精选",
+      "archived": "已归档"
+    },
+    "githubSort": {
+      "review": "最近整理",
+      "upstream": "最近更新",
+      "stars": "Star 最多",
+      "name": "项目名称"
+    }
+  },
+  "Home": {
+    "metadata": {
+      "title": "AI Agent Best Practices",
+      "description": "面向 AI Agent 工程实践的搜索优先知识库。"
+    },
+    "landing": {
+      "eyebrow": "AI Agent Best Practices",
+      "title": "搜索 AI Agent 最佳实践",
+      "description": "输入关键词，直接查找模型、工具、技能、评测、工作流等高价值最佳实践。",
+      "searchLabel": "搜索知识记录",
+      "placeholder": "搜索模型、工具、实践、评测...",
+      "features": ["全文检索", "来源可追溯", "关系可跳转", "版本可追踪"],
+      "githubLibrary": "浏览开源项目参考库",
+      "modelMatrix": "查看模型能力矩阵"
+    },
+    "results": {
+      "eyebrow": "搜索结果",
+      "titleWithQuery": "“{query}” 的 AI 最佳实践结果",
+      "titleFiltered": "AI 最佳实践筛选结果",
+      "description": "继续收敛条件，快速判断这条记录是否值得打开。",
+      "currentMode": "当前模式",
+      "searchMode": "搜索",
+      "browseMode": "浏览",
+      "searchHint": "按相关性优先，再按更新时间",
+      "browseHint": "按更新时间排序",
+      "resultCount": "结果数量",
+      "resultCountHint": "当前查询条件下返回的记录数",
+      "activeConditions": "活动条件",
+      "noQueryLog": "当前没有写入搜索日志",
+      "openGithubLibrary": "打开开源项目参考库",
+      "openModelMatrix": "打开模型能力矩阵",
+      "keyword": "关键词",
+      "category": "分类",
+      "status": "状态",
+      "recordType": "记录类型",
+      "backHome": "返回首页",
+      "resultTitleWithQuery": "“{query}” 的结果",
+      "resultTitleFiltered": "筛选结果",
+      "resultDescription": "结果已按当前搜索与筛选条件收敛。",
+      "total": "共 {total} 条",
+      "sort": "排序: {sort}",
+      "sortRelevance": "相关性",
+      "sortUpdatedAt": "更新时间",
+      "log": "日志 {id}",
+      "filterKeyword": "关键词: {value}",
+      "filterCategory": "分类: {value}",
+      "filterStatus": "状态: {value}",
+      "filterType": "类型: {value}",
+      "noResultsTitle": "没有匹配结果",
+      "noResultsDescription": "可以放宽关键词、切换分类，或者先导入更多记录再检索。",
+      "backSearchHome": "返回搜索首页"
+    },
+    "recordCard": {
+      "noSummary": "暂无摘要。打开记录查看正文、证据、来源和版本历史。",
+      "confidence": "置信度",
+      "matchSource": "匹配方式",
+      "updatedAt": "更新时间"
+    }
+  },
+  "Record": {
+    "metadata": {
+      "titleSuffix": "知识记录",
+      "notFoundTitle": "记录未找到"
+    },
+    "actions": {
+      "backToSearch": "返回搜索"
+    },
+    "sections": {
+      "body": "正文",
+      "problem": "问题",
+      "recommendation": "建议",
+      "tradeoffs": "利弊权衡",
+      "pros": "优势",
+      "cons": "劣势",
+      "evidence": "证据与依据",
+      "basis": "基础依据",
+      "confidenceReason": "置信度原因",
+      "caveat": "注意事项",
+      "sources": "参考来源 ({count})",
+      "relations": "关联记录 ({count})",
+      "incomingRelations": "被引用记录 ({count})",
+      "translations": "翻译 ({count})",
+      "translationVersion": "翻译版本",
+      "versions": "版本历史",
+      "recordInfo": "记录信息",
+      "curation": "内容管理",
+      "applicability": "适用范围",
+      "compatibility": "兼容性信息",
+      "metrics": "指标",
+      "nextSteps": "后续步骤",
+      "aliases": "别名",
+      "keywords": "关键词",
+      "metadata": "元数据",
+      "environmentVariables": "环境变量",
+      "speculativeDecoding": "推测解码",
+      "vllmCommand": "vLLM Serve 命令"
+    },
+    "labels": {
+      "category": "分类",
+      "type": "类型",
+      "language": "语言",
+      "visibility": "可见性",
+      "confidence": "置信度",
+      "updatedAt": "更新时间",
+      "publishedAt": "发布时间",
+      "lastVerifiedAt": "最后验证",
+      "reviewAfter": "复审日期",
+      "owner": "负责人",
+      "reviewStatus": "审核状态",
+      "sourceReviewedAt": "来源审核",
+      "strength": "强度 {value}%",
+      "citedBy": "← 引用自",
+      "untitled": "未命名",
+      "shell": "shell"
+    },
+    "fieldLabels": {
+      "audience": "目标受众",
+      "projectStage": "项目阶段",
+      "scenario": "使用场景",
+      "confirmedMoEExamples": "已确认 MoE 模型",
+      "unknownArchitectureExamples": "未公开架构模型",
+      "policyField": "策略字段",
+      "modelFamilies": "模型家族",
+      "hardwareSignals": "硬件指标",
+      "evalSignals": "评测指标",
+      "database": "数据库",
+      "vectorStore": "向量存储",
+      "search": "搜索方式",
+      "benchmark": "基准测试",
+      "modelFamily": "模型家族",
+      "tools": "工具数量",
+      "scenarios": "场景数量",
+      "inferenceSetting": "推理设置",
+      "evidenceLevels": "证据等级",
+      "expectedHallucinationReduction": "预期幻觉降低",
+      "reviewCadence": "复核节奏",
+      "selectionFields": "选型字段",
+      "expectedDecisionQualityLift": "预期决策质量提升",
+      "benchmarkCoverage": "基准覆盖度",
+      "expectedSelectionRiskReduction": "预期选型风险降低",
+      "observedFailureModes": "观测到的失败模式",
+      "expectedSearchQualityLift": "预期搜索质量提升",
+      "implementationComplexity": "实现复杂度",
+      "contentSource": "内容来源",
+      "draftedFrom": "起草自",
+      "disclosurePolicy": "披露策略",
+      "architectureFocus": "架构焦点",
+      "relatedBenchmark": "相关基准测试",
+      "difficulty": "难度",
+      "useCase": "用例",
+      "sourcePost": "来源帖子",
+      "translationSource": "翻译来源",
+      "owner": "负责人",
+      "reviewStatus": "审核状态",
+      "sourceReviewedAt": "来源审核时间",
+      "nextSteps": "后续步骤",
+      "runtimeConfigSource": "运行配置来源",
+      "vllmServeExample": "vLLM Serve 示例",
+      "commandLines": "命令行",
+      "command": "命令",
+      "env": "环境变量",
+      "runner": "运行方式",
+      "servedModelName": "服务模型名",
+      "port": "端口",
+      "speculativeConfig": "推测解码配置",
+      "method": "方法",
+      "numSpeculativeTokens": "推测 token 数",
+      "maxNumSeqs": "最大并发序列",
+      "maxModelLen": "最大上下文",
+      "enablePrefixCaching": "启用前缀缓存",
+      "gpuMemoryUtilization": "GPU 显存利用率",
+      "reasoningParser": "推理解析器",
+      "enableAutoToolChoice": "启用自动工具选择",
+      "toolCallParser": "工具调用解析器",
+      "modelDistribution": "模型分发",
+      "inferenceBackends": "推理后端",
+      "parsers": "解析器",
+      "authorVllmServeConfig": "作者 vLLM 配置",
+      "interpretation": "解释",
+      "model": "模型"
+    }
+  },
+  "GithubResources": {
+    "metadata": {
+      "title": "开源项目参考库 | AI Agent Best Practices",
+      "description": "精选 AI Agent 工程实践相关开源项目，帮助用户快速找到值得参考的实现、工具和案例。"
+    },
+    "hero": {
+      "badge": "开源项目参考库",
+      "subBadge": "AI Agent 实现参考",
+      "back": "返回知识库",
+      "eyebrow": "精选开源项目",
+      "title": "值得反复打开的项目。",
+      "description": "这里收录的是和 AI Agent 工程实践相关的开源项目。你可以按问题方向、项目类型、整理状态和关键词筛选，快速找到能启发实现方案的参考。",
+      "howToUse": "如何使用",
+      "howToUseBody": "先从你正在解决的问题出发，比如工具调用、RAG、评测、追踪或工作流，再结合标签、Star、最近更新和整理状态判断是否值得深入阅读。",
+      "collectionCount": "当前收录 {count} 个开源项目。每个项目都会保留简短说明、关注理由、分类标签和维护节奏，方便你下次继续回看。"
+    },
+    "metrics": {
+      "currentResults": "当前结果",
+      "totalHint": "参考库共收录 {count} 个项目",
+      "watching": "值得关注",
+      "watchingHint": "当前结果中适合继续跟进的项目",
+      "coverage": "覆盖方向",
+      "coverageHint": "当前结果涉及的知识分类数",
+      "active": "近期活跃",
+      "activeHint": "约 30 天内有上游更新"
+    },
+    "filters": {
+      "eyebrow": "搜索与筛选",
+      "title": "按你要解决的问题筛选参考项目。",
+      "active": "{count} 个筛选条件",
+      "inactive": "未使用筛选",
+      "keyword": "关键词",
+      "keywordPlaceholder": "项目名、标签、评测、追踪、工作流...",
+      "direction": "方向",
+      "status": "整理状态",
+      "type": "类型",
+      "sort": "排序"
+    },
+    "card": {
+      "waiting": "等待更新",
+      "updatedAt": "最近更新",
+      "reviewAfter": "下次复看",
+      "openDetails": "查看详情"
+    },
+    "empty": {
+      "eyebrow": "没有结果",
+      "title": "当前筛选没有命中任何参考项目。",
+      "description": "试试清空筛选，或者改用项目名、作者、评测、追踪、workflow、MCP 这类关键词重新搜索。",
+      "reset": "重置筛选"
+    },
+    "detail": {
+      "metadataTitle": "{name} · 开源项目参考",
+      "notFoundTitle": "参考项目未找到",
+      "badge": "开源项目",
+      "updating": "资料更新中",
+      "back": "返回项目库",
+      "focus": "重点看什么",
+      "overview": "项目概览",
+      "overviewEyebrow": "快速判断",
+      "primaryLanguage": "主要语言",
+      "license": "许可证",
+      "defaultBranch": "默认分支",
+      "updatedAt": "最近更新",
+      "reviewAfter": "下次复看",
+      "whyIncluded": "为什么收录",
+      "curationEyebrow": "整理判断",
+      "primaryDirection": "主要方向",
+      "projectType": "项目类型",
+      "tags": "标签",
+      "keywords": "关键词",
+      "activity": "项目动态",
+      "publicInfo": "公开信息",
+      "noDescription": "暂时没有项目简介。",
+      "homepage": "官网",
+      "lastSynced": "最近同步",
+      "archived": "是否归档",
+      "docsLink": "文档链接",
+      "reviewPlan": "整理节奏",
+      "reviewPlanEyebrow": "复看计划",
+      "addedAt": "收录时间",
+      "lastReviewedAt": "最近整理",
+      "suggestedReview": "建议复看",
+      "relatedKnowledge": "相关知识",
+      "knowledgeEyebrow": "知识关联",
+      "relatedIntro": "这个项目已经关联到知识库里的相关记录。",
+      "noRelated": "当前还没有关联到具体知识记录。你仍然可以把它作为实现参考，后续形成明确结论后再补充关联。",
+      "upstreamPending": "这个项目的公开信息还在更新中，稍后再看会更完整。"
+    }
+  },
+  "Roadmap": {
+    "metadata": {
+      "title": "Roadmap | AI Agent Best Practices",
+      "description": "AI Agent Best Practices 知识库的产品路线图。"
+    },
+    "nav": {
+      "back": "记录列表",
+      "badges": ["知识库", "产品路线图", "企业优先级视角"]
+    },
+    "hero": {
+      "eyebrow": "AI Agent Best Practices Roadmap",
+      "title": "一个可检索、可验证、可复用的 AI Agent 最佳实践知识库",
+      "description": "项目的核心目标是长期沉淀最佳实践。当前内容优先向企业 Agent 落地倾斜，是因为企业场景对工具调用、知识库、工作流、评测和安全的需求更集中，也更容易体现这个知识库的实际价值。",
+      "cards": [
+        { "label": "产品", "value": "最佳实践知识库" },
+        { "label": "当前重点", "value": "企业 Agent 落地" },
+        { "label": "验证方式", "value": "搜索、引用、评测" }
+      ],
+      "principlesEyebrow": "产品原则",
+      "principlesTitle": "Roadmap 服务于知识库本身"
+    },
+    "sections": {
+      "phaseEyebrow": "阶段路线",
+      "phaseTitle": "项目推进路线",
+      "phaseBody": "路线图按产品能力推进：先保证内容可信，再提高检索体验，随后接入带引用的 AI 回答和 Agent 可调用接口。",
+      "priorityEyebrow": "内容优先级",
+      "priorityTitle": "早期内容投入顺序",
+      "priorityBody": "15 个分类都会保留。早期优先级只是资源分配方式：先建设市场需求更集中、也更能证明项目价值的方向。",
+      "firstBuildEyebrow": "第一批建设区域",
+      "firstBuildTitle": "第一批重点建设的 6 个分类",
+      "firstBuildBody": "这些分类不是全部项目边界，而是当前最高性价比的内容建设切入点。",
+      "recordShapeEyebrow": "记录结构",
+      "recordShapeTitle": "一条最佳实践应该回答什么",
+      "recordShapeBody": "记录不是资讯摘要，而是一个可以被搜索、页面渲染、数据库查询和 Agent 调用的结构化对象。",
+      "examplesEyebrow": "内容示例",
+      "examplesTitle": "更适合这个知识库的标题形态",
+      "nearTermEyebrow": "近期工作",
+      "nearTermTitle": "接下来最自然的产品动作",
+      "nearTermBody": "当前不是做成社区，也不是先扩展所有功能，而是先把语言系统、内容录入、检索、详情和验证链路继续打磨。"
+    },
+    "status": {
+      "done": "已完成",
+      "active": "当前阶段",
+      "next": "下一阶段",
+      "later": "后续阶段",
+      "focus": "重点",
+      "detail": "查看详细计划"
+    },
+    "table": {
+      "rank": "排序",
+      "direction": "方向",
+      "categories": "分类",
+      "whyNow": "为什么现在做",
+      "expectedRecords": "预期记录",
+      "priority": "优先级"
+    },
+    "data": {
+      "productSignals": [
+        "一条实践可以在网页、JSON、数据库和 Agent 调用中保持同一份结构。",
+        "中英文页面拥有稳定 URL，语言切换不会破坏分享链接、查询参数和缓存。",
+        "搜索结果能解释命中原因，而不是只返回标题列表。",
+        "AI 回答能引用知识库记录，并保留来源、置信度和更新时间。",
+        "新增内容能通过脚本校验、导入数据库，并在 CI 中被验证。"
+      ],
+      "priorities": [
+        { "rank": 1, "direction": "Tools / MCP / Function Calling", "categories": "05-tools, 06-mcp", "rationale": "企业 Agent 的核心价值来自安全调用业务系统，而不只是聊天。", "output": "工具 schema、权限边界、参数校验、错误处理、MCP Server 规范。" },
+        { "rank": 2, "direction": "RAG / 企业知识库", "categories": "07-rag, 08-memory", "rationale": "文档问答、知识检索、行业知识沉淀是最常见的 ToB 落地入口。", "output": "文档解析、切分、混合检索、引用、权限过滤、知识更新、RAG 评测。" },
+        { "rank": 3, "direction": "Workflow / Runtime", "categories": "03-runtime, 09-workflow", "rationale": "Demo 变成系统以后，需要状态、重试、失败恢复和人工确认。", "output": "任务拆解、Router、Supervisor、审批节点、多 Agent 边界、失败恢复。" },
+        { "rank": 4, "direction": "Evaluation / Trace", "categories": "11-evaluation, 12-trace", "rationale": "企业采用 Agent 时，需要知道系统是否稳定、是否变好、哪里失败。", "output": "成功率、工具调用正确率、RAG 命中率、Replay、成本、延迟、Bad Case 归因。" },
+        { "rank": 5, "direction": "Security / Permission / Audit", "categories": "13-security, 14-sandbox", "rationale": "权限、脱敏、Prompt Injection、审计和沙箱边界决定能否进入生产。", "output": "权限矩阵、PII 脱敏、注入防护、审计日志、沙箱策略。" },
+        { "rank": 6, "direction": "Adapters / Model Routing", "categories": "15-adapters, 01-models", "rationale": "真实系统通常需要接入多个模型，并按任务、成本、延迟和失败率路由。", "output": "OpenAI、Claude、Qwen、DeepSeek、本地模型的接入和路由策略。" },
+        { "rank": 7, "direction": "Agent UI / Human-in-the-loop", "categories": "10-agent-ui", "rationale": "用户需要看懂 Agent 正在做什么，并能审批、打断、反馈和复盘。", "output": "运行时间线、工具调用展示、人工确认、反馈入口、可解释结果页。" },
+        { "rank": 8, "direction": "Models / 自部署模型", "categories": "01-models", "rationale": "模型能力重要，但在知识库早期更适合作为系统落地能力的支撑信息。", "output": "模型选型、上下文、推理成本、部署规格、量化和服务配置。" }
+      ],
+      "phases": [
+        { "step": "00", "status": "done", "title": "数据底座闭环", "goal": "先让内容可以被结构化保存、校验、导入数据库，并能稳定上线。", "deliverables": ["JSON source of truth", "Zod 内容校验", "Prisma upsert", "PostgreSQL 数据库", "内容合同检查", "Ubuntu CI"] },
+        { "step": "01", "status": "done", "title": "知识库产品化", "goal": "把项目做成一个正常可浏览、可检索、可解释的最佳实践知识库。", "deliverables": ["首页搜索入口", "记录列表与详情", "Roadmap 页面", "开源项目参考库", "模型能力矩阵", "来源与元数据展示", "内容状态展示"] },
+        { "step": "02", "status": "active", "title": "双语语言系统", "goal": "在页面继续增多之前，先把语言路由、文案、内容翻译和语言切换做成长期基础设施。", "deliverables": ["next-intl 基础设施", "中文默认路径 + /en 英文路径", "全局语言切换器", "AIAGENT_LOCALE cookie", "UI messages 字典", "内容翻译 fallback"], "detailHref": "/roadmap/i18n" },
+        { "step": "03", "status": "next", "title": "检索质量建设", "goal": "让用户能更快找到曾经的思考、案例和技术判断，并能解释为什么命中。", "deliverables": ["关键词权重", "标签过滤", "中文/英文匹配策略", "搜索结果解释", "Bad Case 记录", "检索评测集"] },
+        { "step": "04", "status": "next", "title": "带引用的 AI 回答", "goal": "让 AI 基于知识库记录回答，而不是脱离来源直接生成结论。", "deliverables": ["TopK 上下文组装", "引用记录", "不确定性提示", "回答日志", "成本与延迟记录", "答案质量评测"] },
+        { "step": "05", "status": "later", "title": "Agent 可调用接口", "goal": "把知识库变成外部 Agent 可以稳定调用的实践检索能力。", "deliverables": ["searchRecords tool", "getRecord tool", "relatedRecords", "MCP Server", "权限控制", "调用审计"] }
+      ],
+      "categoryPlans": [
+        { "code": "05", "name": "Tools", "role": "记录企业 Agent 如何安全调用业务系统。", "records": ["工具 schema", "参数校验", "权限边界", "工具返回格式", "错误恢复"] },
+        { "code": "07", "name": "RAG", "role": "记录知识库从文档到可引用答案的完整链路。", "records": ["文档解析", "切分策略", "混合检索", "引用", "RAG 评测"] },
+        { "code": "09", "name": "Workflow", "role": "记录多步任务、状态管理和人工确认的工程模式。", "records": ["任务拆解", "Router", "Supervisor", "审批节点", "失败恢复"] },
+        { "code": "11", "name": "Evaluation", "role": "记录如何证明 Agent 系统真的变好。", "records": ["成功率", "工具调用正确率", "检索命中率", "回归测试", "Bad Case 归因"] },
+        { "code": "12", "name": "Trace", "role": "记录 Agent 运行过程如何被复盘、回放和归因。", "records": ["运行日志", "Replay", "Token 成本", "延迟", "失败原因"] },
+        { "code": "13", "name": "Security", "role": "记录进入企业生产环境必须具备的安全边界。", "records": ["Prompt Injection", "工具权限", "PII 脱敏", "审计", "沙箱边界"] }
+      ],
+      "recordTemplate": [
+        "场景：这条实践解决什么 Agent 落地问题",
+        "判断：为什么这个问题值得记录",
+        "架构：工具、知识库、工作流、模型如何组合",
+        "边界：权限、安全、失败和人工确认在哪里",
+        "评测：用什么指标判断它是否有效",
+        "来源：来自文档、视频、项目经验还是代码验证"
+      ],
+      "examples": [
+        "企业 Agent 工具调用必须先设计权限和错误边界",
+        "RAG 不应只评估召回率，还要评估答案可执行性",
+        "MCP Server 在企业内部系统集成中的最小可用规范",
+        "Agent 工作流必须保留人工审批节点的场景",
+        "为什么企业 Agent 需要 Replay，而不只是日志",
+        "多模型路由应该按任务类型、成本和失败率决策"
+      ],
+      "nearTerm": [
+        { "title": "双语系统", "body": "先完成中文默认路径、/en 英文路径、全局语言切换、UI messages 和内容 fallback。" },
+        { "title": "导入界面", "body": "把导入任务、成功/失败原因、审计日志做成可查看界面。" },
+        { "title": "搜索体验", "body": "让搜索结果展示命中原因、来源、分类、更新时间和可信度。" },
+        { "title": "记录详情页", "body": "把一个对象渲染成稳定详情页，支持引用、字段解释和相关记录。" },
+        { "title": "质量闭环", "body": "用搜索评测集和 Bad Case 记录持续改进检索质量。" }
+      ]
+    },
+    "i18nStatus": {
+      "done": "已完成",
+      "active": "进行中",
+      "todo": "待处理"
+    },
+    "i18n": {
+      "metadata": {
+        "title": "国际化路线图 | AI Agent Best Practices",
+        "description": "双语路由、语言切换、内容本地化和 i18n 质量门禁的实施计划。"
+      },
+      "navBadges": ["国际化", "下一阶段建设", "产品基础设施"],
+      "hero": {
+        "eyebrow": "语言系统路线图",
+        "title": "把双语能力做成基础设施，而不是页面补丁",
+        "description": "接下来要先解决语言系统。它会影响路由、链接、页面文案、搜索、知识记录翻译、SEO 和缓存，所以必须在页面继续增多之前一次性定好边界。",
+        "badges": ["中文默认 + /en 英文路由", "AIAGENT_LOCALE cookie", "全局语言切换器", "数据库内容翻译"],
+        "buildOrderEyebrow": "建设顺序",
+        "buildOrderTitle": "先做路由，再迁移页面",
+        "buildOrderBody": "如果先逐页翻译文案，后面再改路由，会重复改链接、表单、metadata 和缓存策略。所以第一步必须是 i18n 基础设施。"
+      },
+      "sections": {
+        "decisionsEyebrow": "架构决策",
+        "decisionsTitle": "先固定不会反复改的语言边界",
+        "decisionsBody": "这些决定会影响后续所有页面。先定下来，后面新增页面只按规则接入。",
+        "routeEyebrow": "路由约定",
+        "routeTitle": "公开路由保留中文默认路径",
+        "routeBody": "API 和 artifacts 不进语言路由。中文页面保留现有路径，英文页面统一通过 /en 访问。",
+        "todoEyebrow": "执行清单",
+        "todoTitle": "分阶段执行清单",
+        "todoBody": "每一组都可以独立验收。不要跳过 P0 和 P1，否则后续页面迁移会变成重复劳动。",
+        "acceptanceEyebrow": "验收标准",
+        "acceptanceTitle": "第一版完成标准",
+        "documentationEyebrow": "文档",
+        "documentationTitle": "文档作为执行合同",
+        "documentationBody": "详细 TODO 已放进 docs，后续实现时按文档逐项勾掉，不靠口头记忆。",
+        "documentBody": "这份文档包含路由决策、语言判断顺序、内容边界、P0 到 P5 TODO、新页面 checklist 和验收标准。"
+      },
+      "decisions": [
+        { "title": "显式语言路由", "body": "长期使用中文默认无前缀、英文 /en 前缀。每个英文页面都有确定 URL，现有中文链接也能继续稳定使用。" },
+        { "title": "系统语言只做首次判断", "body": "首次访问按 Accept-Language 判断；用户手动切换后写入 AIAGENT_LOCALE cookie，后续优先使用用户选择。" },
+        { "title": "UI 和内容分离", "body": "按钮、表单、状态、标题等 UI 文案进入 messages；知识记录、翻译、分类和标签继续走数据库内容模型。" },
+        { "title": "先不翻译路由 path", "body": "先保持 /roadmap 和 /en/roadmap 这种稳定技术路径，不做 /路线图 这类本地化路径，降低长期维护成本。" }
+      ],
+      "todoGroups": [
+        { "code": "P0", "status": "done", "title": "基础设施", "goal": "先定路由、请求配置、语言来源和全局 layout，避免后续页面迁移时反复改底层。", "items": ["安装 next-intl", "新增 messages/zh.json 和 messages/en.json", "新增 src/i18n/routing.ts、request.ts、navigation.ts、locale.ts", "新增 src/proxy.ts，并排除 api、_next、静态文件和 artifacts", "迁移根页面到 src/app/[locale]", "设置 AIAGENT_LOCALE cookie"] },
+        { "code": "P1", "status": "done", "title": "语言切换入口", "goal": "让用户可以在每个页面主动切换语言，并保留当前页面上下文。", "items": ["新增全局 LanguageSwitcher", "在 [locale]/layout.tsx 展示语言切换入口", "切换时保留 pathname、query string 和 hash", "当前语言高亮", "所有 Link 改用 @/i18n/navigation", "所有 form action 不再写死根路径"] },
+        { "code": "P2", "status": "done", "title": "页面文案迁移", "goal": "把前端可见 UI 文案全部交给 i18n 字典，不再散落在页面组件里。", "items": ["迁移首页和搜索页", "迁移记录详情页", "迁移 GitHub 资源列表与详情页", "迁移 Roadmap 与模型能力矩阵", "迁移 loading、empty、error 状态", "迁移 metadata title 和 description"] },
+        { "code": "P3", "status": "todo", "title": "内容本地化渲染", "goal": "让知识对象按当前语言显示，同时保留缺翻译时的明确 fallback。", "items": ["新增 pickLocalizedRecord", "新增 category、vocabulary、tag 的 localized picker", "记录详情页默认只展示当前语言版本", "无翻译时 fallback 到原文", "显示暂无完整翻译提示", "日期和数字按 locale 格式化"] },
+        { "code": "P4", "status": "todo", "title": "双语检索", "goal": "中文界面能搜英文内容，英文界面也能发现中文内容，同时解释命中语言。", "items": ["searchRecords 接收 locale", "优先查当前 locale 的 RecordSearchIndex", "fallback 到记录原语言 index", "搜索结果显示命中语言和 fallback 状态", "建立双语搜索 bad case 清单", "补中英混合查询测试数据"] },
+        { "code": "P5", "status": "active", "title": "质量门禁", "goal": "让以后新增页面不会绕过语言系统，避免 i18n 变成一次性工程。", "items": ["新增 pnpm i18n:check", "校验 zh/en message key 完整性", "CI 跑 i18n check", "增加 locale routing 测试", "增加 language switcher 测试", "增加无翻译 fallback 测试"] }
+      ],
+      "acceptance": [
+        "/ 保持中文默认入口",
+        "/en 作为英文入口",
+        "主要页面都有中文默认路径和 /en 英文路径",
+        "语言切换器在所有页面可见",
+        "切换语言保留当前页面和 query",
+        "刷新后语言选择仍然生效",
+        "核心 UI 文案不再硬编码在页面里",
+        "无翻译内容能 fallback 且有明确提示",
+        "lint、build 和 i18n check 通过"
+      ]
+    }
+  },
+  "ModelCapability": {
+    "metadata": {
+      "title": "模型能力矩阵 | AI Agent Best Practices",
+      "description": "面向 AI Agent 工程落地的模型能力对比，覆盖工具调用、结构化输出、长上下文、托管工具和平台原生能力。"
+    },
+    "hero": {
+      "eyebrow": "模型能力矩阵",
+      "title": "AI Agent 模型能力矩阵",
+      "description": "这不是模型排行榜，而是面向 Agent 工程落地的能力核验表。重点看结构化输出、工具调用、长上下文、错误形态、托管工具和厂商原生能力。",
+      "back": "返回搜索首页",
+      "archive": "查看 HTML 归档"
+    },
+    "metrics": {
+      "snapshot": "快照",
+      "snapshotHint": "当前页面来自已落盘的测试快照与人工校正备注。",
+      "models": "模型",
+      "modelsHint": "GPT、Claude、Gemini、Qwen、DeepSeek、Kimi。",
+      "passFail": "通过 / 失败",
+      "scopeWithPending": "{pending} 个项目待测，{deferred} 个项目暂不测，{skipped} 个项目暂跳过。",
+      "scopeWithoutPending": "{deferred} 个项目暂不测，{skipped} 个项目暂跳过；当前没有依赖新增 API 的推进项。"
+    },
+    "status": {
+      "PASS": "PASS",
+      "FAIL": "FAIL",
+      "PENDING": "待测",
+      "DEFERRED": "暂不测",
+      "SKIP": "SKIP",
+      "NA": "/",
+      "PASSHint": "已在当前脚本或专项探针中通过。",
+      "FAILHint": "当前有失败或缺少真实调用痕迹。",
+      "PENDINGHint": "官方路径有宣传或文档支持，但本项目还没接原厂 API 完成实测。",
+      "DEFERREDHint": "当前不接入所需官方 API 或外部资源，暂时不放入下一步计划。",
+      "SKIPHint": "本轮跳过，通常是接口限制、环境缺失或待单独复测。",
+      "NAHint": "不适用：该厂商路径没有这项能力，不属于待测试缺口。"
+    },
+    "sections": {
+      "strategyEyebrow": "策略",
+      "strategyTitle": "工程结论",
+      "sharedEyebrow": "通用基线",
+      "sharedTitle": "通用 Agent 能力基线",
+      "sharedCaption": "这一层更接近通用 Agent runtime 的基础验收，重点看协议、工具控制、长上下文和多轮 loop。",
+      "nativeEyebrow": "平台原生",
+      "nativeTitle": "平台原生专项",
+      "nativeCaption": "这一层只看厂商自己平台上的特殊能力，不把所有项目强行抽象成一套通用协议。",
+      "notesEyebrow": "备注",
+      "notesTitle": "关键备注",
+      "scopeEyebrow": "范围",
+      "scopeTitle": "当前范围与可自处理项",
+      "sourcesEyebrow": "来源",
+      "sourcesTitle": "结果来源",
+      "capability": "能力"
+    },
+    "strategy": {
+      "ownToolsTitle": "核心业务工具自建",
+      "ownToolsBody": "订单、财务、CRM、审批、写库这类工具必须由自己的 Agent runtime 管理，统一做参数校验、权限、审计、回放和幂等。",
+      "hostedTitle": "Hosted tools 作为补充",
+      "hostedBody": "网页搜索、代码沙箱、文件检索可以接厂商能力，但要被包装成适配器，并且必须产生日志、成本、延迟和调用证据。",
+      "layeredTitle": "测试口径保持分层",
+      "layeredBody": "通用 Agent 能力和平台原生能力不能混成一个分数。前者决定可移植性，后者决定某个厂商生态内的上限。"
+    },
+    "rows": {
+      "textGeneration": { "capability": "文本生成", "detail": "基础文本问答与可读性" },
+      "jsonOutput": { "capability": "通用 JSON 输出", "detail": "普通 JSON 约束，不等同于严格 schema" },
+      "strictStructuredOutput": { "capability": "严格结构化输出", "detail": "按 schema 稳定返回可解析对象" },
+      "streaming": { "capability": "流式输出", "detail": "服务端流式返回与中断恢复基础" },
+      "toolCalling": { "capability": "工具调用", "detail": "基础 function calling / tool calling" },
+      "noToolDiscipline": { "capability": "禁止调用工具时是否克制", "detail": "no-tool 模式下不自行编造工具调用" },
+      "toolArgumentAccuracy": { "capability": "工具参数准确率", "detail": "复杂参数、枚举、字段名是否稳定" },
+      "largeToolsetRouting": { "capability": "大工具集路由", "detail": "多个工具并存时能否选择正确工具" },
+      "toolFailureRecovery": { "capability": "工具失败后的恢复", "detail": "部分工具失败后能否解释、重试或降级" },
+      "approvalStop": { "capability": "需要审批时是否停下", "detail": "高风险动作前是否等待人工确认" },
+      "dangerousToolRefusal": { "capability": "危险工具拒绝", "detail": "删除、转账、外发等危险动作的拒绝能力" },
+      "readWriteBoundary": { "capability": "读写工具区分", "detail": "查询类工具与写入类工具的边界识别" },
+      "destructiveRetryDiscipline": { "capability": "破坏性重试纪律", "detail": "失败后不会重复执行破坏性操作" },
+      "forcedToolChoice": { "capability": "强制工具选择稳定性", "detail": "tool_choice / forced tool 的稳定支持" },
+      "parallelToolCalls": { "capability": "并行工具调用", "detail": "一次响应中并行规划多个工具" },
+      "multiTurnToolLoop": { "capability": "多轮工具循环", "detail": "tool result -> 再推理 -> 再调用的闭环" },
+      "longContext": { "capability": "长上下文稳定性", "detail": "长输入中的头尾信息定位" },
+      "errorShape": { "capability": "错误格式可预期性", "detail": "异常时返回形态是否便于工程处理" },
+      "hostedWebSearch": { "capability": "托管式网页搜索", "detail": "OpenRouter 提供的 hosted web search，不等同厂商原生 web_search" },
+      "previousResponseId": { "capability": "previous_response_id 状态承接", "detail": "厂商原生响应 ID 的多轮状态复用" },
+      "nativeWebSearch": { "capability": "原生网页搜索", "detail": "厂商官方 web_search 能力" },
+      "nativeWebExtract": { "capability": "原生网页抽取", "detail": "网页搜索后抽取正文或结构化片段" },
+      "nativeCodeInterpreter": { "capability": "原生代码解释器 / 代码运行器", "detail": "真实工具调用痕迹，而不是只返回正确答案" },
+      "nativeMcp": { "capability": "原生 MCP", "detail": "厂商原生 MCP 调用痕迹" },
+      "nativeFileSearch": { "capability": "原生文件检索", "detail": "厂商向量库或文件检索链路" },
+      "kimiFormulaDiscovery": { "capability": "Kimi 公式发现", "detail": "web-search / fetch / quickjs / memory / code_runner" },
+      "kimiFormulaExecution": { "capability": "Kimi 公式执行", "detail": "fetch / quickjs / code_runner 执行链路" },
+      "kimiMemory": { "capability": "Kimi 记忆写入与读回", "detail": "memory lifecycle" },
+      "kimiFileQa": { "capability": "Kimi 文件上传与文件问答", "detail": "file upload + file QA" },
+      "deepseekReasoningContent": { "capability": "DeepSeek reasoning_content", "detail": "thinking 开关、成本、严格函数、上下文缓存" },
+      "deepseekThinkingLoop": { "capability": "DeepSeek thinking loop 恢复", "detail": "缺少 reasoning_content 时失败，回传后恢复" }
+    },
+    "notes": [
+      { "title": "通用基线必须优先用 /responses", "body": "凡是当前可走 /responses 的模型，shared baseline 一律用 /responses。只有厂商官方没有 /responses，或某项能力只能通过厂商原生接口验证时，才退到官方原生接口，并把 transportPolicy 写进测试报告。" },
+      { "title": "Hosted tools 只能作为备选适配器", "body": "企业 Agent 的核心业务工具应由自己实现，统一做权限、审计、重试和回放。共享基线里的 hosted web search 只表示 OpenRouter web 插件能力；厂商原生 web_search 放在平台原生专项里。" },
+      { "title": "OpenRouter 列不等于原厂能力缺失", "body": "GPT、Claude、Gemini 当前共享基线走 OpenRouter。由于当前不准备接官方原生 API，原厂专项里官方已有但本项目不接入的能力标为“暂不测”。这表示当前范围不覆盖，不表示厂商没有能力。" },
+      { "title": "Qwen 共享基线已经补齐", "body": "Qwen 3.6 Plus 的 shared smoke 当前已经闭合。最新自托管 MCP 复测批次里，原生 code_interpreter 拿到了 codeInterpreterCalls=1 / usageCount=1，应记为带波动备注的 PASS；原生 MCP 仍没有 mcp_call。" },
+      { "title": "DeepSeek hosted tools 当前按不适用处理", "body": "DeepSeek V4 Pro 官方 API 当前没有等价于 web_search、web_extractor、code interpreter、MCP、file_search 的原厂 hosted tools；但如果通过 OpenRouter，则 OpenRouter web 插件可以给 DeepSeek V4 Pro 提供 hosted web search。" },
+      { "title": "DeepSeek strict schema 要分两层看", "body": "DeepSeek V4 Pro 的 JSON Mode 和 strict function calling 已经在 2026-05-22.r3 专项里通过。能力层应记为 PASS；工程实现方式是用 strict function calling 承载业务对象 schema，而不是 OpenAI-style response_format.json_schema 文本输出。" },
+      { "title": "DeepSeek 旧红格已经清理", "body": "DeepSeek V4 Pro 的 forced tool_choice 在默认 thinking mode 下会返回不支持；但 2026-05-22.r3 共享 smoke 已在 forced probe 中显式关闭 thinking，并确认 toolChoiceStability 3/3 通过。" },
+      { "title": "Kimi native 工具专项已经闭合", "body": "MOONSHOT_API_KEY 已恢复，2026-05-22.r3 官方 native 复跑 13 个 probe 全部通过，包括 JSON Mode 和 response_format: json_schema 的 Structured Output。Kimi 当前官方主路径不是 /responses，而是 Chat Completions。" }
+    ],
+    "pendingItems": [
+      "OpenAI / Anthropic / Gemini 官方原生 API 当前不接入；这些格子改为“暂不测”，不再列为当前推进项。",
+      "Qwen native code_interpreter 最新复跑已拿到真实 codeInterpreterCalls=1 / usageCount=1；矩阵改为带波动备注的 PASS。",
+      "Qwen native MCP 已用自建最小 SSE MCP server 复测；仍没有 mcp_call，当前链路固化为不可验证。",
+      "Qwen native file_search 和 shared hosted file search 都需要 vector_store_ids；没有知识库 ID 时只能保持 SKIP/暂不测。",
+      "已完成矩阵语义、hover 注释、证据来源和 Qwen 自托管 MCP 复测；后续只保留已有 key 的低频回归和报告脚本清理。"
+    ],
+    "cellNotes": {
+      "previousResponseId:gpt": "当前不准备接 OpenAI 官方原生 API，所以这项从当前推进项移出；不代表 OpenAI 没有该能力。",
+      "nativeWebSearch:gpt": "当前不准备接 OpenAI 官方原生 API，所以这项暂不测；共享层仍保留 OpenRouter 路径结果。",
+      "nativeWebSearch:claude": "当前不准备接 Anthropic 官方原生 API，所以这项暂不测；不代表 Claude 没有原生联网能力。",
+      "nativeWebSearch:gemini": "当前不准备接 Gemini 官方原生 API，所以这项暂不测；不代表 Gemini 没有 grounding/search 能力。",
+      "nativeCodeInterpreter:gpt": "当前不准备接 OpenAI 官方原生 API，所以 code_interpreter 原生专项暂不测。",
+      "nativeCodeInterpreter:claude": "当前不准备接 Anthropic 官方原生 API，所以 code execution 原生专项暂不测。",
+      "nativeCodeInterpreter:gemini": "当前不准备接 Gemini 官方原生 API，所以 code execution 原生专项暂不测。",
+      "nativeMcp:gpt": "当前不准备接 OpenAI 官方原生 API，所以 remote MCP 原生专项暂不测。",
+      "nativeMcp:claude": "当前不准备接 Anthropic 官方原生 API，所以 MCP connector 原生专项暂不测。",
+      "nativeFileSearch:gpt": "当前不准备接 OpenAI 官方原生 API，也没有对应 vector store 配置，所以 file_search 原生专项暂不测。",
+      "nativeFileSearch:gemini": "当前不准备接 Gemini 官方原生 API，所以 file search 原生专项暂不测。",
+      "jsonOutput:kimi": "Kimi 这里按官方 native Chat Completions 复跑结果记 PASS，不是 /responses 路径；2026-05-22.r3 的 jsonMode 已通过。",
+      "strictStructuredOutput:deepseek": "DeepSeek 这里的 PASS 表示 JSON mode + strict function calling 可承载业务 schema，不是 OpenAI-style response_format.json_schema。",
+      "strictStructuredOutput:kimi": "Kimi 这里按官方 native response_format: json_schema 记 PASS；实测需要遵守 Moonshot 当前温度约束。",
+      "forcedToolChoice:qwen": "Qwen forced tool_choice 在 thinking 模式下不应直接测；当前 PASS 来自 forced probe 显式关闭 thinking 后的结果。",
+      "forcedToolChoice:deepseek": "DeepSeek 默认 thinking mode 不支持 forced tool_choice；当前 PASS 来自 forced probe 禁用 thinking 后 3/3 通过。",
+      "hostedWebSearch:gpt": "这里表示 OpenRouter hosted web plugin 通过，不等同 OpenAI 官方原生 web_search。",
+      "hostedWebSearch:claude": "这里表示 OpenRouter hosted web plugin 通过，不等同 Anthropic 官方原生 web_search。",
+      "hostedWebSearch:gemini": "这里表示 OpenRouter hosted web plugin 通过，不等同 Gemini 官方原生 grounding/search。",
+      "hostedWebSearch:deepseek": "DeepSeek 这里的 PASS 是通过 OpenRouter web plugin 拿到 url_citation；DeepSeek 官方 native hosted web_search 仍按不适用处理。",
+      "previousResponseId:qwen": "Qwen PASS 来自 Responses API 的 previous_response_id 状态承接；这是厂商原生 Responses 能力。",
+      "nativeWebExtract:qwen": "Qwen web_extractor 当前通过的是 web_search + web_extractor 组合链路，不表示 extractor 可独立单跑。",
+      "nativeCodeInterpreter:qwen": "Qwen 最新自托管 MCP 复测批次里拿到 codeInterpreterCalls=1 / usageCount=1，因此能力格改为 PASS；但 2026-05-22 早些时候多次复跑没有工具痕迹，仍按有波动能力处理。",
+      "nativeCodeInterpreter:kimi": "Kimi PASS 来自官方 native code_runner / quickjs 工具链，不是 Qwen/OpenAI 风格的 Responses code_interpreter。",
+      "nativeMcp:qwen": "官方文档有 MCP 能力，但当前 US key / endpoint / MCP server 组合没有产生 mcp_call；本站自建 SSE MCP server 也只得到普通文本工具调用样式，仍没有结构化 mcp_call。",
+      "nativeFileSearch:qwen": "Qwen native file_search 必须先创建百炼知识库/向量库并传 vector_store_ids；只有 QWEN_API_KEY 不够，所以当前 SKIP。",
+      "nativeWebSearch:kimi": "Kimi PASS 来自官方 native builtin $web_search 专项复跑，不是 OpenRouter fallback。",
+      "kimiFormulaDiscovery:kimi": "Kimi 官方 native 工具专项 2026-05-22.r3 已通过 formula discovery 相关 probe。",
+      "kimiFormulaExecution:kimi": "Kimi 官方 native 工具专项 2026-05-22.r3 已通过 fetch / quickjs / code_runner 执行链路。",
+      "kimiFileQa:kimi": "Kimi PASS 来自官方文件上传 + 文件问答 probe，不是通用 RAG 或本项目数据库检索。",
+      "deepseekReasoningContent:deepseek": "DeepSeek PASS 表示 thinking 模式会返回 reasoning_content，并且后续 loop 必须保留它。",
+      "deepseekThinkingLoop:deepseek": "DeepSeek PASS 表示缺少 reasoning_content 时会失败，按规范回传 reasoning_content 后可恢复。"
+    }
+  }
+}

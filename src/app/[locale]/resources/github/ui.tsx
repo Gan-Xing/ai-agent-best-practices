@@ -1,18 +1,8 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
-export const GITHUB_STATUS_OPTIONS = [
-  { value: "inbox", label: "待整理" },
-  { value: "watching", label: "值得关注" },
-  { value: "curated", label: "已精选" },
-  { value: "archived", label: "已归档" },
-] as const;
+export const GITHUB_STATUS_VALUES = ["inbox", "watching", "curated", "archived"] as const;
 
-export const GITHUB_SORT_OPTIONS = [
-  { value: "review", label: "最近整理" },
-  { value: "upstream", label: "最近更新" },
-  { value: "stars", label: "Star 最多" },
-  { value: "name", label: "项目名称" },
-] as const;
+export const GITHUB_SORT_VALUES = ["review", "upstream", "stars", "name"] as const;
 
 export function Badge({
   children,
@@ -162,12 +152,24 @@ export function LinkButton({
     tone === "primary"
       ? "bg-accent text-white hover:bg-accent-strong"
       : "border border-line bg-white text-foreground hover:border-line-strong hover:bg-background";
+  const className = `inline-flex cursor-pointer items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ${classes}`;
+  const isExternal = /^https?:\/\//.test(href);
+
+  if (isExternal) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        {children}
+      </a>
+    );
+  }
 
   return (
-    <Link
-      href={href}
-      className={`inline-flex cursor-pointer items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ${classes}`}
-    >
+    <Link href={href} className={className}>
       {children}
     </Link>
   );
@@ -186,19 +188,17 @@ export function statusTone(status: string) {
   }
 }
 
-export function statusLabel(status: string) {
-  return (
-    GITHUB_STATUS_OPTIONS.find((option) => option.value === status)?.label ?? status
-  );
+export function statusLabel(status: string, labels?: Record<string, string>) {
+  return labels?.[status] ?? status;
 }
 
-export function formatDate(value: string | null | undefined) {
+export function formatDate(value: string | null | undefined, locale = "zh-CN") {
   if (!value) return "—";
   const parsed = Date.parse(value);
 
   if (Number.isNaN(parsed)) return value;
 
-  return new Intl.DateTimeFormat("zh-CN", {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
   }).format(parsed);
 }
