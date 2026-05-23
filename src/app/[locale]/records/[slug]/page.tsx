@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { dateLocale } from "@/i18n/locale";
 import { resolveLocale } from "@/i18n/server";
 import { AppError } from "@/lib/errors";
+import { pickLocalizedName, pickLocalizedRecord } from "@/lib/localization";
 import { getRecordBySlug } from "@/lib/records";
 
 type RecordPageProps = {
@@ -482,10 +483,11 @@ export async function generateMetadata({
 
   try {
     const record = await getRecordBySlug(slug);
+    const localized = pickLocalizedRecord(record, locale);
 
     return {
-      title: `${record.title} · ${t("titleSuffix")}`,
-      description: record.summary ?? undefined,
+      title: `${localized.title} · ${t("titleSuffix")}`,
+      description: localized.summary ?? undefined,
     };
   } catch (error) {
     if (error instanceof AppError && error.status === 404) {
@@ -507,9 +509,12 @@ export default async function RecordPage({
   const locale = await resolveLocale(params);
   const localeForDate = dateLocale(locale);
   const t = await getTranslations({ locale, namespace: "Record" });
+  const languageLabel = (language: string) =>
+    t.has(`language.${language}`) ? t(`language.${language}`) : language;
   const { slug } = await params;
   const { from } = await searchParams;
   const record = await getRecordOrNotFound(slug);
+  const localized = pickLocalizedRecord(record, locale);
   const backHref = normalizeReturnHref(from);
   const copy: RecordCopy = {
     fieldLabels: t.raw("fieldLabels") as Record<string, string>,
@@ -532,7 +537,7 @@ export default async function RecordPage({
     },
   };
 
-  const metadata = asRecord(record.metadata);
+  const metadata = asRecord(localized.metadata) ?? asRecord(record.metadata);
   const applicability = asRecord(record.applicability);
   const compatibility = asRecord(record.compatibility);
   const tradeoffs = asRecord(record.tradeoffs);
@@ -544,6 +549,32 @@ export default async function RecordPage({
   const pros = tradeoffs ? asStringArray(tradeoffs.pros) : [];
   const cons = tradeoffs ? asStringArray(tradeoffs.cons) : [];
   const nextSteps = extensions ? asStringArray(extensions.nextSteps) : [];
+  const alternateVersions = [
+    ...(record.language !== localized.displayLanguage
+      ? [
+          {
+            id: record.id,
+            language: record.language,
+            title: record.title,
+            summary: record.summary,
+            body: record.body,
+            problem: record.problem,
+            recommendation: record.recommendation,
+          },
+        ]
+      : []),
+    ...record.translations
+      .filter((translation) => translation.language !== localized.displayLanguage)
+      .map((translation) => ({
+        id: translation.id,
+        language: translation.language,
+        title: translation.title,
+        summary: translation.summary,
+        body: translation.body,
+        problem: translation.problem,
+        recommendation: translation.recommendation,
+      })),
+  ];
 
   return (
     <main className="min-h-screen px-5 py-8 sm:px-8">
@@ -571,7 +602,7 @@ export default async function RecordPage({
               {record.type}
             </span>
             <span className="rounded-full border border-line bg-background/80 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-              {record.category.name}
+              {pickLocalizedName(record.category, locale)}
             </span>
             {record.externalKey ? (
               <span className="rounded-full border border-accent/20 bg-accent-soft px-3 py-1 font-mono text-[11px] text-accent">
@@ -581,41 +612,50 @@ export default async function RecordPage({
           </div>
 
           <h1 className="mt-4 text-3xl font-semibold tracking-[-0.04em] text-foreground sm:text-5xl">
-            {record.title}
+            {localized.title}
           </h1>
 
-          {record.summary ? (
+          {localized.summary ? (
             <p className="mt-4 max-w-3xl text-base leading-8 text-muted sm:text-lg">
-              {record.summary}
+              {localized.summary}
             </p>
           ) : null}
 
           <div className="mt-6 flex flex-wrap gap-2">
             {record.tags.map((item) => (
-              <Badge key={item.tagId}>{item.tag.name}</Badge>
+              <Badge key={item.tagId}>{pickLocalizedName(item.tag, locale)}</Badge>
             ))}
           </div>
+
+          {localized.isFallback ? (
+            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-7 text-amber-900">
+              {t("notices.missingTranslation", {
+                requested: languageLabel(localized.requestedLocale),
+                fallback: languageLabel(localized.displayLanguage),
+              })}
+            </div>
+          ) : null}
         </header>
 
         {/* ── balanced card flow ── */}
         <div className="gap-6 xl:columns-2">
           {/* ── main content column ── */}
           <div className="contents">
-            {record.body ? (
+            {localized.body ? (
               <Section title={t("sections.body")} id="body" className="mb-6">
-                <p className="whitespace-pre-wrap">{record.body}</p>
+                <p className="whitespace-pre-wrap">{localized.body}</p>
               </Section>
             ) : null}
 
-            {record.problem ? (
+            {localized.problem ? (
               <Section title={t("sections.problem")} id="problem" className="mb-6">
-                <p className="whitespace-pre-wrap">{record.problem}</p>
+                <p className="whitespace-pre-wrap">{localized.problem}</p>
               </Section>
             ) : null}
 
-            {record.recommendation ? (
+            {localized.recommendation ? (
               <Section title={t("sections.recommendation")} id="recommendation" className="mb-6">
-                <p className="whitespace-pre-wrap">{record.recommendation}</p>
+                <p className="whitespace-pre-wrap">{localized.recommendation}</p>
               </Section>
             ) : null}
 
@@ -804,10 +844,10 @@ export default async function RecordPage({
             ) : null}
 
             {/* ── translations ── */}
-            {record.translations.length > 0 ? (
-              <Section title={t("sections.translations", { count: record.translations.length })} id="translations" className="mb-6">
+            {alternateVersions.length > 0 ? (
+              <Section title={t("sections.translations", { count: alternateVersions.length })} id="translations" className="mb-6">
                 <div className="space-y-4">
-                  {record.translations.map((translation) => (
+                  {alternateVersions.map((translation) => (
                     <div
                       key={translation.id}
                       className="rounded-xl border border-line bg-background/60 p-4"
@@ -876,9 +916,13 @@ export default async function RecordPage({
             {/* meta */}
             <Section title={t("sections.recordInfo")} id="meta" className="mb-6">
               <dl className="space-y-3">
-                <KeyValueRow label={t("labels.category")}>{record.category.name}</KeyValueRow>
+                <KeyValueRow label={t("labels.category")}>{pickLocalizedName(record.category, locale)}</KeyValueRow>
                 <KeyValueRow label={t("labels.type")}>{record.type}</KeyValueRow>
-                <KeyValueRow label={t("labels.language")}>{record.language}</KeyValueRow>
+                <KeyValueRow label={t("labels.language")}>{languageLabel(record.language)}</KeyValueRow>
+                <KeyValueRow label={t("labels.displayLanguage")}>{languageLabel(localized.displayLanguage)}</KeyValueRow>
+                {localized.isFallback ? (
+                  <KeyValueRow label={t("labels.translationStatus")}>{t("labels.translationMissing")}</KeyValueRow>
+                ) : null}
                 <KeyValueRow label={t("labels.visibility")}>
                   <Badge variant={record.visibility === "PUBLIC" ? "green" : "default"}>
                     {record.visibility}

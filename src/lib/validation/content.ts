@@ -629,7 +629,7 @@ const contentMetadataSchema = z
 export const contentSourceSchema = importSourceSchema.strict();
 const contentRecordBaseSchema = importRecordInputSchema;
 
-export const contentRecordSchema = contentRecordBaseSchema.extend({
+export const contentRecordSchema = contentRecordBaseSchema.safeExtend({
   externalKey: z.string().trim().min(1),
   slug: contentSlugSchema,
   categoryCode: contentCategoryCodeSchema,

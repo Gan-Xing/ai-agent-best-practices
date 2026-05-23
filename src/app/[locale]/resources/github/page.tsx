@@ -7,6 +7,7 @@ import vocabularyData from "../../../../../prisma/seed-data/vocabulary.json";
 import { dateLocale } from "@/i18n/locale";
 import type { Locale } from "@/i18n/routing";
 import { resolveLocale, type LocaleParams } from "@/i18n/server";
+import { pickLocalizedLabel, pickLocalizedName } from "@/lib/localization";
 import {
   filterGithubRepoCards,
   type GithubCardSort,
@@ -96,13 +97,13 @@ function sortValue(value: string): GithubCardSort {
 }
 
 function categoryLabel(item: CategoryOption, locale: Locale) {
-  return locale === "zh" ? item.nameZh ?? item.name : item.name;
+  return pickLocalizedName(item, locale);
 }
 
 function cardTypeLabel(type: string, locale: Locale) {
   const item = recordTypes.find((recordType) => recordType.code === type);
   if (!item) return type;
-  return locale === "zh" ? item.labelZh ?? item.label : item.label;
+  return pickLocalizedLabel(item, locale);
 }
 
 function activeFiltersCount(input: {

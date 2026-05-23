@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { dateLocale } from "@/i18n/locale";
 import type { Locale } from "@/i18n/routing";
 import { resolveLocale, type LocaleParams } from "@/i18n/server";
+import { pickLocalizedLabel, pickLocalizedName } from "@/lib/localization";
 
 import categoriesData from "../../../prisma/seed-data/categories.json";
 import vocabularyData from "../../../prisma/seed-data/vocabulary.json";
@@ -92,14 +93,6 @@ function buildFreshnessTone(freshness: string) {
     default:
       return "border-line bg-background text-muted";
   }
-}
-
-function localizedCategoryName(item: CategoryOption, locale: Locale) {
-  return locale === "zh" ? item.nameZh ?? item.name : item.name;
-}
-
-function localizedTypeLabel(item: VocabularyOption, locale: Locale) {
-  return locale === "zh" ? item.labelZh ?? item.label : item.label;
 }
 
 function Badge({
@@ -224,9 +217,13 @@ function ResultRow({
     confidence: string;
     matchSource: string;
     updatedAt: string;
+    displayLanguage: string;
+    matchLanguage: string;
+    fallback: (language: string) => string;
     noSummary: string;
     freshness: (value: string) => string;
     match: (value: string) => string;
+    language: (value: string | null) => string;
   };
 }>) {
   const href = from
@@ -242,7 +239,7 @@ function ResultRow({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge>{item.categoryNameZh ?? item.categoryName}</Badge>
+              <Badge>{locale === "zh" ? item.categoryNameZh ?? item.categoryName : item.categoryName}</Badge>
               <Badge>{item.type}</Badge>
               <Badge className={buildStatusTone(item.status)}>{item.status}</Badge>
               <Badge className={buildFreshnessTone(item.freshness)}>
@@ -259,7 +256,7 @@ function ResultRow({
             </p>
           </div>
 
-          <div className="grid shrink-0 gap-3 text-sm text-muted sm:grid-cols-3 lg:w-[22rem] lg:grid-cols-1">
+          <div className="grid shrink-0 gap-3 text-sm text-muted sm:grid-cols-2 lg:w-[22rem] lg:grid-cols-1">
             <div>
               <p className="text-xs font-medium text-muted">{labels.confidence}</p>
               <div className="mt-2">
@@ -270,6 +267,20 @@ function ResultRow({
               <p className="text-xs font-medium text-muted">{labels.matchSource}</p>
               <p className="mt-2 font-mono text-xs text-foreground">
                 {labels.match(item.matchSource)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">{labels.matchLanguage}</p>
+              <p className="mt-2 font-mono text-xs text-foreground">
+                {labels.language(item.matchLanguage ?? item.displayLanguage)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-medium text-muted">{labels.displayLanguage}</p>
+              <p className="mt-2 font-mono text-xs text-foreground">
+                {item.usedFallback
+                  ? labels.fallback(labels.language(item.displayLanguage))
+                  : labels.language(item.displayLanguage)}
               </p>
             </div>
             <div>
@@ -304,6 +315,7 @@ export default async function Home({ params, searchParams }: HomeProps) {
   const searchResult = hasActiveState
     ? await searchRecords({
         q: query || undefined,
+        locale,
         categoryCode: categoryCode || undefined,
         status: status || undefined,
         type: type || undefined,
@@ -321,14 +333,14 @@ export default async function Home({ params, searchParams }: HomeProps) {
   const activeCount = [query, categoryCode, status, type].filter(Boolean).length;
   const selectedCategory =
     categories.find((item) => item.code === categoryCode)
-      ? localizedCategoryName(
+      ? pickLocalizedName(
           categories.find((item) => item.code === categoryCode) as CategoryOption,
           locale,
         )
       : categoryCode;
   const selectedType =
     recordTypes.find((item) => item.code === type)
-      ? localizedTypeLabel(
+      ? pickLocalizedLabel(
           recordTypes.find((item) => item.code === type) as VocabularyOption,
           locale,
         )
@@ -340,8 +352,13 @@ export default async function Home({ params, searchParams }: HomeProps) {
   const recordCardLabels = {
     confidence: t("recordCard.confidence"),
     matchSource: t("recordCard.matchSource"),
+    displayLanguage: t("recordCard.displayLanguage"),
+    matchLanguage: t("recordCard.matchLanguage"),
     updatedAt: t("recordCard.updatedAt"),
     noSummary: t("recordCard.noSummary"),
+    fallback: (language: string) => t("recordCard.fallback", { language }),
+    language: (value: string | null) =>
+      value && vocabulary.has(`language.${value}`) ? vocabulary(`language.${value}`) : value ?? common("none"),
     freshness: (value: string) =>
       vocabulary.has(`freshness.${value}`) ? vocabulary(`freshness.${value}`) : value,
     match: (value: string) =>
@@ -489,7 +506,7 @@ export default async function Home({ params, searchParams }: HomeProps) {
                 <option value="">{common("allCategories")}</option>
                 {categories.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {item.code} · {localizedCategoryName(item, locale)}
+                    {item.code} · {pickLocalizedName(item, locale)}
                   </option>
                 ))}
               </FieldSelect>
@@ -511,7 +528,7 @@ export default async function Home({ params, searchParams }: HomeProps) {
                 <option value="">{common("allTypes")}</option>
                 {recordTypes.map((item) => (
                   <option key={item.code} value={item.code}>
-                    {localizedTypeLabel(item, locale)}
+                    {pickLocalizedLabel(item, locale)}
                   </option>
                 ))}
               </FieldSelect>

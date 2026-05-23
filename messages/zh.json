@@ -50,6 +50,10 @@
       "FTS": "全文检索",
       "ILIKE": "字段匹配"
     },
+    "language": {
+      "zh": "中文",
+      "en": "英文"
+    },
     "githubStatus": {
       "inbox": "待整理",
       "watching": "值得关注",
@@ -119,6 +123,9 @@
       "noSummary": "暂无摘要。打开记录查看正文、证据、来源和版本历史。",
       "confidence": "置信度",
       "matchSource": "匹配方式",
+      "matchLanguage": "命中语言",
+      "displayLanguage": "展示语言",
+      "fallback": "回退到{language}",
       "updatedAt": "更新时间"
     }
   },
@@ -126,6 +133,13 @@
     "metadata": {
       "titleSuffix": "知识记录",
       "notFoundTitle": "记录未找到"
+    },
+    "language": {
+      "zh": "中文",
+      "en": "英文"
+    },
+    "notices": {
+      "missingTranslation": "当前还没有完整的{requested}版本，页面暂时回退展示{fallback}原文。"
     },
     "actions": {
       "backToSearch": "返回搜索"
@@ -164,6 +178,9 @@
       "category": "分类",
       "type": "类型",
       "language": "语言",
+      "displayLanguage": "展示语言",
+      "translationStatus": "翻译状态",
+      "translationMissing": "缺少当前语言版本",
       "visibility": "可见性",
       "confidence": "置信度",
       "updatedAt": "更新时间",
@@ -495,9 +512,9 @@
         { "code": "P0", "status": "done", "title": "基础设施", "goal": "先定路由、请求配置、语言来源和全局 layout，避免后续页面迁移时反复改底层。", "items": ["安装 next-intl", "新增 messages/zh.json 和 messages/en.json", "新增 src/i18n/routing.ts、request.ts、navigation.ts、locale.ts", "新增 src/proxy.ts，并排除 api、_next、静态文件和 artifacts", "迁移根页面到 src/app/[locale]", "设置 AIAGENT_LOCALE cookie"] },
         { "code": "P1", "status": "done", "title": "语言切换入口", "goal": "让用户可以在每个页面主动切换语言，并保留当前页面上下文。", "items": ["新增全局 LanguageSwitcher", "在 [locale]/layout.tsx 展示语言切换入口", "切换时保留 pathname、query string 和 hash", "当前语言高亮", "所有 Link 改用 @/i18n/navigation", "所有 form action 不再写死根路径"] },
         { "code": "P2", "status": "done", "title": "页面文案迁移", "goal": "把前端可见 UI 文案全部交给 i18n 字典，不再散落在页面组件里。", "items": ["迁移首页和搜索页", "迁移记录详情页", "迁移 GitHub 资源列表与详情页", "迁移 Roadmap 与模型能力矩阵", "迁移 loading、empty、error 状态", "迁移 metadata title 和 description"] },
-        { "code": "P3", "status": "todo", "title": "内容本地化渲染", "goal": "让知识对象按当前语言显示，同时保留缺翻译时的明确 fallback。", "items": ["新增 pickLocalizedRecord", "新增 category、vocabulary、tag 的 localized picker", "记录详情页默认只展示当前语言版本", "无翻译时 fallback 到原文", "显示暂无完整翻译提示", "日期和数字按 locale 格式化"] },
-        { "code": "P4", "status": "todo", "title": "双语检索", "goal": "中文界面能搜英文内容，英文界面也能发现中文内容，同时解释命中语言。", "items": ["searchRecords 接收 locale", "优先查当前 locale 的 RecordSearchIndex", "fallback 到记录原语言 index", "搜索结果显示命中语言和 fallback 状态", "建立双语搜索 bad case 清单", "补中英混合查询测试数据"] },
-        { "code": "P5", "status": "active", "title": "质量门禁", "goal": "让以后新增页面不会绕过语言系统，避免 i18n 变成一次性工程。", "items": ["新增 pnpm i18n:check", "校验 zh/en message key 完整性", "CI 跑 i18n check", "增加 locale routing 测试", "增加 language switcher 测试", "增加无翻译 fallback 测试"] }
+        { "code": "P3", "status": "done", "title": "内容本地化渲染", "goal": "让知识对象按当前语言显示，同时保留缺翻译时的明确 fallback。", "items": ["新增 pickLocalizedRecord", "新增 category、vocabulary、tag 的 localized picker", "记录详情页默认只展示当前语言版本", "无翻译时 fallback 到原文", "显示暂无完整翻译提示", "日期和数字按 locale 格式化"] },
+        { "code": "P4", "status": "done", "title": "双语检索", "goal": "中文界面能搜英文内容，英文界面也能发现中文内容，同时解释命中语言。", "items": ["searchRecords 接收 locale", "优先查当前 locale 的 RecordSearchIndex", "fallback 到记录原语言 index", "搜索结果显示命中语言和 fallback 状态", "建立双语搜索 bad case 清单", "补中英混合查询测试数据"] },
+        { "code": "P5", "status": "done", "title": "质量门禁", "goal": "让以后新增页面不会绕过语言系统，避免 i18n 变成一次性工程。", "items": ["新增 pnpm i18n:check", "校验 zh/en message key 完整性", "CI 跑 i18n check", "增加 locale routing 测试", "增加 language switcher 测试", "增加无翻译 fallback 测试"] }
       ],
       "acceptance": [
         "/ 保持中文默认入口",

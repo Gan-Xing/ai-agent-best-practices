@@ -28,7 +28,7 @@ const nonEmptyJsonObjectSchema = z
 
 export const importSourceSchema = recordSourceInputSchema;
 
-export const importRecordInputSchema = createRecordInputSchema.extend({
+export const importRecordInputSchema = createRecordInputSchema.safeExtend({
   sources: z.array(importSourceSchema).min(1),
 });
 

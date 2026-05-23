@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { dateLocale } from "@/i18n/locale";
 import type { Locale } from "@/i18n/routing";
 import { resolveLocale } from "@/i18n/server";
+import { pickLocalizedLabel, pickLocalizedName } from "@/lib/localization";
 
 import categoriesData from "../../../../../../prisma/seed-data/categories.json";
 import vocabularyData from "../../../../../../prisma/seed-data/vocabulary.json";
@@ -66,13 +67,13 @@ function firstParam(value: string | string[] | undefined) {
 }
 
 function categoryLabel(item: CategoryOption, locale: Locale) {
-  return locale === "zh" ? item.nameZh ?? item.name : item.name;
+  return pickLocalizedName(item, locale);
 }
 
 function typeLabel(value: string, locale: Locale) {
   const item = recordTypes.find((recordType) => recordType.code === value);
   if (!item) return value;
-  return locale === "zh" ? item.labelZh ?? item.label : item.label;
+  return pickLocalizedLabel(item, locale);
 }
 
 export async function generateMetadata({

@@ -144,12 +144,13 @@ type RecordWriteArtifacts = {
   parsed: CreateRecordInput;
   slug: string;
   tags: Array<{ id: string; name: string }>;
-  primaryChunk: {
+  chunks: Array<{
     kind: string;
+    language: string;
     text: string;
-  };
-  chunkContentHash: string;
-  searchIndex: {
+    contentHash: string;
+  }>;
+  searchIndexes: Array<{
     language: string;
     title: string;
     summary: string | null;
@@ -158,7 +159,7 @@ type RecordWriteArtifacts = {
     aliases: string;
     keywords: string;
     contentHash: string;
-  };
+  }>;
   snapshot: RecordSnapshot;
   recordChecksum: string;
 };
@@ -262,24 +263,60 @@ function buildPrimaryChunk(input: CreateRecordInput) {
   };
 }
 
-function buildSearchIndexPayload(input: CreateRecordInput, tags: string[]) {
+function buildSearchIndexPayloadFromContent(input: {
+  language: string;
+  title: string;
+  summary?: string | null;
+  body?: string | null;
+  aliases: string[];
+  keywords: string[];
+  tags: string[];
+}) {
   return {
     language: input.language,
     title: input.title,
     summary: input.summary ?? null,
     body: input.body ?? null,
-    tags: tags.join(" "),
+    tags: input.tags.join(" "),
     aliases: input.aliases.join(" "),
     keywords: input.keywords.join(" "),
     contentHash: hashContent({
       title: input.title,
       summary: input.summary ?? null,
       body: input.body ?? null,
-      tags,
+      tags: input.tags,
       aliases: input.aliases,
       keywords: input.keywords,
     }),
   };
+}
+
+function buildSearchIndexPayload(input: CreateRecordInput, tags: string[]) {
+  return buildSearchIndexPayloadFromContent({
+    language: input.language,
+    title: input.title,
+    summary: input.summary ?? null,
+    body: input.body ?? null,
+    tags,
+    aliases: input.aliases,
+    keywords: input.keywords,
+  });
+}
+
+function buildTranslationSearchIndexPayload(
+  translation: CreateRecordInput["translations"][number],
+  input: CreateRecordInput,
+  tags: string[],
+) {
+  return buildSearchIndexPayloadFromContent({
+    language: translation.language,
+    title: translation.title,
+    summary: translation.summary ?? null,
+    body: translation.body ?? null,
+    tags,
+    aliases: input.aliases,
+    keywords: input.keywords,
+  });
 }
 
 function buildRecordSnapshot(
@@ -497,7 +534,7 @@ async function prepareRecordWrite(
 
   const slug = ensureSlug(parsed);
   const primaryChunk = buildPrimaryChunk(parsed);
-  const chunkContentHash = hashContent({
+  const primaryChunkContentHash = hashContent({
     kind: primaryChunk.kind,
     text: primaryChunk.text,
     language: parsed.language,
@@ -510,9 +547,41 @@ async function prepareRecordWrite(
     parsed,
     slug,
     tags,
-    primaryChunk,
-    chunkContentHash,
-    searchIndex: buildSearchIndexPayload(parsed, tagNames),
+    chunks: [
+      {
+        ...primaryChunk,
+        language: parsed.language,
+        contentHash: primaryChunkContentHash,
+      },
+      ...parsed.translations.map((translation) => {
+        const chunk = buildPrimaryChunk({
+          ...parsed,
+          language: translation.language,
+          title: translation.title,
+          summary: translation.summary,
+          body: translation.body,
+          problem: translation.problem,
+          recommendation: translation.recommendation,
+          metadata: translation.metadata,
+        });
+
+        return {
+          ...chunk,
+          language: translation.language,
+          contentHash: hashContent({
+            kind: chunk.kind,
+            text: chunk.text,
+            language: translation.language,
+          }),
+        };
+      }),
+    ],
+    searchIndexes: [
+      buildSearchIndexPayload(parsed, tagNames),
+      ...parsed.translations.map((translation) =>
+        buildTranslationSearchIndexPayload(translation, parsed, tagNames),
+      ),
+    ],
     snapshot,
     recordChecksum: hashContent(snapshot),
   };
@@ -645,14 +714,12 @@ async function syncRecordRelations(
   await tx.recordSearchIndex.deleteMany({
     where: {
       recordId,
-      language: artifacts.parsed.language,
     },
   });
   await tx.recordChunk.deleteMany({
     where: {
       recordId,
       chunkNo: 0,
-      language: artifacts.parsed.language,
     },
   });
   await tx.recordTranslation.deleteMany({
@@ -708,22 +775,22 @@ async function syncRecordRelations(
     });
   }
 
-  await tx.recordSearchIndex.create({
-    data: {
+  await tx.recordSearchIndex.createMany({
+    data: artifacts.searchIndexes.map((searchIndex) => ({
       recordId,
-      ...artifacts.searchIndex,
-    },
+      ...searchIndex,
+    })),
   });
 
-  await tx.recordChunk.create({
-    data: {
+  await tx.recordChunk.createMany({
+    data: artifacts.chunks.map((chunk) => ({
       recordId,
       chunkNo: 0,
-      kind: artifacts.primaryChunk.kind,
-      language: artifacts.parsed.language,
-      text: artifacts.primaryChunk.text,
-      contentHash: artifacts.chunkContentHash,
-    },
+      kind: chunk.kind,
+      language: chunk.language,
+      text: chunk.text,
+      contentHash: chunk.contentHash,
+    })),
   });
 
   return tx.recordVersion.create({

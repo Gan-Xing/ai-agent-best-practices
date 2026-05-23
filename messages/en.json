@@ -50,6 +50,10 @@
       "FTS": "Full-text search",
       "ILIKE": "Field match"
     },
+    "language": {
+      "zh": "Chinese",
+      "en": "English"
+    },
     "githubStatus": {
       "inbox": "Inbox",
       "watching": "Watching",
@@ -119,6 +123,9 @@
       "noSummary": "No summary yet. Open the record to view body, evidence, sources, and version history.",
       "confidence": "Confidence",
       "matchSource": "Match source",
+      "matchLanguage": "Matched language",
+      "displayLanguage": "Display language",
+      "fallback": "{language} fallback",
       "updatedAt": "Updated"
     }
   },
@@ -126,6 +133,13 @@
     "metadata": {
       "titleSuffix": "Knowledge record",
       "notFoundTitle": "Record not found"
+    },
+    "language": {
+      "zh": "Chinese",
+      "en": "English"
+    },
+    "notices": {
+      "missingTranslation": "A complete {requested} version is not available yet, so this page is temporarily showing the {fallback} source content."
     },
     "actions": {
       "backToSearch": "Back to search"
@@ -164,6 +178,9 @@
       "category": "Category",
       "type": "Type",
       "language": "Language",
+      "displayLanguage": "Display language",
+      "translationStatus": "Translation status",
+      "translationMissing": "Current-language version missing",
       "visibility": "Visibility",
       "confidence": "Confidence",
       "updatedAt": "Updated",
@@ -495,9 +512,9 @@
         { "code": "P0", "status": "done", "title": "Infrastructure", "goal": "Set routing, request config, language sources, and global layout first so later page migration does not churn the foundation.", "items": ["Install next-intl", "Add messages/zh.json and messages/en.json", "Add src/i18n/routing.ts, request.ts, navigation.ts, and locale.ts", "Add src/proxy.ts excluding api, _next, static files, and artifacts", "Move root pages into src/app/[locale]", "Set AIAGENT_LOCALE cookie"] },
         { "code": "P1", "status": "done", "title": "Language switcher", "goal": "Let users switch language on every page while preserving the current page context.", "items": ["Add global LanguageSwitcher", "Render it in [locale]/layout.tsx", "Preserve pathname, query string, and hash", "Highlight current language", "Use @/i18n/navigation for all internal links", "Stop hardcoding form actions to root"] },
         { "code": "P2", "status": "done", "title": "UI message migration", "goal": "Move all visible UI copy into the i18n dictionaries instead of scattering it across page components.", "items": ["Migrate home and search pages", "Migrate record detail page", "Migrate GitHub list and detail pages", "Migrate Roadmap and model capability matrix", "Migrate loading, empty, and error states", "Migrate metadata title and description"] },
-        { "code": "P3", "status": "todo", "title": "Localized content rendering", "goal": "Render knowledge objects in the current language while preserving explicit fallback when translations are missing.", "items": ["Add pickLocalizedRecord", "Add localized pickers for category, vocabulary, and tag", "Show current-language record version by default", "Fallback to original content when translation is missing", "Show missing full translation hint", "Format dates and numbers by locale"] },
-        { "code": "P4", "status": "todo", "title": "Bilingual search", "goal": "Let Chinese UI find English content and English UI find Chinese content while explaining the matched language.", "items": ["searchRecords accepts locale", "Prefer current-locale RecordSearchIndex", "Fallback to original-language index", "Show matched language and fallback state", "Build bilingual bad-case list", "Add mixed Chinese/English query test data"] },
-        { "code": "P5", "status": "active", "title": "Quality gate", "goal": "Make it hard for future pages to bypass the language system.", "items": ["Add pnpm i18n:check", "Verify zh/en message-key completeness", "Run i18n check in CI", "Add locale routing tests", "Add language switcher tests", "Add fallback tests for missing translation"] }
+        { "code": "P3", "status": "done", "title": "Localized content rendering", "goal": "Render knowledge objects in the current language while preserving explicit fallback when translations are missing.", "items": ["Add pickLocalizedRecord", "Add localized pickers for category, vocabulary, and tag", "Show current-language record version by default", "Fallback to original content when translation is missing", "Show missing full translation hint", "Format dates and numbers by locale"] },
+        { "code": "P4", "status": "done", "title": "Bilingual search", "goal": "Let Chinese UI find English content and English UI find Chinese content while explaining the matched language.", "items": ["searchRecords accepts locale", "Prefer current-locale RecordSearchIndex", "Fallback to original-language index", "Show matched language and fallback state", "Build bilingual bad-case list", "Add mixed Chinese/English query test data"] },
+        { "code": "P5", "status": "done", "title": "Quality gate", "goal": "Make it hard for future pages to bypass the language system.", "items": ["Add pnpm i18n:check", "Verify zh/en message-key completeness", "Run i18n check in CI", "Add locale routing tests", "Add language switcher tests", "Add fallback tests for missing translation"] }
       ],
       "acceptance": [
         "/ remains the Chinese default entry",

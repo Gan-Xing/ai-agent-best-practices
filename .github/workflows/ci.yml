@@ -43,6 +43,12 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Validate i18n messages
+        run: pnpm i18n:check
+
+      - name: Validate i18n quality gates
+        run: pnpm i18n:quality
+
       - name: Validate content JSON
         run: pnpm content:verify
 

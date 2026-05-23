@@ -154,39 +154,38 @@ Tag.name / Tag.nameZh
 
 ### P3 - Localized Data Rendering
 
-- [ ] 新增 `pickLocalizedRecord(record, locale)`
-- [ ] 新增 `pickLocalizedCategory(category, locale)`
-- [ ] 新增 `pickLocalizedVocabulary(term, locale)`
-- [ ] 新增 `pickLocalizedTag(tag, locale)`
-- [ ] 记录详情页默认只展示当前语言版本
-- [ ] 没有翻译时展示 fallback 提示
-- [ ] 保留“查看其他语言版本”的扩展入口
-- [ ] JSON metadata 字段标签支持双语
-- [ ] 日期格式根据 locale 渲染
-- [ ] 数字格式根据 locale 渲染
+- [x] 新增 `pickLocalizedRecord(record, locale)`
+- [x] 新增 `pickLocalizedName(category/tag, locale)`
+- [x] 新增 `pickLocalizedLabel(vocabularyTerm, locale)`
+- [x] 记录详情页默认只展示当前语言版本
+- [x] 没有翻译时展示 fallback 提示
+- [x] 保留“查看其他语言版本”的扩展入口
+- [x] JSON metadata 字段标签支持双语
+- [x] 日期格式根据 locale 渲染
+- [x] 数字格式根据 locale 渲染
 
 ### P4 - Search And Content Index
 
-- [ ] `searchRecords` 接收 `locale`
-- [ ] 查询优先当前 locale 的 `RecordSearchIndex`
-- [ ] fallback 到记录原语言 index
-- [ ] 中文界面允许召回英文内容
-- [ ] 英文界面允许召回中文内容
-- [ ] 搜索结果显示命中语言
-- [ ] 搜索结果显示是否 fallback
-- [ ] 建立双语搜索 bad case 清单
-- [ ] 为中英混合查询补充测试数据
+- [x] `searchRecords` 接收 `locale`
+- [x] 查询优先当前 locale 的 `RecordSearchIndex`
+- [x] fallback 到记录原语言 index
+- [x] 中文界面允许召回英文内容
+- [x] 英文界面允许召回中文内容
+- [x] 搜索结果显示命中语言
+- [x] 搜索结果显示是否 fallback
+- [x] 建立双语搜索 bad case 清单
+- [x] 为中英混合查询补充测试数据
 
 ### P5 - Quality Gate
 
 - [x] 增加 `pnpm i18n:check`
 - [x] 校验 `messages/zh.json` 与 `messages/en.json` key 完整性
-- [ ] CI 跑 i18n check
-- [ ] 增加 locale routing 测试
-- [ ] 增加 language switcher 测试
-- [ ] 增加 localized metadata 测试
-- [ ] 增加无翻译 fallback 测试
-- [ ] 文档记录新增页面 i18n checklist
+- [x] CI 跑 i18n check
+- [x] 增加 locale routing 测试
+- [x] 增加 language switcher 测试
+- [x] 增加 localized metadata 测试
+- [x] 增加无翻译 fallback 测试
+- [x] 文档记录新增页面 i18n checklist
 
 ## New Page Checklist
 
@@ -217,4 +216,5 @@ UI 文案是否进入 messages
 首页、搜索页、详情页、Roadmap、模型矩阵没有硬编码核心 UI 文案
 无翻译内容能 fallback 且有明确提示
 lint 和 build 通过
+i18n check 和 i18n quality gate 通过
 ```

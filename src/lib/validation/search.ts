@@ -16,6 +16,7 @@ const optionalTrimmedString = z.preprocess(
 
 export const searchRecordsInputSchema = z.object({
   q: optionalTrimmedString,
+  locale: z.enum(["zh", "en"]).default("zh"),
   categoryCode: optionalTrimmedString,
   status: z.enum(["DRAFT", "REVIEW", "PUBLISHED", "ARCHIVED"]).optional(),
   type: optionalTrimmedString,

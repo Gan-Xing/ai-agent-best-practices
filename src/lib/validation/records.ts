@@ -201,7 +201,18 @@ export const createRecordInputSchema = z
     tags: requiredNonEmptyStringArray,
     relations: recordRelationsSchema,
   })
-  .strict();
+  .strict()
+  .superRefine((record, context) => {
+    for (const [index, translation] of record.translations.entries()) {
+      if (translation.language === record.language) {
+        context.addIssue({
+          code: "custom",
+          message: "Translation language must differ from the primary record language",
+          path: ["translations", index, "language"],
+        });
+      }
+    }
+  });
 
 export const listRecordsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
