@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "itzcrazykns__vane",
+  "repo": {
+    "host": "github",
+    "owner": "itzcrazykns",
+    "name": "vane",
+    "fullName": "itzcrazykns/vane",
+    "url": "https://github.com/itzcrazykns/vane"
+  },
+  "classification": {
+    "categoryCode": "10",
+    "secondaryCategoryCodes": [
+      "07",
+      "03"
+    ],
+    "recordType": "REFERENCE",
+    "tags": [
+      "answering-engine",
+      "source-citation",
+      "web-search",
+      "agent-ui",
+      "product-reference"
+    ],
+    "keywords": [
+      "itzcrazykns/vane",
+      "vane",
+      "perplexica",
+      "answering engine",
+      "source citation",
+      "answer ui",
+      "websearch runtime"
+    ]
+  },
+  "summary": "开源 AI answering engine，把搜索、来源引用、文件上传和回答界面串成一条完整产品链。",
+  "whyItMatters": "适合观察上层 answering experience 如何消费 WebSearch runtime，尤其是 answer UI、source citation 和本地隐私体验。",
+  "notes": "原先提到的 Perplexica 仓库当前以 Vane 为准。重点借鉴 search -> answer UI -> source citation -> local privacy 这条产品链，不把它当你的 runtime core。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "dzhng__deep-research",
+  "repo": {
+    "host": "github",
+    "owner": "dzhng",
+    "name": "deep-research",
+    "fullName": "dzhng/deep-research",
+    "url": "https://github.com/dzhng/deep-research"
+  },
+  "classification": {
+    "categoryCode": "09",
+    "secondaryCategoryCodes": [
+      "07"
+    ],
+    "recordType": "REFERENCE",
+    "tags": [
+      "deep-research",
+      "minimal-pipeline",
+      "breadth-depth",
+      "workflow-reference",
+      "future-study"
+    ],
+    "keywords": [
+      "dzhng/deep-research",
+      "deep research",
+      "minimal deep retrieval",
+      "breadth depth",
+      "research assistant"
+    ]
+  },
+  "summary": "一个更小更直接的 deep research / deep retrieval pipeline 参考实现。",
+  "whyItMatters": "适合学习 breadth / depth、多轮 research 和最小 deep retrieval pipeline 怎么落地。",
+  "notes": "属于下一阶段 workflow 研究对象，不拿来做底层 runtime。",
+  "status": "inbox",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

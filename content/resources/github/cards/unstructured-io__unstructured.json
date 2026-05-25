@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "unstructured-io__unstructured",
+  "repo": {
+    "host": "github",
+    "owner": "unstructured-io",
+    "name": "unstructured",
+    "fullName": "unstructured-io/unstructured",
+    "url": "https://github.com/unstructured-io/unstructured"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "09"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "document-etl",
+      "partitioning",
+      "chunking",
+      "production-ingestion",
+      "next-phase"
+    ],
+    "keywords": [
+      "unstructured-io/unstructured",
+      "unstructured",
+      "document etl",
+      "partitioning",
+      "chunking",
+      "enterprise ingestion"
+    ]
+  },
+  "summary": "生产导向的文档 ETL 框架，覆盖 partition、chunking 和预处理。",
+  "whyItMatters": "如果后面要做企业知识导入管线，它比单纯 parser 更像生产级参考答案。",
+  "notes": "更像后续企业文件 ingestion / ETL 层参考，不是当前 websearch core。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://www.unstructured.io/"
+  }
+}

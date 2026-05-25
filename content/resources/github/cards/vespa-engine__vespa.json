@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "vespa-engine__vespa",
+  "repo": {
+    "host": "github",
+    "owner": "vespa-engine",
+    "name": "vespa",
+    "fullName": "vespa-engine/vespa",
+    "url": "https://github.com/vespa-engine/vespa"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "11",
+      "03"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "search-engine",
+      "ranking",
+      "online-serving",
+      "heavyweight",
+      "future-study"
+    ],
+    "keywords": [
+      "vespa-engine/vespa",
+      "vespa",
+      "ranking engine",
+      "online retrieval",
+      "search serving"
+    ]
+  },
+  "summary": "重型在线搜索与排序系统，适合大规模检索和在线 ranking。",
+  "whyItMatters": "它代表更重的在线召回与排序路线，适合做长期上限参考。",
+  "notes": "现在阶段太重，先收录为未来研究对象，不进入第一阶段实现。",
+  "status": "inbox",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://vespa.ai"
+  }
+}

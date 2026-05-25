@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "deepset-ai__haystack",
+  "repo": {
+    "host": "github",
+    "owner": "deepset-ai",
+    "name": "haystack",
+    "fullName": "deepset-ai/haystack",
+    "url": "https://github.com/deepset-ai/haystack"
+  },
+  "classification": {
+    "categoryCode": "09",
+    "secondaryCategoryCodes": [
+      "07",
+      "03"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "workflow",
+      "rag-pipelines",
+      "routing",
+      "component-architecture",
+      "future-study"
+    ],
+    "keywords": [
+      "deepset-ai/haystack",
+      "haystack",
+      "pipeline orchestration",
+      "rag workflow",
+      "routing",
+      "generation"
+    ]
+  },
+  "summary": "显式 pipeline 和 agent workflow 框架，强调 retrieval、routing、memory、generation 的组件化。",
+  "whyItMatters": "适合研究 /research、/rerank、/chunk、/citation 等服务边界怎么拆。",
+  "notes": "作为 orchestration 参考很有价值，但不建议第一阶段直接把 runtime 绑成 Haystack 风格。",
+  "status": "inbox",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://haystack.deepset.ai"
+  }
+}

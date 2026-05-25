@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "browserbase__stagehand",
+  "repo": {
+    "host": "github",
+    "owner": "browserbase",
+    "name": "stagehand",
+    "fullName": "browserbase/stagehand",
+    "url": "https://github.com/browserbase/stagehand"
+  },
+  "classification": {
+    "categoryCode": "14",
+    "secondaryCategoryCodes": [
+      "05",
+      "03"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "browser-fallback",
+      "browser-policy",
+      "playwright",
+      "sandbox",
+      "second-stage"
+    ],
+    "keywords": [
+      "browserbase/stagehand",
+      "stagehand",
+      "browser policy layer",
+      "act agent extract",
+      "browser fallback",
+      "playwright agent"
+    ]
+  },
+  "summary": "面向浏览器 agent 的 SDK，提供 act / agent / extract 等高层接口。",
+  "whyItMatters": "非常适合拿来设计你后续的 browser fallback / browser policy layer。",
+  "notes": "第二阶段重点参考。先学什么时候走 cheap fetch、什么时候升级浏览器，以及浏览器接口应该长什么样，不急着第一版就绑定它。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://stagehand.dev"
+  }
+}

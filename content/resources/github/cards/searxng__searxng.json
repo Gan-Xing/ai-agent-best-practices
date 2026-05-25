@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "searxng__searxng",
+  "repo": {
+    "host": "github",
+    "owner": "searxng",
+    "name": "searxng",
+    "fullName": "searxng/searxng",
+    "url": "https://github.com/searxng/searxng"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "15"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "search-adapter",
+      "metasearch",
+      "privacy",
+      "results-normalization",
+      "mvp-direct"
+    ],
+    "keywords": [
+      "searxng/searxng",
+      "searxng",
+      "metasearch engine",
+      "search adapter",
+      "privacy search",
+      "results aggregation"
+    ]
+  },
+  "summary": "开源元搜索引擎，聚合多种搜索服务结果并强调隐私。",
+  "whyItMatters": "当前 WebSearch Service MVP 可直接借它做 search adapter、多引擎聚合、查询参数与结果标准化。",
+  "notes": "当前目标最直接的核心参考之一。重点看搜哪里、怎么统一结果，不看上层 answer UI。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

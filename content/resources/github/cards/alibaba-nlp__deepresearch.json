@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "alibaba-nlp__deepresearch",
+  "repo": {
+    "host": "github",
+    "owner": "alibaba-nlp",
+    "name": "deepresearch",
+    "fullName": "alibaba-nlp/deepresearch",
+    "url": "https://github.com/alibaba-nlp/deepresearch"
+  },
+  "classification": {
+    "categoryCode": "09",
+    "secondaryCategoryCodes": [
+      "11",
+      "07"
+    ],
+    "recordType": "REFERENCE",
+    "tags": [
+      "deep-research",
+      "research-agent",
+      "benchmark-runtime",
+      "workflow-reference",
+      "future-study"
+    ],
+    "keywords": [
+      "alibaba-nlp/deepresearch",
+      "deepresearch",
+      "tongyi deep research",
+      "research agent",
+      "benchmark runtime"
+    ]
+  },
+  "summary": "偏研究型的 deep research agent / benchmark runtime。",
+  "whyItMatters": "适合研究任务流程、工具接法和评测视角，但不属于当前底层 retrieval infra。",
+  "notes": "定位上更接近 research agent 运行时与 benchmark 参考，不要过早直接融合。",
+  "status": "inbox",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

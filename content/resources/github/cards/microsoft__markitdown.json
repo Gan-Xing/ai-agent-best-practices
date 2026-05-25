@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "microsoft__markitdown",
+  "repo": {
+    "host": "github",
+    "owner": "microsoft",
+    "name": "markitdown",
+    "fullName": "microsoft/markitdown",
+    "url": "https://github.com/microsoft/markitdown"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "05"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "file-to-markdown",
+      "office-docs",
+      "pdf",
+      "light-ingestion",
+      "next-phase"
+    ],
+    "keywords": [
+      "microsoft/markitdown",
+      "markitdown",
+      "office to markdown",
+      "pdf to markdown",
+      "light ingestion"
+    ]
+  },
+  "summary": "把 Office、PDF 等文件快速转成 Markdown 的轻量工具。",
+  "whyItMatters": "适合未来做最小文件 ingestion 链路时，先搭一个低阻力入口。",
+  "notes": "偏轻量 ingestion 入口，适合先落地再决定是否上更重的 ETL 管线。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

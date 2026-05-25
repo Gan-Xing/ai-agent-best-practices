@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "firecrawl__firecrawl",
+  "repo": {
+    "host": "github",
+    "owner": "firecrawl",
+    "name": "firecrawl",
+    "fullName": "firecrawl/firecrawl",
+    "url": "https://github.com/firecrawl/firecrawl"
+  },
+  "classification": {
+    "categoryCode": "05",
+    "secondaryCategoryCodes": [
+      "07",
+      "14"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "web-search",
+      "web-scraping",
+      "api-design",
+      "tool-api",
+      "mvp-direct"
+    ],
+    "keywords": [
+      "firecrawl/firecrawl",
+      "firecrawl",
+      "search scrape interact",
+      "web api",
+      "websearch runtime",
+      "scraping api"
+    ]
+  },
+  "summary": "统一封装 search / scrape / interact 的网页数据接口服务。",
+  "whyItMatters": "当前 WebSearch Service MVP 可直接借它的 API 形态、返回结构和能力分层，同时把它当竞品与对照组。",
+  "notes": "当前目标直接相关。重点看统一 API、输出结构和能力分层；定位上把它当竞品参考，不当长期底座。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://firecrawl.dev"
+  }
+}

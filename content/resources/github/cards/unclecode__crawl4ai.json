@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "unclecode__crawl4ai",
+  "repo": {
+    "host": "github",
+    "owner": "unclecode",
+    "name": "crawl4ai",
+    "fullName": "unclecode/crawl4ai",
+    "url": "https://github.com/unclecode/crawl4ai"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "14",
+      "03"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "fetch-adapter",
+      "js-rendering",
+      "html-to-markdown",
+      "web-crawling",
+      "mvp-direct"
+    ],
+    "keywords": [
+      "unclecode/crawl4ai",
+      "crawl4ai",
+      "llm friendly crawler",
+      "fetch adapter",
+      "javascript rendering",
+      "markdown output"
+    ]
+  },
+  "summary": "面向 LLM 场景的网页抓取与提取工具，覆盖 JS 渲染与 Markdown 输出。",
+  "whyItMatters": "当前 WebSearch Service MVP 可直接借它做 fetch runtime、动态页面抓取和内容标准化输出。",
+  "notes": "当前目标最直接的核心参考之一。重点看 fetch adapter、渲染升级和网页转 Markdown。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

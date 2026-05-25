@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "stanford-futuredata__colbert",
+  "repo": {
+    "host": "github",
+    "owner": "stanford-futuredata",
+    "name": "colbert",
+    "fullName": "stanford-futuredata/colbert",
+    "url": "https://github.com/stanford-futuredata/colbert"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "11"
+    ],
+    "recordType": "REFERENCE",
+    "tags": [
+      "rerank",
+      "late-interaction",
+      "retrieval-quality",
+      "second-stage",
+      "next-phase"
+    ],
+    "keywords": [
+      "stanford-futuredata/colbert",
+      "colbert",
+      "late interaction retrieval",
+      "rerank",
+      "second stage retrieval"
+    ]
+  },
+  "summary": "经典 late interaction 检索方案，适合高质量 second-stage retrieval / rerank。",
+  "whyItMatters": "当你后续开始补检索质量时，它能提供 candidate recall -> rerank 两阶段思路。",
+  "notes": "当前先不集成，等 WebSearch MVP 跑通后再拿它补搜索准确率。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

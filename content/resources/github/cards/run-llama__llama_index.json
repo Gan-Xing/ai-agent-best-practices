@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "run-llama__llama_index",
+  "repo": {
+    "host": "github",
+    "owner": "run-llama",
+    "name": "llama_index",
+    "fullName": "run-llama/llama_index",
+    "url": "https://github.com/run-llama/llama_index"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "09"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "data-connectors",
+      "query-interface",
+      "index-abstraction",
+      "rag-framework",
+      "future-study"
+    ],
+    "keywords": [
+      "run-llama/llama_index",
+      "llamaindex",
+      "data connectors",
+      "query interface",
+      "index abstraction",
+      "rag framework"
+    ]
+  },
+  "summary": "RAG 框架与数据连接器生态，提供 query interface 与多种 index 抽象。",
+  "whyItMatters": "适合借 schema、data connector 和 query interface 设计，不适合一开始就把 runtime 绑成全家桶。",
+  "notes": "更像长期 schema / connector 参考，而不是当前 WebSearch MVP 直接依赖。",
+  "status": "inbox",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  }
+}

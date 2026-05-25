@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "adbar__trafilatura",
+  "repo": {
+    "host": "github",
+    "owner": "adbar",
+    "name": "trafilatura",
+    "fullName": "adbar/trafilatura",
+    "url": "https://github.com/adbar/trafilatura"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "05"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "html-extraction",
+      "metadata-cleaning",
+      "cheap-fallback",
+      "markdown-output",
+      "mvp-direct"
+    ],
+    "keywords": [
+      "adbar/trafilatura",
+      "trafilatura",
+      "html extraction",
+      "metadata extraction",
+      "article extractor",
+      "cheap fallback"
+    ]
+  },
+  "summary": "轻量网页正文与元数据提取工具，适合把 URL 先变成干净文本。",
+  "whyItMatters": "当前 WebSearch MVP 可直接借它做 cheap extractor fallback，避免所有页面都一上来就升级到浏览器。",
+  "notes": "当前目标直接相关。重点看静态网页正文提取、元数据清洗和低成本 fetch/extract 路径。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://trafilatura.readthedocs.io"
+  }
+}

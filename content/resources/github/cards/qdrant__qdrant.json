@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "qdrant__qdrant",
+  "repo": {
+    "host": "github",
+    "owner": "qdrant",
+    "name": "qdrant",
+    "fullName": "qdrant/qdrant",
+    "url": "https://github.com/qdrant/qdrant"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "recordType": "TOOL",
+    "tags": [
+      "vector-database",
+      "hybrid-search",
+      "payload-filter",
+      "retrieval-storage",
+      "next-phase"
+    ],
+    "keywords": [
+      "qdrant/qdrant",
+      "qdrant",
+      "hybrid search",
+      "multivector",
+      "payload filter",
+      "vector database"
+    ]
+  },
+  "summary": "支持 dense / sparse / multivector / payload filter 的向量检索引擎。",
+  "whyItMatters": "适合参考后续 retrieval 存储层的接口和过滤能力，而不是自己重写一套搜索存储。",
+  "notes": "等你进入 retrieval storage / hybrid search 阶段时重点再看；当前不需要把它拉进 MVP 范围。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://qdrant.tech"
+  }
+}

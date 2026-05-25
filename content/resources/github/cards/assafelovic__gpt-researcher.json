@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "assafelovic__gpt-researcher",
+  "repo": {
+    "host": "github",
+    "owner": "assafelovic",
+    "name": "gpt-researcher",
+    "fullName": "assafelovic/gpt-researcher",
+    "url": "https://github.com/assafelovic/gpt-researcher"
+  },
+  "classification": {
+    "categoryCode": "09",
+    "secondaryCategoryCodes": [
+      "07",
+      "12"
+    ],
+    "recordType": "FRAMEWORK",
+    "tags": [
+      "deep-research",
+      "workflow",
+      "citation",
+      "observability",
+      "research-layer"
+    ],
+    "keywords": [
+      "assafelovic/gpt-researcher",
+      "gpt researcher",
+      "deep research workflow",
+      "citation",
+      "mcp",
+      "observability"
+    ]
+  },
+  "summary": "面向深度研究任务的开源 research agent，强调多步 research、引用和可观测性。",
+  "whyItMatters": "适合研究 /research 层该怎么设计，而不是当前 /search 层怎么实现。",
+  "notes": "它和最终目标有关，但不属于当前 WebSearch MVP 核心。重点借 deep research workflow、citation、MCP 接法和 trace/observability。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://gptr.dev"
+  }
+}

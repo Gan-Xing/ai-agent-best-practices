@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "docling-project__docling",
+  "repo": {
+    "host": "github",
+    "owner": "docling-project",
+    "name": "docling",
+    "fullName": "docling-project/docling",
+    "url": "https://github.com/docling-project/docling"
+  },
+  "classification": {
+    "categoryCode": "07",
+    "secondaryCategoryCodes": [
+      "05"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "document-ingestion",
+      "document-parser",
+      "normalized-document",
+      "private-data",
+      "next-phase"
+    ],
+    "keywords": [
+      "docling-project/docling",
+      "docling",
+      "document ingestion",
+      "normalized document",
+      "markdown export",
+      "json export"
+    ]
+  },
+  "summary": "多格式文档解析工具，适合把文档统一导出成 Markdown / HTML / JSON。",
+  "whyItMatters": "如果后续让 retrieval runtime 支持企业内部文件，它是统一 Document -> NormalizedDocument -> Chunk 契约的重要参考。",
+  "notes": "属于最终目标的补强层，不是当前纯公网网页 MVP 的核心。",
+  "status": "watching",
+  "review": {
+    "addedAt": "2026-05-25T12:06:18.612Z",
+    "lastReviewedAt": "2026-05-25T12:06:18.612Z",
+    "reviewAfter": "2026-08-23T12:06:18.612Z"
+  },
+  "links": {
+    "docs": "https://docling-project.github.io/docling"
+  }
+}
