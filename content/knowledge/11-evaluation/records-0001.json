@@ -185,6 +185,233 @@
           "note": "本次对话中用户提供的帖文主要内容和补充判断。"
         }
       ]
+    },
+    {
+      "slug": "typescript-agent-stack-should-split-runtime-tracing-and-offline-evals",
+      "externalKey": "kb-000013",
+      "externalId": "github-json-kb-000013",
+      "schemaVersion": 1,
+      "type": "PRACTICE",
+      "categoryCode": "11",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED",
+      "maturity": "REVIEWED",
+      "freshness": "FRESH",
+      "confidence": 0.81,
+      "language": "zh",
+      "title": "TS 全栈 Agent 应分层选择 Runtime、Trace 和 Offline Eval 工具",
+      "summary": "如果目标是 TypeScript 全栈 Agent，不应只用一个项目覆盖全部能力。更稳的组合是 Mastra 写 Agent，Langfuse 做生产 trace 与在线评测，Promptfoo 做离线评测、红队和 CI 回归。",
+      "body": "TypeScript 全栈 Agent 的评测体系要分清三件事：Agent 如何运行、生产运行如何被观察、上线前如何做可重复测试。Mastra 更适合作为 Agent runtime 和 workflow 主体，负责 agents、tools、workflows、memory、RAG 与应用集成；Langfuse 更适合作为生产 Trace / Evaluation Layer，承接 traces、metrics、datasets、prompt management、人工反馈和在线评测闭环；Promptfoo 更适合作为 Offline Eval / CI Regression 工具，把 prompts、agents、RAGs、tool calling、policy 和 red-team 用例写成可重复运行的测试集。Helicone 可作为 gateway / observability / prompt experiment 的补充参考，VoltAgent 可作为 TypeScript Agent engineering platform 的平台化参考。这个组合比单押一个项目更稳，因为 runtime、production observability 和 pre-release eval 的反馈周期不同，工程边界也不同。",
+      "problem": "很多 TS Agent 项目会把 runtime、trace、eval 和 CI 测试混成一个选择题，导致上线后只剩日志，或者只有离线 benchmark 而缺少真实生产 trace 回流。",
+      "recommendation": "采用分层选型：Mastra 负责 Agent runtime，Langfuse 负责生产 trace、online eval、datasets 和人工反馈，Promptfoo 负责 offline eval、red team 和 CI regression。Helicone 适合作为网关观测补充，VoltAgent 适合作为 TS Agent 平台化路线参考。",
+      "metadata": {
+        "contentSource": "source-check-plus-curation",
+        "draftedFrom": "conversation",
+        "judgementType": "stack-recommendation",
+        "stackLayer": "evaluation-and-observability",
+        "primaryLanguage": "typescript",
+        "recommendedRuntime": "Mastra",
+        "recommendedTracePlatform": "Langfuse",
+        "recommendedOfflineEval": "Promptfoo"
+      },
+      "applicability": {
+        "audience": [
+          "typescript-agent-builders",
+          "ai-application-engineers",
+          "agent-platform-engineers"
+        ],
+        "projectStage": [
+          "architecture-decision",
+          "production-planning",
+          "evaluation-design"
+        ],
+        "scenario": [
+          "typescript-fullstack-agent",
+          "agent-observability",
+          "ci-regression-evals",
+          "production-tracing"
+        ]
+      },
+      "compatibility": {
+        "runtimeLayer": [
+          "Mastra",
+          "VoltAgent"
+        ],
+        "traceLayer": [
+          "Langfuse",
+          "Helicone"
+        ],
+        "offlineEvalLayer": [
+          "Promptfoo"
+        ],
+        "fitsWith": [
+          "Next.js",
+          "TypeScript",
+          "OpenTelemetry",
+          "OpenAI-compatible providers"
+        ]
+      },
+      "tradeoffs": {
+        "pros": [
+          "把 runtime、生产 trace 和离线评测拆开，职责清晰",
+          "适合接入 CI 做 prompt / tool / RAG 回归",
+          "生产 trace 可以回流为 datasets 和 bad cases",
+          "整体技术栈保持 TypeScript-first"
+        ],
+        "cons": [
+          "需要维护多套工具之间的数据流",
+          "Langfuse / Promptfoo / Mastra 的 eval 抽象需要做适配",
+          "早期项目可能先只接 Langfuse 或 Promptfoo，避免一次性集成过重"
+        ]
+      },
+      "evidence": {
+        "basis": "Langfuse 官方仓库定位为 open source LLM engineering platform，覆盖 observability、metrics、evals、prompt management、playground 和 datasets；Promptfoo 官方仓库定位为测试 prompts、agents、RAGs，并覆盖 red teaming、pentesting 和 CI/CD；Mastra 官方仓库定位为用现代 TypeScript stack 构建 AI-powered applications and agents；Helicone 官方仓库定位为 open source LLM observability platform；VoltAgent 官方仓库定位为基于开源 TypeScript AI Agent Framework 的 AI Agent Engineering Platform。",
+        "confidenceReason": "这些项目的公开定位分别覆盖 runtime、observability、eval 和 platform 化方向，分层组合符合企业 Agent 生产链路。",
+        "caveat": "这是一条架构选型建议，不表示所有项目都必须同时接入。MVP 阶段可以先用 Mastra + Langfuse，等评测用例稳定后再引入 Promptfoo。"
+      },
+      "metrics": {
+        "recommendedDefaultStack": "Mastra + Langfuse + Promptfoo",
+        "runtimeFit": "high for TypeScript agent applications",
+        "productionObservabilityFit": "high with Langfuse",
+        "offlineRegressionFit": "high with Promptfoo",
+        "integrationComplexity": "medium"
+      },
+      "curation": {
+        "owner": "Gan-Xing",
+        "reviewStatus": "reviewed",
+        "sourceReviewedAt": "2026-06-03",
+        "reviewPolicy": "auto-needs-review-after-90-days"
+      },
+      "extensions": {
+        "nextSteps": [
+          "为 TS Agent MVP 先验证 Mastra + Langfuse 的 trace 接入",
+          "把关键 tool calling 和 RAG 场景固化为 Promptfoo eval cases",
+          "后续比较 Helicone 是否适合作为 provider gateway observability 层",
+          "持续观察 VoltAgent 的平台化能力是否适合替代或补充 Mastra"
+        ]
+      },
+      "publishedAt": "2026-06-03T00:00:00.000Z",
+      "lastVerifiedAt": "2026-06-03T00:00:00.000Z",
+      "reviewAfter": "2026-09-01T00:00:00.000Z",
+      "translations": [
+        {
+          "language": "en",
+          "title": "A TypeScript full-stack agent should split runtime, tracing, and offline evaluation tools",
+          "summary": "For a TypeScript full-stack agent, do not force one project to cover every concern. A stronger default is Mastra for the agent runtime, Langfuse for production tracing and online evaluation, and Promptfoo for offline evals, red teaming, and CI regression.",
+          "body": "A TypeScript agent stack should separate three concerns: how the agent runs, how production behavior is observed, and how changes are tested before release. Mastra is a strong candidate for the TypeScript agent runtime and workflow layer. Langfuse is better suited for traces, metrics, datasets, prompt management, human feedback, and online evaluation. Promptfoo is the better fit for offline eval suites, red-team cases, and CI regression. Helicone can complement the stack at the gateway and observability layer, while VoltAgent is worth tracking as a TypeScript agent engineering platform.",
+          "problem": "Teams often collapse runtime, tracing, online evaluation, and CI regression into a single tool decision, which leaves gaps once the agent reaches production.",
+          "recommendation": "Use Mastra for runtime, Langfuse for production tracing and online evaluation, and Promptfoo for offline evals and CI regression. Treat Helicone and VoltAgent as complementary references depending on gateway and platform needs.",
+          "metadata": {
+            "translationSource": "manual"
+          }
+        }
+      ],
+      "aliases": [
+        "TS Agent 评测栈",
+        "TypeScript agent eval stack",
+        "Mastra Langfuse Promptfoo",
+        "TS full-stack agent observability"
+      ],
+      "keywords": [
+        "TypeScript Agent",
+        "Agent evaluation",
+        "Agent tracing",
+        "Mastra",
+        "Langfuse",
+        "Promptfoo",
+        "Helicone",
+        "VoltAgent",
+        "online eval",
+        "offline eval",
+        "CI regression",
+        "LLM observability"
+      ],
+      "tags": [
+        "typescript",
+        "agent-eval",
+        "trace",
+        "observability",
+        "runtime",
+        "ci-regression",
+        "red-team"
+      ],
+      "relations": [
+        {
+          "toExternalKey": "kb-000003",
+          "relationType": "COMPLEMENTS",
+          "strength": 0.78,
+          "description": "这条记录提供 TS Agent 评测工具栈，kb-000003 提供 tool calling eval 的具体检查原则。",
+          "metadata": {
+            "reason": "stack-to-eval-principle"
+          }
+        },
+        {
+          "toExternalKey": "kb-000012",
+          "relationType": "COMPLEMENTS",
+          "strength": 0.72,
+          "description": "这条记录补充 self-hosted runtime + replaceable models 路线下的 TypeScript trace/eval 工具选择。",
+          "metadata": {
+            "reason": "enterprise-agent-stack"
+          }
+        }
+      ],
+      "sources": [
+        {
+          "sourceKey": "github:langfuse/langfuse",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/langfuse/langfuse",
+          "title": "langfuse/langfuse",
+          "author": "Langfuse",
+          "publisher": "GitHub",
+          "accessedAt": "2026-06-03T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Langfuse 的 open source LLM engineering platform、observability、metrics、evals、prompt management、playground 和 datasets 定位。"
+        },
+        {
+          "sourceKey": "github:promptfoo/promptfoo",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/promptfoo/promptfoo",
+          "title": "promptfoo/promptfoo",
+          "author": "Promptfoo",
+          "publisher": "GitHub",
+          "accessedAt": "2026-06-03T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Promptfoo 对 prompts、agents、RAGs、red teaming、pentesting、vulnerability scanning 和 CI/CD 的定位。"
+        },
+        {
+          "sourceKey": "github:mastra-ai/mastra",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/mastra-ai/mastra",
+          "title": "mastra-ai/mastra",
+          "author": "Mastra",
+          "publisher": "GitHub",
+          "accessedAt": "2026-06-03T00:00:00.000Z",
+          "role": "PRIMARY",
+          "note": "用于确认 Mastra 是 modern TypeScript stack 下的 AI-powered applications and agents framework。"
+        },
+        {
+          "sourceKey": "github:Helicone/helicone",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/Helicone/helicone",
+          "title": "Helicone/helicone",
+          "author": "Helicone",
+          "publisher": "GitHub",
+          "accessedAt": "2026-06-03T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于确认 Helicone 的 open source LLM observability platform 和 monitor/evaluate/experiment 定位。"
+        },
+        {
+          "sourceKey": "github:VoltAgent/voltagent",
+          "sourceType": "REPOSITORY",
+          "uri": "https://github.com/VoltAgent/voltagent",
+          "title": "VoltAgent/voltagent",
+          "author": "VoltAgent",
+          "publisher": "GitHub",
+          "accessedAt": "2026-06-03T00:00:00.000Z",
+          "role": "REFERENCE",
+          "note": "用于确认 VoltAgent 的 TypeScript AI Agent Framework 和 Agent Engineering Platform 定位。"
+        }
+      ]
     }
   ]
 }
