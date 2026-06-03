@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "helicone__helicone",
+  "repo": {
+    "host": "github",
+    "owner": "helicone",
+    "name": "helicone",
+    "fullName": "helicone/helicone",
+    "url": "https://github.com/helicone/helicone"
+  },
+  "classification": {
+    "categoryCode": "12",
+    "secondaryCategoryCodes": [
+      "15",
+      "11"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "typescript",
+      "llm-observability",
+      "gateway",
+      "monitoring",
+      "experiments",
+      "evaluation"
+    ],
+    "keywords": [
+      "helicone/helicone",
+      "helicone",
+      "llm observability",
+      "monitor evaluate experiment",
+      "open source llm observability platform",
+      "gateway",
+      "cost tracking",
+      "prompt experiments"
+    ]
+  },
+  "summary": "开源 LLM observability 平台，强调用一行代码监控、评测和实验，适合作为 gateway / monitoring / prompt experiment 方向的 TS 参考。",
+  "whyItMatters": "Helicone 的优势在请求级观测、成本、延迟、prompt 实验和网关接入。它适合作为生产流量入口层的观测工具参考，但 Agent 任务级评测仍应与 Langfuse 或 Promptfoo 搭配。",
+  "notes": "更偏 Gateway / Observability Layer。用于 TS 全栈 Agent 时，定位应是生产请求监控和实验，不是主要 runtime。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-06-03T00:00:00.000Z",
+    "lastReviewedAt": "2026-06-03T00:00:00.000Z",
+    "reviewAfter": "2026-09-01T00:00:00.000Z"
+  },
+  "links": {
+    "docs": "https://docs.helicone.ai/"
+  }
+}

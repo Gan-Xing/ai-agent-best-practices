@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "langfuse__langfuse",
+  "repo": {
+    "host": "github",
+    "owner": "langfuse",
+    "name": "langfuse",
+    "fullName": "langfuse/langfuse",
+    "url": "https://github.com/langfuse/langfuse"
+  },
+  "classification": {
+    "categoryCode": "12",
+    "secondaryCategoryCodes": [
+      "11",
+      "03"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "typescript",
+      "llm-observability",
+      "agent-tracing",
+      "evaluation",
+      "datasets",
+      "prompt-management",
+      "self-hosted"
+    ],
+    "keywords": [
+      "langfuse/langfuse",
+      "langfuse",
+      "open source llm engineering platform",
+      "llm observability",
+      "agent tracing",
+      "evals",
+      "prompt management",
+      "datasets",
+      "opentelemetry",
+      "langsmith alternative"
+    ]
+  },
+  "summary": "开源 LLM engineering 平台，覆盖 observability、metrics、evals、prompt management、playground 与 datasets，适合作为 TS 全栈 Agent 的生产 trace 与评测闭环。",
+  "whyItMatters": "如果 TS Agent 要进入生产，单靠 runtime 内部日志不够。Langfuse 更适合承接 traces、数据集、人工反馈、在线评测和 prompt 版本治理，是开源 TS 路线里最接近 LangSmith 的候选平台。",
+  "notes": "更像 Trace / Evaluation Layer，不是 Agent runtime 本身。和 Mastra 搭配时，Mastra 负责 agent/workflow，Langfuse 负责生产运行可观测和评测数据回流。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-06-03T00:00:00.000Z",
+    "lastReviewedAt": "2026-06-03T00:00:00.000Z",
+    "reviewAfter": "2026-09-01T00:00:00.000Z"
+  },
+  "links": {
+    "docs": "https://langfuse.com/docs"
+  }
+}

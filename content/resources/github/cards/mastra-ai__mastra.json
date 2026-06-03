@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "mastra-ai__mastra",
+  "repo": {
+    "host": "github",
+    "owner": "mastra-ai",
+    "name": "mastra",
+    "fullName": "mastra-ai/mastra",
+    "url": "https://github.com/mastra-ai/mastra"
+  },
+  "classification": {
+    "categoryCode": "03",
+    "secondaryCategoryCodes": [
+      "09",
+      "11",
+      "15"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "typescript",
+      "agent-framework",
+      "workflow",
+      "tools",
+      "memory",
+      "rag",
+      "evals"
+    ],
+    "keywords": [
+      "mastra-ai/mastra",
+      "mastra",
+      "typescript agent framework",
+      "ai powered applications and agents",
+      "agent runtime",
+      "workflows",
+      "tools",
+      "memory",
+      "evals"
+    ]
+  },
+  "summary": "TypeScript-first 的 AI application 与 Agent framework，适合作为 TS 全栈 Agent 的 runtime 主体，承接 agents、tools、workflows、memory、RAG 与 evals。",
+  "whyItMatters": "如果目标是从零做 TS 全栈 Agent，Mastra 比纯观测平台更适合作为应用框架。它负责 Agent 如何运行，Langfuse / Promptfoo 则负责生产 trace 和离线评测。",
+  "notes": "定位是 Agent Runtime / Workflow Layer。评测能力可以作为开发内置能力，但生产级 trace 与数据集闭环仍建议接 Langfuse。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-06-03T00:00:00.000Z",
+    "lastReviewedAt": "2026-06-03T00:00:00.000Z",
+    "reviewAfter": "2026-09-01T00:00:00.000Z"
+  },
+  "links": {
+    "docs": "https://mastra.ai/docs"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "promptfoo__promptfoo",
+  "repo": {
+    "host": "github",
+    "owner": "promptfoo",
+    "name": "promptfoo",
+    "fullName": "promptfoo/promptfoo",
+    "url": "https://github.com/promptfoo/promptfoo"
+  },
+  "classification": {
+    "categoryCode": "11",
+    "secondaryCategoryCodes": [
+      "13",
+      "12"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "typescript",
+      "agent-eval",
+      "prompt-testing",
+      "rag-eval",
+      "red-team",
+      "ci-regression",
+      "security-testing"
+    ],
+    "keywords": [
+      "promptfoo/promptfoo",
+      "promptfoo",
+      "test prompts agents and RAGs",
+      "agent evaluation",
+      "red teaming",
+      "ai security",
+      "ci cd evals",
+      "prompt regression testing"
+    ]
+  },
+  "summary": "TypeScript 写成的 CLI-first eval 与 red-team 框架，用声明式配置测试 prompts、agents、RAGs，并适合接入 CI/CD 做回归。",
+  "whyItMatters": "Agent 评测需要上线前的固定测试集、红队测试和回归门禁。Promptfoo 比生产观测平台更像测试框架，适合把 tool calling、RAG、policy 和安全用例固化为可重复运行的评测集。",
+  "notes": "更适合 Offline Eval / CI Regression，不替代 Langfuse 的生产 trace，也不替代 Mastra 的 Agent runtime。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-06-03T00:00:00.000Z",
+    "lastReviewedAt": "2026-06-03T00:00:00.000Z",
+    "reviewAfter": "2026-09-01T00:00:00.000Z"
+  },
+  "links": {
+    "docs": "https://www.promptfoo.dev/docs"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "github-repo-card",
+  "cardKey": "voltagent__voltagent",
+  "repo": {
+    "host": "github",
+    "owner": "voltagent",
+    "name": "voltagent",
+    "fullName": "voltagent/voltagent",
+    "url": "https://github.com/voltagent/voltagent"
+  },
+  "classification": {
+    "categoryCode": "03",
+    "secondaryCategoryCodes": [
+      "11",
+      "12",
+      "13"
+    ],
+    "recordType": "TOOL",
+    "tags": [
+      "typescript",
+      "agent-framework",
+      "agent-engineering-platform",
+      "observability",
+      "evals",
+      "guardrails"
+    ],
+    "keywords": [
+      "voltagent/voltagent",
+      "VoltAgent",
+      "AI Agent Engineering Platform",
+      "TypeScript AI Agent Framework",
+      "observability",
+      "deployment",
+      "evals",
+      "guardrails"
+    ]
+  },
+  "summary": "基于开源 TypeScript Agent Framework 的 AI Agent Engineering Platform，覆盖 framework、observability、deployment、evals 与 guardrails 等平台化方向。",
+  "whyItMatters": "VoltAgent 适合作为 TS Agent 平台化路线参考：它不只是 eval 工具，而是把 framework、观测、部署、评测和 guardrails 放在同一工程叙事里。",
+  "notes": "和 Mastra 同属 TS Agent framework / platform 候选。若优先做生产 trace/eval，Langfuse 和 Promptfoo 仍更专门。",
+  "status": "curated",
+  "review": {
+    "addedAt": "2026-06-03T00:00:00.000Z",
+    "lastReviewedAt": "2026-06-03T00:00:00.000Z",
+    "reviewAfter": "2026-09-01T00:00:00.000Z"
+  },
+  "links": {
+    "docs": "https://voltagent.dev/docs"
+  }
+}
